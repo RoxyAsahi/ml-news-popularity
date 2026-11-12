@@ -1,0 +1,7 @@
+measure,value,n
+"raw agreement, 4 labels",0.9,60
+"Cohen kappa, 4 labels",0.82,60
+"raw agreement, same story vs not",0.917,60
+"Cohen kappa, same story vs not",0.826,60
+"same-story precision sim>=0.5 filtered, annotator 1",0.8,35
+"same-story precision sim>=0.5 filtered, annotator 2",0.829,35

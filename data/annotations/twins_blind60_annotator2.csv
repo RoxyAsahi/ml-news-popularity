@@ -1,0 +1,61 @@
+pair_id,date_i,date_j,channel_i,channel_j,slug_i,slug_j,label,note
+131,2014-12-22,2014-12-22,world,other,de blasio speaks nypd,de blasio speaks up about nypd,S,
+111,2013-03-07,2013-03-12,socmed,socmed,how to watch facebook live news feed,facebook news feed evolution,S,
+19,2014-06-13,2014-06-14,other,world,world cup fans,world cup fans manaus,T,"both World Cup fan pieces, likely different matches"
+120,2013-04-20,2013-04-27,socmed,socmed,top comments,top comments,R,
+127,2014-04-02,2014-04-03,world,world,amazon fire tv why,amazon fire tv gaming,S,
+173,2013-09-22,2013-09-28,world,other,ios and android apps you dont want to miss,7 apps you dont want to miss,R,
+102,2014-05-24,2014-05-26,tech,world,memorial day,memorial day 2014 pics,T,"holiday peg, not a news story; could be S"
+154,2014-12-03,2014-12-08,tech,socmed,protests eric garner,eric garner protests pro sports,S,
+165,2013-05-16,2013-05-20,socmed,bus,yahoo tumblr,yahoo tumblr advertising,S,
+41,2013-07-15,2013-07-19,other,bus,trayvon martin tumblr,obama trayvon martin,S,
+134,2014-07-04,2014-07-08,world,other,world cup day,world cup brazil germany,T,
+93,2014-08-20,2014-08-20,bus,socmed,ice bucket challenge facebook,kermit ice bucket challenge,S,
+106,2013-03-27,2013-03-28,bus,bus,brands marriage equality facebook,tumblr brands marriage equality,S,
+47,2013-09-17,2013-09-24,tech,entertainment,social good summit world meetups,social good summit tweets,S,
+137,2014-06-09,2014-06-13,socmed,tech,orange is the new black episodes 10 12 recaps,songs orange is the new black season 2 music soundtrack,T,
+90,2014-07-03,2014-07-03,world,tech,hurricane arthur instagram,hurricane arthur weather forecasters nightmare,S,
+104,2013-01-13,2013-01-14,other,other,bill clinton at golden globes,golden globes gifs,S,
+146,2013-05-16,2013-05-19,socmed,bus,yahoo tumblr,yahoo tumblr,S,
+148,2013-02-18,2013-02-18,bus,other,burger king twitter account hacked,reactions to burger king twitter hacked,S,
+109,2013-04-06,2013-04-09,tech,tech,google fiber austin,google fiber austin,S,
+22,2013-12-01,2013-12-03,lifestyle,bus,awful christmas sweaters,christmas sweaters cat ladies,T,
+139,2014-04-02,2014-04-05,tech,other,amazon fire tv,amazon fire tv review,S,
+80,2013-06-19,2013-06-26,entertainment,world,miami heat fans,ravens miami heat fans tweet,S,unsure; both likely about Heat fans leaving Game 6 early
+117,2014-05-22,2014-05-22,world,lifestyle,world cup preview group f,world cup preview group g,R,
+42,2014-04-18,2014-04-25,tech,tech,elon musk spacex grasshopper launch,elon musk spacex booster stage atlantic,T,"related SpaceX tests, different events"
+50,2014-09-01,2014-09-04,entertainment,world,joan rivers coma lawsuit,joan rivers jokes,S,
+77,2014-02-12,2014-02-14,tech,socmed,house of cards valentines,house of cards valentines day,S,
+143,2013-11-28,2013-11-29,lifestyle,bus,kittens black friday,black friday supercut,T,holiday peg; could be S
+62,2013-05-06,2013-05-11,other,entertainment,star wars infomercials,star wars tunisia,T,
+132,2013-01-23,2013-01-25,socmed,bus,twitter vine videos,twitter vine brands,S,
+129,2013-03-13,2013-03-15,world,world,pope francis facebook,pope francis 92 seconds,S,
+28,2014-03-20,2014-03-20,entertainment,tech,international day of happiness playlist,international day of happiness,S,
+152,2013-02-20,2013-02-21,bus,bus,live chat announcer dealgooder,live chat giveforward,R,
+162,2014-02-05,2014-02-07,socmed,world,winter olympics opening ceremony,winter olympics opening ceremony photos videos,S,
+95,2013-10-17,2013-10-21,entertainment,world,google q3 earnings,netflix q3 earnings,T,
+128,2013-04-25,2013-04-27,entertainment,entertainment,video water games,5 games 4,U,unclear slugs
+121,2014-08-23,2014-08-29,bus,tech,harsh light photo challenge,harsh light photo challenge roundup,S,challenge and its roundup
+99,2014-04-28,2014-05-01,world,world,paul simon edie brickell arrested,edie brickell paul simon song,S,follow-up on same couple
+84,2014-09-30,2014-10-01,entertainment,entertainment,windows 10 hands on,popkey hands on,U,"shared ""hands on"" format only"
+123,2014-04-02,2014-04-02,tech,tech,amazon fire tv,amazon fire tv game controller,S,
+116,2014-07-17,2014-07-18,entertainment,world,malaysia airlines ukraine russia rebel,sara firth rt malaysia airlines ukraine,S,
+114,2014-04-16,2014-04-20,world,tech,south korean ferry texts,south korean ferry confusion,S,
+8,2014-09-09,2014-09-09,tech,bus,apple pay competitors,apple pay,S,
+115,2014-01-31,2014-02-01,other,world,super bowl halftime show intro,super bowl halftime history,T,same upcoming show but intro vs history piece; could be S
+160,2014-12-12,2014-12-15,world,world,korean air lines apology,korean air lines nut rage,S,
+170,2013-02-10,2013-02-17,other,other,viral video recap must,viral video recap,R,
+135,2014-05-01,2014-05-01,world,entertainment,turkey may day,ukraine may day,T,
+59,2013-02-04,2013-02-04,bus,entertainment,brands super bowl social media,super bowl social media,S,
+112,2014-07-08,2014-07-12,tech,other,brazil germany world cup third place,world cup third place preview,S,
+65,2013-06-02,2013-06-05,tech,bus,iradio apple,audio ads iradio apple,S,
+16,2014-08-12,2014-08-13,bus,tech,robin williams mosaic,allison williams peter pan robin williams,S,
+125,2014-05-21,2014-05-22,entertainment,lifestyle,world cup preview group c,world cup preview group g,R,
+107,2013-11-10,2013-11-12,world,socmed,lady gaga,ps22 chorus lady gaga medley glamour,T,unsure; ARTPOP week
+136,2014-03-31,2014-04-01,bus,lifestyle,simple april fools day pranks,april fools tech,T,holiday peg
+149,2013-10-29,2013-10-29,tech,tech,ashton kutcher lenovo,lenovo ashton kutcher,S,
+82,2014-10-17,2014-10-20,tech,world,scandal season 4 episode 4 recap,downton abbey season 5 episode 5 recap,T,both TV recaps but different shows
+147,2014-12-02,2014-12-08,world,world,sony hack passwords,sony hack unprecedented undetectable,S,
+157,2013-04-25,2013-05-01,socmed,socmed,photo challenge hometown,photo challenge hometown escapes,S,challenge and its results
+105,2013-05-20,2013-05-21,world,other,oklahoma tornado social media,oklahoma tornado rainbow vine,S,
+141,2014-12-22,2014-12-23,bus,other,north korea internet outage,north korea internet outage what happened,S,
