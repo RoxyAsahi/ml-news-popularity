@@ -1,0 +1,6 @@
+quantity,value,lo,hi
+AUC with memory minus without (past-only HistGB),-0.0008,-0.0019,0.0004
+"Spearman(memory_hinf, log shares)",0.0213,,
+"Spearman(memory_h7, log shares)",0.0164,,
+"Spearman(memory_h30, log shares)",0.0291,,
+"Spearman(memory_h180, log shares)",0.0263,,

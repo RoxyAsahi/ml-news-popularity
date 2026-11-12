@@ -76,12 +76,12 @@ Independent review after each milestone (end of each week).
 - [ ] Milestone review 1 (independent reviewer thread) → apply fixes
 
 ### Week 2 (20–26 Nov): RQ2 content within stories + RQ3 attention competition
-- [ ] RQ2: twin-difference regression vs cross-sectional regression of log shares on content features (length, subjectivity, polarity, images/videos, links); paired CIs; which effects survive topic control
-- [ ] RQ3: same-day volume effect (week + weekday + channel FE, day-clustered CIs), robustness to content controls; semantic-memory time decay as negative result (merges old E2)
+- [x] (#26) RQ2: twin-difference regression vs cross-sectional regression of log shares on content features (length, subjectivity, polarity, images/videos, links); paired CIs; which effects survive topic control
+- [x] (#26, + placebo, long articles, within twins, same/other channel) RQ3: same-day volume effect (week + weekday + channel FE, day-clustered CIs), robustness to content controls; semantic-memory time decay as negative result (merges old E2)
 - [ ] Milestone review 2
 
 ### Week 3 (27 Nov–3 Dec): RQ4 honest uncertainty + packaging
-- [ ] RQ4: CQR + adaptive conformal (ACI) monthly coverage under drift; selective prediction risk–coverage (merges old E1/E4)
+- [x] (#26) RQ4: CQR + adaptive conformal (ACI) monthly coverage under drift; selective prediction risk–coverage (merges old E1/E4)
 - [ ] Figures, `run_all.sh` update, clean-environment reproduction
 - [ ] Milestone review 3
 
