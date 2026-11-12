@@ -88,19 +88,19 @@ def fig2():
 
 
 def fig3():
-    plt.rcParams.update({"font.size": 9, "axes.titlesize": 9.5})
+    plt.rcParams.update({"font.size": 10, "axes.titlesize": 10.5})
     e4 = pd.read_csv(TAB / "e4_threshold.csv")
     e5 = pd.read_csv(TAB / "e5_learning_curve.csv")
     e6 = pd.read_csv(TAB / "e6_logreg_C.csv")
-    fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.2, 2.7))
+    fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.2, 2.9))
     s = e4[(e4.features == "all") & (e4.model == "hgb")]
     q = s["quantile"] * 100
     a.plot(q, s.roc_auc, marker="o", ms=3, color="C0", label="ROC-AUC")
     a.fill_between(q, s.auc_lo, s.auc_hi, color="C0", alpha=0.15)
     a.plot(q, s.pr_auc, marker="s", ms=3, color="0.3", label="PR-AUC")
     a.plot(q, s.pos_rate, ls=":", color="0.55", label="positive rate")
-    a.set_xticks([50, 75, 90, 95]); a.set_xlabel("threshold percentile"); a.set_ylim(0, 0.8)
-    a.legend(fontsize=7.5, loc="lower left"); a.set_title("(a) threshold (HistGB)")
+    a.set_xticks([50, 75, 95]); a.set_xlabel("threshold percentile"); a.set_ylim(0, 0.8)
+    a.legend(fontsize=8, loc="lower left"); a.set_title("(a) threshold (HistGB)")
     cols = {"logreg": "0.55", "knn": "C2", "rf": "C1", "hgb": "C0"}
     names = {"logreg": "LogReg", "knn": "kNN", "rf": "RF", "hgb": "HistGB"}
     for m in ["logreg", "knn", "rf", "hgb"]:
@@ -108,12 +108,12 @@ def fig3():
         b.errorbar(d.index, d["mean"], yerr=d["std"].fillna(0), marker="o", ms=2.5, capsize=1.5,
                    color=cols[m], label=names[m])
     b.set_xscale("log"); b.set_xlabel("training articles"); b.set_ylabel("test ROC-AUC")
-    b.legend(fontsize=7.5, loc="lower right"); b.set_title("(b) learning curves")
+    b.legend(fontsize=8, loc="lower right"); b.set_title("(b) learning curves")
     for size, ls_, lab in [("1000", "-", "1,000 articles"), ("full", "--", "27,750 articles")]:
         d = e6[(e6.train_size == size) & (e6.penalty == "l2")]
         c.plot(d.C, d.val_auc, ls=ls_, marker="o", ms=2.5, color="C0", label=lab)
-    c.set_xscale("log"); c.set_xlabel("C (smaller = stronger L2 penalty)"); c.set_ylabel("validation ROC-AUC")
-    c.legend(fontsize=7.5, loc="lower left"); c.set_title("(c) regularisation (LogReg)")
+    c.set_xscale("log"); c.set_xlabel("C (smaller = stronger penalty)"); c.set_ylabel("validation ROC-AUC")
+    c.legend(fontsize=8, loc="lower left"); c.set_title("(c) regularisation (LogReg)")
     fig.tight_layout(); fig.savefig(FIG / "fig3_threshold_size_reg.png", dpi=300)
 
 

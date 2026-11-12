@@ -54,6 +54,7 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Clean-environment reproduction (2026-11-12): fresh clone + venv (numpy 2.5.4, pandas 3.1.1, scikit-learn 1.9.1), `./run_all.sh` in 26 min, all 44 tables match main (max abs diff 1.2e-10)
 - [x] Build the submission zip: `./make_submission.sh` -> `dist/group3_news_popularity.zip` (report.pdf + code/, no data)
 - [x] Review round 3 (adversarial grading, items 2–8): age not identifiable, kw values from collection date (upper bound), weekly block bootstrap, sliding-window variance, validation-chosen reference model, wider kNN grid, HistGB temporal early stopping, Breslow–Day + per-channel effects, all Isolation Forest settings, method citations, VCPToolBox footnote, figure fonts, abstract rewrite; 8 pages
+- [x] Review round 4 fixes (kw alone 0.016, 'likely optimistic', per-fold block SE 0.008 vs period sd 0.017, staleness as upper bound, RQ1 wording, Related Work compressed, larger Fig 3/4 fonts)
 - [ ] Prose tightening pass: the report is at exactly 8 pages; cut ~0.3 page (repetition between Results and Discussion, long captions) so later additions fit
 - [ ] Seed robustness of the main comparison: refit RF and HistGB with 5 seeds, report the spread of test AUC next to Table 2 (one sentence + table column or footnote)
 - [ ] Calibration under drift: reliability curve of HistGB on validation vs test blocks (Brier, ECE); one sentence in RQ1 if it fits, else docs only

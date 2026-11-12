@@ -58,8 +58,8 @@ def main():
     y = make_label(df.shares, 1400)
     model = fit(get_model("hgb", 0), X[tr], y[tr])
     rows = []
-    plt.rcParams.update({"font.size": 9})
-    fig, axes = plt.subplots(1, 4, figsize=(7.2, 2.2), sharey=True)
+    plt.rcParams.update({"font.size": 10})
+    fig, axes = plt.subplots(1, 4, figsize=(7.2, 2.5), sharey=True)
     for ax, (f, name) in zip(axes, FEATURES.items()):
         edges, eff = ale(model, X[tr], cols.index(f))
         rows += [{"feature": f, "x": e, "ale": a} for e, a in zip(edges, eff)]
@@ -69,9 +69,9 @@ def main():
         ax.axhline(0, color="0.6", lw=0.6)
         ticks = [10, 50, 90]
         vals = np.quantile(X[tr, cols.index(f)], np.array(ticks) / 100)
-        ax.set_xticks(ticks, [f"p{t}\n{v:,.0f}" for t, v in zip(ticks, vals)], fontsize=7.5)
+        ax.set_xticks(ticks, [f"p{t}\n{v:,.0f}" for t, v in zip(ticks, vals)], fontsize=8.5)
         ax.set_xlim(0, 101)
-        ax.set_title(name, fontsize=8)
+        ax.set_title(name, fontsize=9)
         print(f, "range of effect:", round(eff.max() - eff.min(), 3))
     axes[0].set_ylabel("ALE on P(popular)")
     fig.tight_layout(); fig.savefig(FIG / "e8_ale.png", dpi=300)

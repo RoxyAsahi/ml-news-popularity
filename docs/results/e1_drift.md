@@ -81,3 +81,7 @@ earlier article:
 - Age vs shares: all articles were collected on the same day, so age and publication date are
   one-to-one; the flat age curve cannot by itself show saturation. Report relies on Szabo &
   Huberman (2010) for that.
+- Sampling error of one sliding-window test block (weekly block bootstrap, 11–16 weeks per block):
+  SE 0.008 (HistGB and LogReg). Period sd 0.017 has a 95% interval of 0.010–0.049 with 5 folds, so
+  "clearly larger than sampling error (about twice)", not "ten times".
+- Staleness 0.006 is an upper bound: training size also grows from 27,772 to 33,788 as the cutoff moves.

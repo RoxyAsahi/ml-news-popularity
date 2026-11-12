@@ -46,7 +46,7 @@ def window(dates, lo, hi):
     return np.where((dates >= pd.Timestamp(lo)) & (dates < pd.Timestamp(hi)))[0]
 
 
-def sliding_window(X, y, n, min_train=0.4, n_folds=5):
+def sliding_window(X, y, n, week, min_train=0.4, n_folds=5):
     """Same five test blocks as the expanding rolling-origin folds of E1, but every model is
     trained on a FIXED number of the most recent articles (n * min_train), so fold-to-fold
     variation is not confounded with growing training size."""
@@ -57,7 +57,15 @@ def sliding_window(X, y, n, min_train=0.4, n_folds=5):
         win = tr[-size:]
         for m in MODELS:
             p = fit(get_model(m, 0), X[win], y[win]).predict_proba(X[te])[:, 1]
-            rows.append({"fold": k, "model": m, "n_train": len(win), "auc": roc_auc_score(y[te], p)})
+            # sampling error of this single test block: sd of a weekly block bootstrap
+            rng = np.random.default_rng(k)
+            boots = []
+            for _ in range(N_BOOT):
+                i = _resample(rng, len(te), week[te])
+                boots.append(roc_auc_score(y[te][i], p[i]))
+            rows.append({"fold": k, "model": m, "n_train": len(win), "n_test": len(te),
+                         "n_weeks": len(np.unique(week[te])), "auc": roc_auc_score(y[te], p),
+                         "block_se": float(np.std(boots))})
     return pd.DataFrame(rows)
 
 
@@ -100,10 +108,12 @@ def main():
     dec.to_csv(TAB / "e1b_decomposition.csv", index=False)
     print(dec.round(3).to_string(index=False))
 
-    sw = sliding_window(X, y, len(df))
+    sw = sliding_window(X, y, len(df), week)
     sw.to_csv(TAB / "e1b_sliding_window.csv", index=False)
     print(sw.pivot(index="fold", columns="model", values="auc").round(3))
     print("sd across fixed-size folds:", sw.groupby("model").auc.std().round(4).to_dict())
+    print("mean block-bootstrap SE of one fold:", sw.groupby("model").block_se.mean().round(4).to_dict(),
+          "weeks per fold:", sw.n_weeks.unique())
 
     fig, ax = plt.subplots(figsize=(3.4, 2.3))
     for m, col in zip(MODELS, ["C0", "0.45"]):
