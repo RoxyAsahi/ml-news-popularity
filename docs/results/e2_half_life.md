@@ -22,7 +22,7 @@ Unweighted rolling-origin AUC: HistGB 0.730, logistic regression 0.715.
   the tree ensembles still need.
 - Logistic regression gains a small but consistent +0.004 to +0.006 with half-lives of 180–365
   days. It is far from closing the 0.015 gap to HistGB.
-- This fits E1: ranking is fairly stable over time (the decay is 0.03 over six months), so the
-  benefit of emphasising recent articles is small, and only a low-variance model can use it.
+- This fits E1b: a fully up-to-date model gains only 0.006 AUC on Oct–Dec 2014 (most of the late
+  drop is harder articles, not staleness), so the benefit of emphasising recent articles is small, and only a low-variance model can use it.
 - Write it as a mostly negative result in the report; it tests a plausible idea and says why it
   does not pay off for the strongest model.

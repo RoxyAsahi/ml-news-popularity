@@ -33,27 +33,37 @@ def fig2():
 
     fig = plt.figure(figsize=(7.2, 4.6))
     gs = fig.add_gridspec(2, 2, height_ratios=[1, 1], width_ratios=[1.35, 1])
-    a = fig.add_subplot(gs[0, 0]); b = fig.add_subplot(gs[1, 0], sharex=a)
+    a = fig.add_subplot(gs[0, 0]); b = fig.add_subplot(gs[1, 0])
     c = fig.add_subplot(gs[0, 1]); d = fig.add_subplot(gs[1, 1])
 
     a.plot(base.publish_date, base["mean"], marker="o", ms=2.5, color="0.35")
     cut = pd.Timestamp("2014-06-25")
-    for ax in (a, b):
-        ax.axvline(cut, color="C3", ls="--", lw=1)
+    a.axvline(cut, color="C3", ls="--", lw=1)
     a.text(cut, 0.66, " training ends", color="C3", fontsize=7)
     a.set_ylabel("share popular"); a.set_title("(a) base rate drifts by month")
-    for m, col, off in [("hgb", "C0", 4), ("logreg", "0.55", -4)]:
-        s = mon[mon.model == m]
-        x = pd.PeriodIndex(s.month, freq="M").to_timestamp() + pd.Timedelta(days=14 + off)
-        b.errorbar(x, s.roc_auc, yerr=[s.roc_auc - s.auc_lo, s.auc_hi - s.roc_auc], marker="o", ms=2.5,
-                   capsize=1.5, color=col, label={"hgb": "HistGB", "logreg": "logistic regression"}[m])
-    b.set_ylabel("ROC-AUC (95% CI)"); b.legend(fontsize=6.5, loc="lower left")
-    b.set_title("(b) ranking decays slowly after training ends")
     import matplotlib.dates as mdates
-    for ax in (a, b, c):
-        ax.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))
-        ax.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
-    plt.setp(a.get_xticklabels(), visible=False)
+    a.xaxis.set_major_locator(mdates.MonthLocator(bymonth=[1, 7]))
+    a.xaxis.set_major_formatter(mdates.DateFormatter("%b %Y"))
+
+    # (b) staleness vs difficulty: Oct-Dec 2014 AUC as the training cutoff moves forward
+    cut_auc = pd.read_csv(TAB / "e1b_cutoff_auc.csv")
+    dec = pd.read_csv(TAB / "e1b_decomposition.csv").set_index("model")
+    labels = {"hgb": "HistGB", "logreg": "logistic regression"}
+    for k, (m, col) in enumerate([("hgb", "C0"), ("logreg", "0.45")]):
+        s_ = cut_auc[cut_auc.model == m].reset_index(drop=True)
+        x = np.arange(len(s_)) + (k - 0.5) * 0.08
+        b.errorbar(x, s_.auc, yerr=[s_.auc - s_.lo, s_.hi - s_.auc], marker="o", ms=3, capsize=1.5,
+                   color=col, label=labels[m])
+        early = dec.loc[m, "total_decay"] + s_.auc.iloc[0]
+        b.plot([x[0]], [early], marker="D", ms=4, mfc="white", color=col)
+    b.annotate("first model,\ntested on Jul-Sep", (0, dec.loc["hgb", "total_decay"] + cut_auc.auc.iloc[0]),
+               xytext=(0.6, 0.748), fontsize=6.5, arrowprops=dict(arrowstyle="-", lw=0.6, color="0.4"))
+    b.set_xticks(range(4), ["26 Jun", "1 Aug", "1 Sep", "1 Oct"]); b.set_xlim(-0.4, 3.4)
+    b.set_xlabel("training cutoff (2014)"); b.set_ylim(0.69, 0.764)
+    b.set_ylabel("ROC-AUC on Oct-Dec 2014"); b.legend(fontsize=6.5, loc="upper right")
+    b.set_title("(b) a fresher model barely helps")
+    c.xaxis.set_major_locator(mdates.YearLocator())
+    c.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
 
     c.step(prior.index, prior.values, where="post", color="0.65", lw=2, label="max shares of any earlier article")
     c.plot(kmm.index, kmm.values, ".", ms=1.5, color="C0", label="kw_max_max (daily median)")

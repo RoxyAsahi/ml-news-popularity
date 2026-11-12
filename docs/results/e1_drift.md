@@ -18,7 +18,7 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
 
 2. **Threshold-dependent metrics do degrade.** PR-AUC drops from 0.756 to 0.719 (HistGB) and F1 from 0.699 to 0.674, mostly because the share of popular articles falls from 53% (whole data) to 48% in the newest 20%. Month by month after training, the models predict 49–53% positives while the true rate is 47–49% (Sep–Dec 2014): a calibration drift, not a ranking failure.
 
-3. **Ranking quality decays with distance from the training data, by about 0.03.** Training
+3. **AUC is about 0.03 lower in Oct–Dec than in Jul–Sep 2014 — but this is mostly not staleness (see E1b below).** Training
    on the oldest 70%, AUC on the first three full months after the cutoff (Jul–Sep 2014) vs the
    last three (Oct–Dec 2014): HistGB 0.754 → 0.722, decay 0.032 [0.014, 0.049]; logistic
    regression 0.736 → 0.707, decay 0.030 [0.012, 0.048] (independent bootstrap, 95% CI). Monthly
@@ -30,8 +30,8 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
    accuracy at 0.667 and Brier at 0.209 (logistic regression 0.658 → 0.660). The shift happens
    *inside* the test period (47.9% positive), so no rate known at training time can anticipate it.
 
-4. **Old and new articles are easy to tell apart, largely because some keyword columns act as a
-   clock.** A classifier separates the oldest 70% from the newest 30% with ROC-AUC 0.958 on all
+4. **Old and new articles are easy to tell apart; the keyword clock columns explain only a small
+   part of it** (0.958 → 0.940 without them, see E3). A classifier separates the oldest 70% from the newest 30% with ROC-AUC 0.958 on all
    features and 0.804 without `kw_*`/`self_reference_*`. E3 shows the keyword statistics are
    point-in-time and that three of them mostly encode archive size (constant inside the test
    block). The remaining separability (0.80 from content features) is real covariate drift, but
@@ -47,3 +47,27 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
 
 - 2014-06 is a partial month at the cutoff (303 articles).
 - No hyper-parameter tuning yet; E1 compares split types, not models.
+
+## E1b — stale model or harder articles? (added after review round 2)
+
+Script: `scripts/e1b_staleness.py` (~1 min); tables `e1b_cutoff_auc.csv`, `e1b_decomposition.csv`,
+figure `e1b_staleness.png` (and panel (b) of the report's Fig. 2).
+
+Fix the evaluation window at Oct–Dec 2014 and move the training cutoff forward, training on every
+earlier article:
+
+| Cutoff | HistGB AUC on Oct–Dec | LogReg AUC on Oct–Dec |
+| --- | --- | --- |
+| 26 Jun 2014 | 0.722 | 0.707 |
+| 1 Aug 2014 | 0.723 | 0.707 |
+| 1 Sep 2014 | 0.726 | 0.708 |
+| 1 Oct 2014 | 0.729 | 0.710 |
+
+- **Staleness** (fresh − old model on the same Oct–Dec articles, paired bootstrap): HistGB
+  0.006 [0.002, 0.011], LogReg 0.003 [0.001, 0.005]. Detectable but small.
+- **Difficulty** (old model on Jul–Sep − fresh model on Oct–Dec, independent bootstrap): HistGB
+  0.024 [0.007, 0.042], LogReg 0.027 [0.010, 0.045].
+- So most of the 0.03 gap is that late-2014 articles are harder to rank, not that the model is
+  outdated. This also explains why half-life weighting (E2) does not help.
+- Note: the Jul–Sep window includes the validation block (not used for training here), so
+  call it "after the training cutoff", not "within the test period".

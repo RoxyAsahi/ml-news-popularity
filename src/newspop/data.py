@@ -85,7 +85,7 @@ def feature_groups(df: pd.DataFrame) -> dict[str, list[str]]:
 
 
 def feature_set(df: pd.DataFrame, name: str = "all") -> list[str]:
-    """Feature sets for the leakage audit (RQ2).
+    """Feature sets for the share-derived feature analysis (RQ2).
 
     all       : every predictive column
     no_kw     : drop keyword-share statistics (kw_*)
