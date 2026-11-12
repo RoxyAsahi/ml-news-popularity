@@ -1,0 +1,8 @@
+level,spec,term,coef,lo,hi,n
+article,"story size, FE",log_k,-0.0105,-0.0351,0.0141,39643
+article,"story size, FE + content",log_k,-0.0105,-0.0349,0.0139,39643
+article,"story size, FE + content, k <= 10",log_k,-0.0252,-0.0548,0.0045,39369
+article,same-story articles within 2 days,log_near,-0.0134,-0.044,0.0173,39643
+article,other articles that day,log_other,-0.2806,-0.3488,-0.2123,39643
+story,"story total vs size, FE of first article",log_k,1.1785,1.137,1.2199,37413
+story,"story total vs size, k <= 10",log_k,1.1757,1.1301,1.2212,37394
