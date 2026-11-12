@@ -7,7 +7,7 @@ calibration on the next 10%, target coverage 80% on the newest 20%. ACI: same ba
 quantile of the most recent 3,000 scores, step gamma = 0.005, updated article by article in time
 order (the true shares are assumed known before the next article is scored, as in an online setting;
 in practice shares arrive with a delay, so this is optimistic).
-Selective prediction: past-only HistGB scores (monthly rolling origin, cached by s2); predict only the
+Selective prediction: past-only HistGB (and L1 logistic regression) scores (monthly rolling origin, cached by s2); predict only the
 fraction of articles with the largest |p - 0.5|.
 
 Outputs: results/tables/s7_coverage.csv, results/tables/s7_selective.csv
@@ -54,16 +54,17 @@ print(by.round(3).to_string())
 print(f"median 80% CQR interval: {lo_sh:.0f} - {hi_sh:.0f} shares; upper/lower ratio median {np.median(w):.1f}")
 
 S = pd.read_csv(ROOT / "data" / "processed" / "scores.csv")
-p = S["hgb_all"].to_numpy()
-m = ~np.isnan(p)
-yb = (df.shares.to_numpy() >= 1400)[m]
-p = p[m]
-order = np.argsort(-np.abs(p - 0.5))
-correct = ((p > 0.5) == yb)[order]
 rows = []
-for cov in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1, 0.05]:
-    k = int(round(cov * len(p)))
-    rows.append({"coverage": cov, "accuracy": correct[:k].mean(), "n": k})
+for model in ["hgb_all", "logreg_all"]:  # L1 logistic regression as a baseline
+    p = S[model].to_numpy()
+    m = ~np.isnan(p)
+    yb = (df.shares.to_numpy() >= 1400)[m]
+    p = p[m]
+    order = np.argsort(-np.abs(p - 0.5))
+    correct = ((p > 0.5) == yb)[order]
+    for cov in [1.0, 0.8, 0.6, 0.4, 0.2, 0.1, 0.05]:
+        k = int(round(cov * len(p)))
+        rows.append({"model": model, "coverage": cov, "accuracy": correct[:k].mean(), "n": k})
 R = pd.DataFrame(rows).round(4)
 R.to_csv(ROOT / "results" / "tables" / "s7_selective.csv", index=False)
 print(R.to_string(index=False))

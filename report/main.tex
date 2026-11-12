@@ -21,15 +21,15 @@ Popularity models for the Mashable news benchmark reach a ROC-AUC of about 0.74,
 that skill consists of: knowing \emph{when} and \emph{where} an article appears, \emph{what story} it covers,
 or \emph{how} it is written. The benchmark ships no text, yet every article's URL ends in a shortened
 headline. Retrieving near-identical headlines published within a week, we find 2{,}941 pairs of same-story
-``twin'' articles (78\% precision on 180 annotated pairs) and use them as a topic-controlled natural
+``twin'' articles (about 71\% same-story precision, from 180 annotated pairs) and use them as a topic-controlled natural
 experiment. With strictly past-only models we find that (i) publication time contributes no ranking skill,
-the editorial channel about 0.045 AUC, and fixing the story no detectable further amount: within a channel
-and day the model still ranks at 0.675; (ii) same-story articles barely share their fate (residual
+the editorial channel about 0.045 AUC, and fixing the story no detectable further amount (bounded at
+about 0.07): within a channel and day the model still ranks at 0.675; (ii) same-story articles barely share their fate (residual
 correlation 0.05), and the earlier twin gets about 7\% more shares, consistent with split attention but also
 with follow-ups simply being smaller; (iii) of 13 content features, only the subjectivity of the body survives
-topic control, with a larger point estimate within twins than across articles (0.17 vs.\ 0.07 log shares per sd); (iv) articles fare worse on crowded days (doubling daily volume:
+topic control (0.17 log shares per sd within twins); (iv) articles fare worse on crowded days (doubling daily volume:
 $-$18\% shares; also within twins, not in a placebo). Since much remains chance, we show what a model can
-honestly promise: 80\% intervals spanning a factor of six, kept calibrated under drift by adaptive conformal
+honestly promise: 80\% intervals whose ends differ by a factor of about six, kept calibrated under drift by adaptive conformal
 inference, and 87\% accuracy on the 10\% of articles it is most sure about.
 \end{abstract}
 
@@ -129,8 +129,10 @@ To measure precision we annotated 180 pairs, 30 per similarity band from 0.3 to 
 series instalment, same broad topic, or unrelated, from slug, dates and channel. The labels were produced by an
 AI assistant (Claude) following written rules, not by human annotators; they are released with the code so that they
 can be checked. The filter caught 27 of 33 series pairs with no false
-positives. After filtering, pairs with similarity $\geq$0.5 are the same story in 78\% [68, 85] (Wilson) and the
-same story or topic in 96\%. Without the filter, the most similar band is mostly series (Fig.~\ref{fig:precision}), so a higher
+positives; since its rules were written while inspecting these same pairs, this is an optimistic in-sample figure.
+After filtering, annotated pairs with similarity $\geq$0.5 are the same story in 78\% [68, 85] (Wilson) and the
+same story or topic in 96\%. The sample is stratified, however, while 60\% of the twins we use lie in the
+lowest band (0.5--0.6, precision 63\%); weighting the bands by the twins actually used gives 71\% [60, 83]. Without the filter, the most similar band is mostly series (Fig.~\ref{fig:precision}), so a higher
 threshold alone does not give cleaner twins. Twins are rarely in the same channel (29\%): channel labels agree only loosely
 with slug topics (e.g.\ 27\% of \emph{game of thrones} slugs are labelled entertainment), so we treat channel as
 an editorial placement rather than a topic.
@@ -206,9 +208,21 @@ inference (ACI, step 0.005) \citep{gibbs2021}; selective prediction keeps the ar
 (gap 0.001 [$-$0.003, 0.005], weekly block bootstrap) and beat L1 logistic regression by 0.020 [0.014, 0.025].
 The share-derived features are worth 0.034 [0.027, 0.040] AUC. Ranking holds up under a chronological split, and
 a later dip (Oct--Dec 2014) reflects harder articles more than an outdated model: retraining up to October
-recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples: random forest is best below
-10{,}000 training articles, and with 1{,}000 articles strong L1 regularisation gains 0.03 AUC, while with all data
-the penalty hardly matters.
+recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples
+(Fig.~\ref{fig:bench}a): random forest is best below 10{,}000 training articles, and with 1{,}000 articles strong L1
+regularisation gains 0.03 AUC, while with all data the penalty hardly matters. Raising the label threshold leaves
+ROC-AUC unchanged but makes PR-AUC collapse (Fig.~\ref{fig:bench}b). Clusters of articles in topic and sentiment
+space carry less popularity information than the channel label (Cram\'er's $V$ 0.13--0.19 vs.\ 0.25), consistent
+with treating channel as an editorial placement rather than a topic.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{v2_fig_e_benchmark.png}
+\caption{Benchmark checks on the chronological test block. (a) Test ROC-AUC against the number of training
+articles (mean over resamples). (b) ROC-AUC and PR-AUC as the popularity threshold rises from the median to the
+95th percentile (blue HistGB, grey L1 logistic).}
+\label{fig:bench}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
@@ -268,7 +282,9 @@ articles at 0.734 [0.725, 0.740] (Fig.~\ref{fig:anatomy}). Comparing only articl
 (0.734) or day (0.727) barely changes this, so the model does not profit from knowing which days were good.
 Comparing within a channel costs 0.045 (0.690 [0.682, 0.696]), and within channel and day 0.675 [0.668, 0.683].
 Holding the story fixed adds no detectable loss: same-story twins are ranked at 0.719 [0.692, 0.748], and
-same-story twins in the same channel at 0.672 [0.602, 0.738], overlapping the channel-and-day level. The pattern is
+same-story twins in the same channel at 0.672 [0.602, 0.738]. The difference from the channel-and-day level is
+$-$0.003 [$-$0.073, 0.065]: with only 195 informative pairs we can exclude a further loss larger than about 0.07,
+but not a loss as large as the channel's own 0.045. The pattern is
 the same for logistic regression (0.709 to 0.639) and for HistGB without share-derived features (0.701 to 0.628),
 and for concordance on pairs that differ more than twofold (0.714 overall, 0.667 within channel and day,
 0.690 [0.656, 0.727] within twins). Most of what the model knows is therefore about the article, not its context:
@@ -292,12 +308,14 @@ cannot separate these readings (Section~\ref{sec:discussion}).
 \label{sec:rq2}
 Most content effects that look clear across articles cannot be confirmed within twins, because twin
 differences are noisier: the two articles of a pair differ widely in format (their body lengths correlate at
-0.02). One effect survives and grows (Fig.~\ref{fig:twins}b): a one-sd more subjective body goes with 0.070
-[0.057, 0.084] more log shares across articles but 0.166 [0.092, 0.239] within twins (BH-adjusted $q=0.013$); the
-difference, 0.097 [0.018, 0.165], excludes zero. The point estimate is stable across twin variants: cosine $\geq$0.6 (0.149, $q=0.052$), same
-channel (0.122, $q=0.33$) and similar length (0.165, $q=0.013$), but the difference from the cross-section is
-detectable only in the main sample ($p=0.11$, $0.41$ and $0.08$ in the variants). An opinionated take on a story
-thus beats a neutral one on the same story at least as much as the cross-sectional estimate suggests. Links (0.067 [0.010, 0.132]) and average word length
+0.02). One effect survives (Fig.~\ref{fig:twins}b): a one-sd more subjective body goes with 0.070 [0.057, 0.084]
+more log shares across articles and 0.166 [0.092, 0.239] within twins (BH-adjusted $q=0.013$). The within-twin
+estimate is positive in every variant: cosine $\geq$0.6 0.149 [0.044, 0.247], same channel 0.122 [0.009, 0.225],
+similar length 0.165 [0.059, 0.285], with weekday-difference controls 0.169 [0.090, 0.242], and without pairs with an
+empty body 0.153 [0.077, 0.227]. It is larger than the cross-sectional estimate (difference 0.097 [0.018, 0.165],
+$p=0.016$), but that difference does not survive correction across the 13 features ($q=0.21$) and is not detectable
+in the smaller variants, so we claim only that the effect is not explained by topic: an opinionated take on a story
+does better than a neutral take on the same story. Links (0.067 [0.010, 0.132]) and average word length
 ($-$0.113 [$-$0.198, $-$0.030]) agree in sign with the cross-section but do not pass the multiple-testing correction.
 The video effect (0.054 [0.041, 0.068] across articles) shrinks to 0.007 [$-$0.041, 0.059] within twins (difference
 $p=0.09$); video-heavy stories rather than videos may be what is popular, but the evidence is weak. Negative tone, measured as the share
@@ -325,21 +343,22 @@ did not help either. What matters is the article and its day, not what similar s
 
 \subsection{What can a model promise? (RQ4)}
 \label{sec:rq4}
-An 80\% conformal interval for a typical test article runs from 776 to 5{,}017 shares, a factor of 6.2. Calibrated
+An 80\% conformal interval for a typical test article runs from 776 to 5{,}017 shares (a factor of 6.5; the median ratio over articles is 6.2). Calibrated
 once on the validation block, it covers 79.5\% of the test articles overall but only 76.3\% in September 2014; ACI
 keeps September to December 2014 between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b), assuming shares become known before the next
 article is scored, which is optimistic. Viral articles are hardest: at the 95th-percentile threshold ROC-AUC is unchanged (0.73) but PR-AUC falls
 to about 0.10, although a weekly shortlist of the top 5\% still contains three times the base rate of viral articles
-(12\% [9, 15] vs.\ 4\%). A model can still be useful when it is allowed to abstain: past-only accuracy is 0.673 on all articles, 0.785
-on the 40\% it is most sure about and 0.869 on the top 10\% (Fig.~\ref{fig:context}c).
+(12\% [9, 15] vs.\ 4\%). A model can still be useful when it is allowed to abstain: past-only HistGB accuracy is 0.673 on all articles, 0.785
+on the 40\% it is most sure about and 0.869 on the top 10\%, against 0.656, 0.751 and 0.832 for L1 logistic
+regression (Fig.~\ref{fig:context}c).
 
 % ------------------------------------------------------------------
 \section{Discussion}
 \label{sec:discussion}
 \paragraph{What the 0.74 is made of.} The benchmark's AUC is mostly article-level skill. Time contributes nothing,
 the editorial channel about 0.045, and the story nothing we can detect: within a channel and day about three quarters
-of the skill above chance remains (0.175 of 0.234). The test has limited power, since the same-channel twin interval
-[0.60, 0.74] cannot rule out a further loss of up to about 0.07. This changes how to read the benchmark: a
+of the skill above chance remains (0.175 of 0.234). The test has limited power: the twin comparison rules out a
+further loss above about 0.07, not smaller ones. This changes how to read the benchmark: a
 better model is not one that recognises popular sections but one that separates articles that compete for the same
 readers. Within such pairs the only content signal that survives multiple testing is subjectivity of the body.
 
@@ -347,9 +366,9 @@ readers. Within such pairs the only content signal that survives multiple testin
 matters little, or it matters but its audience is split between articles, which would also lower the correlation.
 The volume effect, and less firmly the earlier-twin advantage, are consistent with some splitting. Separating them would need share histories
 or randomised versions \citep{matias2021}; with one snapshot the twin correlation is best read as a lower bound on how
-much ``the story'' alone tells, since both splitting and the 22\% of twins that are not the same story pull it down.
+much ``the story'' alone tells, since both splitting and the roughly 29\% of twins that are not the same story pull it down.
 
-\paragraph{Limitations.} Twins are found from slugs only and are 78\% precise; the remaining same-topic pairs bias
+\paragraph{Limitations.} Twins are found from slugs only and are about 71\% precise; the remaining same-topic pairs bias
 correlations and effects towards cross-sectional values. Annotation was done by an AI assistant, not by independent human annotators. Twin differences remove the
 story and the week but not everything else (an editor may give a scoop more prominence). The daily volume counts
 articles in this dataset, which may not equal Mashable's true output. Shares were recorded once, so age and

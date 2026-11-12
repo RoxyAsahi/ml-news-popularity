@@ -1,6 +1,6 @@
 """S1b: precision of slug twins against 180 annotated pairs, before and after the series filter.
 
-Annotation (data/annotations/twins_sample.csv, column `label`) was done by the authors' assistant
+Annotation (data/annotations/twins_sample.csv, column `label`) was done by an AI assistant
 (Claude), not by independent annotators, from slug + dates + channel only:
   S = same news story/event, R = recurring series instalment, T = same broad topic, different story,
   U = unrelated (lexical coincidence).

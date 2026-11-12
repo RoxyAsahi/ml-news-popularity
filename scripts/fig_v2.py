@@ -100,7 +100,10 @@ def fig_c():
     b.set_ylabel("coverage of 80% interval")
     b.set_title("(b) Intervals under drift")
     b.legend(frameon=False, fontsize=7)
-    c.plot(R.coverage, R.accuracy, "o-", color=ACC, ms=3.5)
+    for model, col, mk, name in [("hgb_all", ACC, "o-", "HistGB"), ("logreg_all", GREY, "s-", "L1 logistic")]:
+        r = R[R.model == model]
+        c.plot(r.coverage, r.accuracy, mk, color=col, ms=3.5 if mk == "o-" else 3, label=name)
+    c.legend(frameon=False, fontsize=7)
     c.set_xscale("log")
     c.set_xticks([0.05, 0.1, 0.2, 0.4, 1.0], ["5%", "10%", "20%", "40%", "100%"])
     c.set_xlabel("share of articles predicted")
@@ -130,5 +133,36 @@ def fig_d():
     fig.savefig(FIG / "v2_fig_d_twin_precision.png", dpi=300)
 
 
-fig_a(); fig_b(); fig_c(); fig_d()
+def fig_e():
+    """Benchmark sanity checks: learning curve (E5) and label threshold (E4), chronological test block."""
+    L = pd.read_csv(TAB / "e5_learning_curve_summary.csv", header=[0, 1], index_col=[0, 1, 2])
+    T = pd.read_csv(TAB / "e4_threshold.csv")
+    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 1.75))
+    styles = {"hgb": (ACC, "o-", "HistGB"), "rf": ("#d9822b", "^-", "RF"), "logreg": (GREY, "s-", "L1 logistic"),
+              "knn": ("0.3", "x:", "kNN")}
+    for m, (col, mk, name) in styles.items():
+        r = L.loc[("all", m)]
+        a.plot(r.index, r[("test_auc", "mean")], mk, color=col, ms=2.5, lw=1, label=name)
+    a.set_xscale("log")
+    a.set_xlabel("training articles")
+    a.set_ylabel("test ROC-AUC")
+    a.set_title("(a) Learning curve")
+    a.legend(frameon=False, fontsize=6)
+    for m, (col, mk, name) in [(k, styles[k]) for k in ["hgb", "logreg"]]:
+        r = T[(T.features == "all") & (T.model == m)]
+        xq = np.arange(len(r))
+        b.plot(xq, r.roc_auc, mk, color=col, ms=2.5, lw=1, label="_")
+        b.plot(xq, r.pr_auc, mk.replace("-", "--"), color=col, ms=2.5, lw=1, label="_")
+    b.set_xticks(range(4), ["50", "75", "90", "95"])
+    b.set_xlabel("threshold percentile")
+    b.set_ylim(0, 0.8)
+    b.set_title("(b) Viral threshold")
+    b.plot([], [], "-", color="0.2", lw=1, label="ROC-AUC")
+    b.plot([], [], "--", color="0.2", lw=1, label="PR-AUC")
+    b.legend(frameon=False, fontsize=6, loc="lower left")
+    fig.tight_layout(pad=0.3)
+    fig.savefig(FIG / "v2_fig_e_benchmark.png", dpi=300)
+
+
+fig_a(); fig_b(); fig_c(); fig_d(); fig_e()
 print("figures written")
