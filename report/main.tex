@@ -57,7 +57,9 @@ no age correction needed (RQ1, part 1).}
 
 % ------------------------------------------------------------------ 0.75 page
 \section{Methodology}
-\todo{Chronological 70/10/20 split + 5-fold rolling origin; thresholds from training quantiles;
+\todo{Chronological 70/10/20 split + 5-fold rolling origin. Threshold convention (state once): main
+experiments use 1,400 shares (median of the full data, as in \citep{fernandes2015}); the threshold
+sweep (E4) uses quantiles of the training block, whose median is 1,500;
 metrics ROC-AUC, PR-AUC, F1, balanced accuracy; models (majority, L1/L2 LogReg, kNN, RF,
 HistGB); all preprocessing in pipelines; seeds; one script per experiment.}
 

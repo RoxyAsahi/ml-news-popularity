@@ -32,8 +32,8 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] **R5 E4 (#12):** decision threshold currently set with `np.quantile` on test scores (transductive peeking) → set it on the validation block. Paired bootstrap CI for regressor vs classifier at the 95th percentile (~300 positives).
 - [x] **R6 E7 (#13):** negative-sentiment effect is confounded by channel → CMH test or logistic regression with channel. Isolation Forest: profile the outliers; contamination 1% and 5% too.
 - [x] **R7 E2 (#14):** half-life weighting under rolling-origin folds, paired differences, written as a negative result tied to "ranking is stable".
-- [ ] **R8 Misc:** state the threshold convention once (overall median 1,400 vs training-block median 1,500); drop jupyter from requirements.txt; compile LaTeX early.
-- [ ] Get LaTeX compiling (tectonic or TeX Live in the container; fall back to documenting Overleaf)
+- [x] **R8 Misc (#15):** state the threshold convention once (overall median 1,400 vs training-block median 1,500); drop jupyter from requirements.txt; compile LaTeX early.
+- [x] Get LaTeX compiling (#15): `report/build.sh`; in a fresh container first run `apt-get update && apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-bibtex-extra`
 - [ ] Report: Data section + Table 1 (feature groups) + Fig. 1 (shares histogram / shares vs age)
 - [ ] Report: Methodology section
 - [ ] Report: Results RQ1 + RQ2 (combined figure: drift + ablation)
