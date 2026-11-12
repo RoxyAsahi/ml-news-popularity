@@ -40,7 +40,7 @@ Data issues to report: 1,181 articles with 0 content words; 58% of rows have `kw
 | E0 | — | EDA: shares distribution, shares vs age, channel/weekday, monthly base rate | Fig. 1 |
 | E1 | RQ1 | Random vs chronological split; monthly positive rate and per-month AUC | drift plot |
 | E2 | RQ1 | Half-life sample weighting (none, 30, 90, 180, 365 days) under rolling-origin evaluation | AUC vs half-life |
-| E3 | RQ2 | Feature sets all / no `kw_*` / no `kw_*`+`self_reference_*`; permutation importance + SHAP or PDP | importance comparison |
+| E3 | RQ2 | Point-in-time check of keyword statistics; clock columns; feature-set ablations with paired CIs; grouped permutation importance | staircase figure, ablation |
 | E4 | RQ3 | Threshold at 50/75/90/95th percentile; ROC-AUC vs PR-AUC; log-shares regression as reference | threshold plot |
 | E5 | RQ3 | Learning curves 1–100% of training data, 5 seeds per point | learning curves |
 | E6 | RQ3 | Logistic regression C from 1e-4 to 1e2, L1 and L2; L1 path | validation curve, L1 path |
@@ -73,7 +73,7 @@ E1–E3 carry the novelty; E4–E7 cover what the assignment lists. If time runs
 | --- | --- | --- |
 | Shared code & reproducibility | data, splits, evaluation, run-all script, E0 | |
 | Time & drift | E1, E2 | |
-| Leakage & interpretability | E3 | |
+| Share-derived features & interpretability | E3 | |
 | Threshold, data size, regularisation | E4, E5, E6 | |
 | Clustering & anomalies | E7 | |
 
@@ -83,7 +83,7 @@ E1–E3 carry the novelty; E4–E7 cover what the assignment lists. If time runs
 - Yang et al. (2014). Active learning for networked data. WSDM. — motivation for learning curves.
 - Yang, Tang & Zhang (2014). Streaming active learning. CIKM. — drift / retweet prediction.
 - Szabo & Huberman (2010). Predicting the popularity of online content. CACM. — early saturation of popularity.
-- Kaufman et al. (2012). Leakage in data mining. KDD / TKDD. — leakage audit.
+- Kaufman et al. (2012). Leakage in data mining. TKDD. — point-in-time features; why ours are not leakage.
 - Gama et al. (2014). A survey on concept drift adaptation. ACM Computing Surveys.
 - Saito & Rehmsmeier (2015). The precision-recall plot is more informative than the ROC plot on imbalanced datasets. PLOS ONE.
 - Pedregosa et al. (2011). Scikit-learn. JMLR.

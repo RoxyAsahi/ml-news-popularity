@@ -10,7 +10,7 @@ The project asks **how reliable the "popular" label is, and how much of what a m
 | RQ | Question | Experiments |
 | --- | --- | --- |
 | RQ1 Time & drift | Do shares keep growing with article age? How much worse is a chronological split than a random one, and does half-life recency weighting help? | E1, E2 |
-| RQ2 Leakage audit | `kw_*` and `self_reference_*` are built from other articles' share counts. How much performance depends on them? | E3 |
+| RQ2 Share-derived features | `kw_*` and `self_reference_*` are built from earlier articles' share counts. Are they point-in-time, do they carry a clock, and how much performance depends on them? | E3 |
 | RQ3 Threshold & data size | How do ROC-AUC and PR-AUC change from the median to the 95th-percentile threshold? Learning curves (1%–100%) and regularisation strength for linear, kNN and boosting models. | E4, E5, E6 |
 | RQ4 Clustering | Do clusters in topic (LDA) + sentiment space differ in popularity? | E7 |
 
@@ -18,7 +18,7 @@ Pilot findings (untuned, `scripts/01_pilot.py`):
 
 - Shares barely depend on article age (Spearman ρ = 0.03; youngest article is 8 days old), so shares can be used as a label without age correction.
 - The share of articles with ≥ 1400 shares drifts by month between 44% and 68%.
-- Gradient boosting reaches ROC-AUC ≈ 0.74 on a chronological split; dropping `kw_*` and `self_reference_*` costs ≈ 0.04.
+- Gradient boosting reaches ROC-AUC ≈ 0.74 on a chronological split; dropping `kw_*` and `self_reference_*` costs ≈ 0.04. These features are point-in-time (not leakage), but three keyword columns act as a clock; removing those costs nothing.
 - Half-life recency weighting did not beat unweighted training in the pilot.
 
 The full plan is in [`docs/PLAN.md`](docs/PLAN.md); results notes per experiment are in [`docs/results/`](docs/results/), and the remaining work is queued in [`docs/TASKS.md`](docs/TASKS.md).
