@@ -11,8 +11,9 @@ Cross-section: OLS of log(1+shares) on the features + channel x week + weekday f
 Twins: OLS of the within-pair difference (earlier minus later) on feature differences + a constant
 (the earlier-article advantage) + channel-difference dummies; story-cluster bootstrap.
 Difference (twin - cross-section): independent bootstraps combined, 95% interval; BH-adjusted
-p-values for the twin coefficients. Variants: sim >= 0.6, same channel only, similar length
-(|delta log length| < 0.5).
+p-values for the twin coefficients and for the 13 differences. Variants: sim >= 0.6, same channel
+only, similar length (|delta log length| < 0.5), with weekday-difference dummies, and without pairs
+where either article has an empty body (n_tokens_content = 0).
 
 Outputs: results/tables/s4_twin_effects.csv
 """
@@ -67,7 +68,11 @@ cs_boot = np.array([cs_fit(np.concatenate([wk_members[k] for k in rng.integers(0
 
 
 # ---- twins
-def twin_design(Q):
+WDAY = df.publish_date.dt.dayofweek.to_numpy()
+EMPTY = df.n_tokens_content.to_numpy() == 0
+
+
+def twin_design(Q, weekday=False):
     later = np.where(Q["first"] == Q.i, Q.j, Q.i)
     first = Q["first"].to_numpy()
     D = X[first] - X[later]
@@ -75,6 +80,9 @@ def twin_design(Q):
         - pd.get_dummies(pd.Series(chan[later]), dtype=float).reindex(columns=sorted(set(chan)), fill_value=0).to_numpy()
     C = C[:, 1:]
     W = np.c_[D, np.ones(len(Q)), C]
+    if weekday:  # weekday-difference dummies (first minus later), Monday as reference
+        E = np.eye(7)[WDAY[first]] - np.eye(7)[WDAY[later]]
+        W = np.c_[W, E[:, 1:]]
     return W, ls[first] - ls[later], Q.story.to_numpy()
 
 
@@ -85,10 +93,11 @@ def tw_fit(W, dy):
 P = st.clean_twins(df)
 P["story"] = st.story_ids(len(df), P)[P.i]
 variants = {"main (sim >= 0.5)": P, "sim >= 0.6": P[P.sim >= 0.6], "same channel": P[P.same_channel],
-            "similar length": P[np.abs(np.log1p(df.n_tokens_content.to_numpy()[P.i]) - np.log1p(df.n_tokens_content.to_numpy()[P.j])) < 0.5]}
+            "similar length": P[np.abs(np.log1p(df.n_tokens_content.to_numpy()[P.i]) - np.log1p(df.n_tokens_content.to_numpy()[P.j])) < 0.5],
+            "+ weekday differences": P, "without empty-body pairs": P[~(EMPTY[P.i] | EMPTY[P.j])]}
 rows = []
 for vname, Q in variants.items():
-    W, dy, story = twin_design(Q)
+    W, dy, story = twin_design(Q, weekday=vname == "+ weekday differences")
     est = tw_fit(W, dy)
     labels, inv = np.unique(story, return_inverse=True)
     members = [np.where(inv == k)[0] for k in range(len(labels))]
@@ -99,12 +108,13 @@ for vname, Q in variants.items():
     diff_boot = boot[:, :k] - cs_boot
     p_diff = np.minimum(1, 2 * np.minimum((diff_boot > 0).mean(0), (diff_boot < 0).mean(0)))
     q_tw = multipletests(np.maximum(p_tw, 1 / B), method="fdr_bh")[1]
+    q_diff = multipletests(np.maximum(p_diff, 1 / B), method="fdr_bh")[1]
     for f in range(k):
         rows.append(dict(variant=vname, feature=names[f], pairs=len(Q), cross_section=cs[f],
                          cs_lo=np.quantile(cs_boot[:, f], .025), cs_hi=np.quantile(cs_boot[:, f], .975),
                          twin=est[f], tw_lo=np.quantile(boot[:, f], .025), tw_hi=np.quantile(boot[:, f], .975),
                          twin_q_bh=q_tw[f], diff=est[f] - cs[f], diff_lo=np.quantile(diff_boot[:, f], .025),
-                         diff_hi=np.quantile(diff_boot[:, f], .975), diff_p=p_diff[f]))
+                         diff_hi=np.quantile(diff_boot[:, f], .975), diff_p=p_diff[f], diff_q_bh=q_diff[f]))
     rows.append(dict(variant=vname, feature="earlier-article advantage", pairs=len(Q), twin=est[k],
                      tw_lo=np.quantile(boot[:, k], .025), tw_hi=np.quantile(boot[:, k], .975)))
     print(vname, "done", flush=True)
