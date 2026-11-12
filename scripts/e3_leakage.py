@@ -21,7 +21,7 @@ from scipy.stats import spearmanr
 from sklearn.metrics import roc_auc_score
 
 from newspop.data import ROOT, feature_groups, feature_set, load, make_label
-from newspop.evaluate import classification_report
+from newspop.evaluate import classification_report, paired_fold_diff
 from newspop.models import fit, get_model
 from newspop.splits import rolling_origin, temporal_split
 
@@ -54,7 +54,7 @@ def ablation(df, y, sets):
     n = len(df)
     tr, va, te = temporal_split(n, 0.7, 0.1)
     trv = np.concatenate([tr, va])
-    rows = []
+    rows, fold_aucs = [], {}
     for name, cols in sets.items():
         X = df[cols].to_numpy()
         for m in MODELS:
@@ -63,8 +63,13 @@ def ablation(df, y, sets):
             roll = []
             for a, b in rolling_origin(n, 5, 0.4):
                 roll.append(roc_auc_score(y[b], fit(get_model(m, 0), X[a], y[a]).predict_proba(X[b])[:, 1]))
-            rows.append({"feature_set": name, "n_features": len(cols), "model": m, **r,
-                         "rolling_auc_mean": np.mean(roll), "rolling_auc_std": np.std(roll)})
+            fold_aucs[(name, m)] = roll
+            row = {"feature_set": name, "n_features": len(cols), "model": m, **r,
+                   "rolling_auc_mean": np.mean(roll), "rolling_auc_std": np.std(roll)}
+            if name != "all":
+                pf = paired_fold_diff(fold_aucs[("all", m)], roll)
+                row.update({"drop_vs_all": pf["diff"], "drop_lo": pf["lo"], "drop_hi": pf["hi"]})
+            rows.append(row)
             print(f"{name:18s} {m:6s} test AUC {r['roc_auc']:.3f}  rolling {np.mean(roll):.3f}±{np.std(roll):.3f}")
     return pd.DataFrame(rows)
 
@@ -121,19 +126,20 @@ def main():
     ts.to_csv(TAB / "e3_time_signal.csv", index=False)
     print(ts.head(12).round(3).to_string())
 
-    # ---- figure: ablation (HistGB, rolling-origin mean ± sd)
-    order = ["all", "no_self_ref", "no_kw", "no_kw_ref", "only_kw_ref"]
-    labels = ["all features", "no self_reference_*", "no kw_*", "no kw_* and\nno self_reference_*",
-              "only kw_* +\nself_reference_*"]
-    s = abl[abl.model == "hgb"].set_index("feature_set").loc[order]
-    fig, ax = plt.subplots(figsize=(6.2, 3.2))
-    colors = ["0.45", "0.65", "0.65", "C0", "0.65"]
-    ax.barh(range(len(order))[::-1], s["rolling_auc_mean"], xerr=s["rolling_auc_std"],
-            color=colors, capsize=2)
-    for i, (v, sd) in enumerate(zip(s["rolling_auc_mean"], s["rolling_auc_std"])):
-        ax.text(v + sd + 0.004, len(order) - 1 - i, f"{v:.3f}", va="center", fontsize=8)
-    ax.set_yticks(range(len(order))[::-1], labels, fontsize=8)
-    ax.set_xlim(0.5, 0.78); ax.set_xlabel("ROC-AUC, gradient boosting (rolling-origin mean ± sd; 0.5 = chance)")
+    # ---- figure: ablation as paired drop vs all features (HistGB, 5 rolling folds, 95% t-CI)
+    order = [k for k in sets if k != "all"]
+    s = abl[(abl.model == "hgb") & (abl.feature_set != "all")].set_index("feature_set").loc[order]
+    s = s.sort_values("drop_vs_all")
+    fig, ax = plt.subplots(figsize=(6.2, 3.4))
+    colors = ["C0" if k in ("no_kw", "no_kw_ref", "only_kw_ref", "no_self_ref") else "0.6" for k in s.index]
+    ax.barh(range(len(s)), s["drop_vs_all"],
+            xerr=[s["drop_vs_all"] - s["drop_lo"], s["drop_hi"] - s["drop_vs_all"]], color=colors, capsize=2)
+    ax.axvline(0, color="0.3", lw=0.8)
+    pretty = {"only_kw_ref": "only kw_* + self_reference_*", "no_kw_ref": "without kw_* + self_reference_*",
+              "no_kw": "without kw_*", "no_self_ref": "without self_reference_*",
+              "drop_lda": "without LDA topics"}
+    ax.set_yticks(range(len(s)), [pretty.get(k, k.replace("drop_", "without ")) for k in s.index], fontsize=8)
+    ax.set_xlabel("drop in ROC-AUC vs all features\n(HistGB, paired over 5 rolling folds, 95% CI)")
     fig.tight_layout(); fig.savefig(FIG / "e3_ablation.png", dpi=200)
 
     # ---- figure: grouped permutation importance

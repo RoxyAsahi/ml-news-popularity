@@ -44,9 +44,26 @@ Tables `results/tables/e3b_*.csv`, `e3_*.csv`; figures `e3b_staircase.png`, `e3_
    keyword averages still drift with the growing archive; content features alone still separate
    periods at 0.80, so there is genuine covariate drift too, but it does not hurt ranking (E1).
 
-5. **Importance** (unchanged from the first version): `keyword` is HistGB's most important group
-   (validation AUC drop 0.052 when permuted), then channel (0.034) and weekday (0.029).
+5. **Drop-one-group ablation, paired over 5 rolling folds** (drop in AUC vs all features, 95% t-interval;
+   `results/tables/e3_ablation.csv`, figure `e3_ablation.png`):
 
+   | Removed group | HistGB | Logistic regression |
+   | --- | --- | --- |
+   | `kw_*` + `self_reference_*` | 0.027 [0.021, 0.032] | 0.021 [0.020, 0.022] |
+   | weekday | 0.013 [0.007, 0.018] | 0.014 [0.008, 0.020] |
+   | `kw_*` | 0.011 [0.005, 0.017] | 0.015 [0.014, 0.017] |
+   | `self_reference_*` | 0.008 [0.004, 0.013] | 0.004 [0.002, 0.006] |
+   | channel | 0.008 [0.002, 0.013] | 0.008 [0.004, 0.013] |
+   | content | 0.005 [0.002, 0.007] | 0.006 [0.002, 0.010] |
+   | LDA topics | 0.001 [−0.002, 0.004] | 0.003 [−0.000, 0.006] |
+   | sentiment | 0.002 [−0.002, 0.005] | 0.001 [−0.001, 0.002] |
+
+   Removing LDA topics or the 16 sentiment features makes no detectable difference: the
+   information they carry is also available from the channel and keyword features. Keeping
+   *only* the 13 share-derived features loses 0.050 [0.030, 0.070] (HistGB).
+
+6. **Importance** (grouped permutation on the validation block): `keyword` is HistGB's most
+   important group (validation AUC drop 0.052 when permuted), then channel (0.034) and weekday (0.029).
 ## Limitation for the report
 
 The shares of earlier articles used to build these statistics were measured when the dataset
