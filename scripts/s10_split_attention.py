@@ -73,3 +73,53 @@ R = pd.DataFrame(rows).round(4)
 R.to_csv(ROOT / "results" / "tables" / "s10_split_attention.csv", index=False)
 print(R.to_string(index=False))
 print("articles in multi-article stories:", int((d.k > 1).sum()), "stories with k>1:", int((S.k > 1).sum()))
+
+# ---------------------------------------------------------------- recall and timing (review round 2)
+# (d) recall of the twin graph: same-story pairs we miss below the 0.5 threshold. Pairs with slug cosine in
+#     [0.3, 0.5) (series-filtered) times their annotated same-story rate, against found pairs times weighted
+#     precision. A lower bound on what is missed (pairs below 0.3 or with unrelated slugs are not counted).
+#     Missing siblings put true multi-article stories at k = 1 and attenuate the log-k slope towards 0.
+prec = pd.read_csv(ROOT / "results" / "tables" / "s1b_twin_precision.csv")
+prec = prec[prec.series_filtered].set_index("subset").precision
+s9 = pd.read_csv(ROOT / "results" / "tables" / "s9_precision_power.csv")
+wprec = float(s9[s9.check.str.startswith("weighted")].estimate.iloc[0])
+L = st.twin_pairs(df, min_sim=0.3)
+L = L[~st.is_series(df, L)]
+missed = ((L.sim >= 0.3) & (L.sim < 0.4)).sum() * prec["band [0.3,0.4)"] + \
+         ((L.sim >= 0.4) & (L.sim < 0.5)).sum() * prec["band [0.4,0.5)"]
+found = len(P) * wprec
+rows2 = [dict(level="recall", spec="same-story pairs found (sim >= 0.5) x precision", term="", coef=found),
+         dict(level="recall", spec="same-story pairs in [0.3, 0.5) x band precision (missed)", term="", coef=missed),
+         dict(level="recall", spec="recall upper value", term="", coef=found / (found + missed))]
+
+# (e) timing within twins: residual log shares (channel x week + weekday FE) of the earlier article when its
+#     follow-up appears 1 day later vs 3-7 days later. Split attention predicts a lower residual for the
+#     earlier article when the follow-up arrives during its first days. Story-cluster bootstrap.
+cw = pd.Series(d.chan) + "_" + pd.Series(d.week).astype(str)
+res = smf.ols("ls ~ C(cw) + C(wd)", pd.DataFrame({"ls": d.ls, "cw": cw, "wd": d.wd})).fit().resid.to_numpy()
+Q = P[P.dt > 0].copy()
+Q["later"] = np.where(Q["first"] == Q.i, Q.j, Q.i)
+Q["story"] = sid[Q["first"]]
+Q["r_first"], Q["r_later"] = res[Q["first"]], res[Q.later]
+short, long_ = Q[Q.dt == 1], Q[Q.dt >= 3]
+rng = np.random.default_rng(0)
+
+
+def boot_mean(A, col):
+    lab, inv = np.unique(A.story, return_inverse=True)
+    sm_, c = np.bincount(inv, A[col]), np.bincount(inv)
+    return np.array([(lambda k: sm_[k].sum() / c[k].sum())(rng.integers(0, len(lab), len(lab))) for _ in range(2000)])
+
+
+for col, who in [("r_first", "earlier article"), ("r_later", "later article")]:
+    b1, b2 = boot_mean(short, col), boot_mean(long_, col)
+    dd = b1 - b2
+    rows2.append(dict(level="timing", spec=f"{who}: follow-up after 1 day minus after 3-7 days", term=col,
+                      coef=short[col].mean() - long_[col].mean(), lo=np.quantile(dd, .025), hi=np.quantile(dd, .975),
+                      n=len(short) + len(long_)))
+    for name, A, bb in [("1 day", short, b1), ("3-7 days", long_, b2)]:
+        rows2.append(dict(level="timing", spec=f"{who}: mean residual, follow-up after {name}", term=col,
+                          coef=A[col].mean(), lo=np.quantile(bb, .025), hi=np.quantile(bb, .975), n=len(A)))
+R = pd.concat([R, pd.DataFrame(rows2).round(4)], ignore_index=True)
+R.to_csv(ROOT / "results" / "tables" / "s10_split_attention.csv", index=False)
+print(pd.DataFrame(rows2).round(4).to_string(index=False))

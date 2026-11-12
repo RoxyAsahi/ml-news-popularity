@@ -9,7 +9,10 @@
     - a past-only HistGB regressor on all features (monthly rolling origin), out-of-sample R^2;
     - both: the regressor's prediction plus channel x day fixed effects (df-adjusted);
     - plus story: the remaining variance times r_story (an upper value for what knowing the story adds).
-    The rest is not predictable from these data ("chance" relative to the information available).
+    The model term is a lower bound on what the features can predict (a better learner could do more) and
+    the story term an upper value, so the sum is neither bound: it is the share we can explain. The model R^2
+    is out of sample; the channel x day term is in sample, df-adjusted. Week-cluster bootstrap for the model
+    and context terms.
 
 Output: results/tables/s11_chance.csv
 """
@@ -72,6 +75,34 @@ rows = [
          hi=r2_both + (1 - r2_both) * r_story_hi),
     dict(quantity="not predictable from these data", value=1 - r2_both - story_add, lo=np.nan, hi=np.nan),
 ]
+# week-cluster bootstrap of the model and context terms; the story term is drawn independently
+# from a normal approximation to its interval (r_story bounds / 3.92)
+wk = st.week_index(df)[ok]
+wl, winv = np.unique(wk, return_inverse=True)
+idx = [np.where(winv == j)[0] for j in range(len(wl))]
+rng = np.random.default_rng(0)
+bm, bb, bt = [], [], []
+sd_story = (r_story_hi - r_story_lo) / 3.92
+for _ in range(300):
+    picks = rng.integers(0, len(wl), len(wl))
+    sel = np.concatenate([idx[j] for j in picks])
+    copy = np.concatenate([np.full(len(idx[j]), c) for c, j in enumerate(picks)])  # a week drawn twice = new groups
+    yy, pp, gg = y[sel], p[sel], pd.factorize(pd.Series(g[sel]).astype(str) + "_" + pd.Series(copy).astype(str))[0]
+    sst_b = ((yy - yy.mean()) ** 2).sum()
+    m_b = 1 - ((yy - pp) ** 2).sum() / sst_b
+    dm = lambda v: v - pd.Series(v).groupby(gg).transform("mean").to_numpy()
+    yd_b, pd_b = dm(yy), dm(pp)
+    be = (yd_b * pd_b).sum() / (pd_b ** 2).sum()
+    kk = gg.max() + 1
+    both_b = 1 - (((yd_b - be * pd_b) ** 2).sum() / (len(yy) - kk - 1)) / (sst_b / (len(yy) - 1))
+    rs = rng.normal(r_story, sd_story)
+    bm.append(m_b); bb.append(both_b); bt.append(both_b + (1 - both_b) * rs)
+q = lambda v: (np.quantile(v, .025), np.quantile(v, .975))
+rows[3]["lo"], rows[3]["hi"] = q(bm)
+rows[4]["lo"], rows[4]["hi"] = q(bb)
+rows[5]["lo"], rows[5]["hi"] = q(bt)
+rows[5]["quantity"] = "+ story (story term is an upper value; model term a lower bound)"
+rows[6]["quantity"] = "not explained by this decomposition"
 R = pd.DataFrame(rows).round(4)
 R.to_csv(ROOT / "results" / "tables" / "s11_chance.csv", index=False)
 print(R.to_string(index=False))

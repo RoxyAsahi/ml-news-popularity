@@ -1,8 +1,17 @@
 level,spec,term,coef,lo,hi,n
-article,"story size, FE",log_k,-0.0105,-0.0351,0.0141,39643
-article,"story size, FE + content",log_k,-0.0105,-0.0349,0.0139,39643
-article,"story size, FE + content, k <= 10",log_k,-0.0252,-0.0548,0.0045,39369
-article,same-story articles within 2 days,log_near,-0.0134,-0.044,0.0173,39643
-article,other articles that day,log_other,-0.2806,-0.3488,-0.2123,39643
-story,"story total vs size, FE of first article",log_k,1.1785,1.137,1.2199,37413
-story,"story total vs size, k <= 10",log_k,1.1757,1.1301,1.2212,37394
+article,"story size, FE",log_k,-0.0105,-0.0351,0.0141,39643.0
+article,"story size, FE + content",log_k,-0.0105,-0.0349,0.0139,39643.0
+article,"story size, FE + content, k <= 10",log_k,-0.0252,-0.0548,0.0045,39369.0
+article,same-story articles within 2 days,log_near,-0.0134,-0.044,0.0173,39643.0
+article,other articles that day,log_other,-0.2806,-0.3488,-0.2123,39643.0
+story,"story total vs size, FE of first article",log_k,1.1785,1.137,1.2199,37413.0
+story,"story total vs size, k <= 10",log_k,1.1757,1.1301,1.2212,37394.0
+recall,same-story pairs found (sim >= 0.5) x precision,,2101.3445,,,
+recall,"same-story pairs in [0.3, 0.5) x band precision (missed)",,4896.12,,,
+recall,recall upper value,,0.3003,,,
+timing,earlier article: follow-up after 1 day minus after 3-7 days,r_first,0.0119,-0.0946,0.1209,1884.0
+timing,"earlier article: mean residual, follow-up after 1 day",r_first,0.0476,-0.04,0.1367,711.0
+timing,"earlier article: mean residual, follow-up after 3-7 days",r_first,0.0358,-0.0321,0.104,1173.0
+timing,later article: follow-up after 1 day minus after 3-7 days,r_later,-0.069,-0.1626,0.0224,1884.0
+timing,"later article: mean residual, follow-up after 1 day",r_later,-0.0685,-0.1427,0.0061,711.0
+timing,"later article: mean residual, follow-up after 3-7 days",r_later,0.0005,-0.057,0.0646,1173.0
