@@ -57,5 +57,5 @@ max_negative_polarity,0.31622776601683794
 min_negative_polarity,0.31622776601683794
 rate_negative_words,0.31622776601683794
 abs_title_sentiment_polarity,0.31622776601683794
-weekday_is_thursday,3.1622776601683795
-weekday_is_sunday,3.1622776601683795
+weekday_is_thursday,10.0
+weekday_is_sunday,31.622776601683793
