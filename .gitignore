@@ -24,3 +24,6 @@ report/*.out
 report/*.bbl
 report/*.blg
 report/*.synctex.gz
+
+# submission build
+dist/

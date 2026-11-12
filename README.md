@@ -44,8 +44,9 @@ The file has 39,644 rows and 61 columns (the course PDF's 39,797 is the pre-clea
 ## Running
 
 ```bash
-./run_all.sh                  # every experiment, ~30 min
+./run_all.sh                  # every experiment, ~26 min
 ./report/build.sh             # compile the report (pdflatex + bibtex), prints the page count
+./make_submission.sh          # dist/group3_news_popularity.zip: report.pdf + code/ (tracked files, no data)
 # or one at a time:
 python scripts/00_eda.py      # E0: figures + summary tables
 python scripts/01_pilot.py    # pilot numbers used in the plan (~1 min)

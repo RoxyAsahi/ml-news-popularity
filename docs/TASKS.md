@@ -40,10 +40,11 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Report: Results RQ3 (one combined figure: threshold, learning curve, regularisation)
 - [x] Report: Results RQ4 (cluster figure)
 - [x] Report: Table 2 (main results, tuned on validation)
-- [ ] Report: final float placement / layout pass (Fig. 3 and 4 currently float to the last page)
+- [x] Report: final float placement / layout pass (resolved by #20: figures follow reference order, 7 pages)
 - [x] Report: Introduction, Related Work, Discussion, Conclusion, Abstract (first full draft, 6 pages)
 - [x] Fill the two Yang et al. 2014 titles + DOIs (checked via web search)
 - [x] Review round 2: E1b staleness vs difficulty, ALE figure (E8), weekly precision@top-5% (E4b), text corrections, all references with DOIs/pages (Fernandes claim confirmed from abstract + .names file)
 - [x] Check page count ≤ 8 (7 pages after review round 2)
-- [ ] Clean-environment reproduction: fresh venv, `pip install`, `./run_all.sh`, diff results
-- [ ] Build the submission zip (report PDF + code, no data) and hand it to Roxy for upload
+- [x] Clean-environment reproduction (2026-11-12): fresh clone + venv (numpy 2.5.4, pandas 3.1.1, scikit-learn 1.9.1), `./run_all.sh` in 26 min, all 44 tables match main (max abs diff 1.2e-10)
+- [x] Build the submission zip: `./make_submission.sh` -> `dist/group3_news_popularity.zip` (report.pdf + code/, no data)
+- [ ] Roxy: decide the author line (currently "Group 3"), then rebuild the zip and upload it to Canvas
