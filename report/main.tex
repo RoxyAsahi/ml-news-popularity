@@ -1,14 +1,15 @@
-% ML Final Group Project -- Online News Popularity
-% Limit: 8 pages INCLUDING figures and references. Page budget per section in comments.
+% ML Final Group Project -- Online News Popularity (v2 storyline)
+% Limit: 8 pages INCLUDING figures and references.
 \documentclass[10pt,a4paper,twocolumn]{article}
-\usepackage[margin=2cm]{geometry}
+\usepackage[margin=1.9cm]{geometry}
 \usepackage{graphicx,booktabs,amsmath,hyperref,xcolor,caption}
 \usepackage[numbers,sort&compress]{natbib}
 \graphicspath{{../results/figures/}}
-\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\captionsetup{font=small}
+\setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 
-\title{When Is an Article ``Popular''?\\
-Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popularity Prediction}
+\title{Same Story, Different Fate:\\
+Context, Content and Chance in Online News Popularity}
 \author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
 \date{December 2026}
 
@@ -16,413 +17,345 @@ Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popu
 \maketitle
 
 \begin{abstract}
-Online news popularity is usually predicted as a binary label (``at least 1{,}400 shares'') and evaluated
-on a random split. Using 39{,}643 Mashable articles from 2013--2014, we ask how far that set-up can be trusted,
-and report three findings. First, ranking quality survives a chronological split (ROC-AUC 0.74, with random
-forest and gradient boosting tied), but it varies between time periods about twice as much as sampling
-error alone would explain; a later drop in AUC comes from harder articles, not from an outdated model, since retraining recovers only
-0.006 of it. Second, the strongest features, keyword statistics built from earlier articles' shares, use
-only earlier articles but take their share counts from the collection date, and a few of them act as a
-clock. Together with the self-reference statistics they are worth 0.03 AUC (keyword statistics alone
-0.016), and these gains are likely optimistic. Third, what can be
-achieved depends far more on the threshold than on the model: at the 95th percentile PR-AUC is 0.10, while
-a weekly shortlist of the top 5\% is still three times richer in viral articles than chance.
+Popularity models for the Mashable news benchmark reach a ROC-AUC of about 0.74, but it is unknown what
+that skill consists of: knowing \emph{when} and \emph{where} an article appears, \emph{what story} it covers,
+or \emph{how} it is written. The benchmark ships no text, yet every article's URL ends in a shortened
+headline. Retrieving near-identical headlines published within a week, we find 2{,}941 pairs of same-story
+``twin'' articles (78\% precision on 180 annotated pairs) and use them as a topic-controlled natural
+experiment. With strictly past-only models we find that (i) publication time contributes no ranking skill,
+the editorial channel about 0.045 AUC, and fixing the story no detectable further amount: within a channel
+and day the model still ranks at 0.675; (ii) same-story articles barely share their fate (residual
+correlation 0.05), and the earlier twin gets about 7\% more shares, a sign that follow-ups split attention;
+(iii) of 13 content features, only the subjectivity of the body survives topic control, and it more than
+doubles (0.07 to 0.17 log shares per sd); (iv) articles fare worse on crowded days (doubling daily volume:
+$-$18\% shares; also within twins, not in a placebo). Since much remains chance, we show what a model can
+honestly promise: 80\% intervals spanning a factor of six, kept calibrated under drift by adaptive conformal
+inference, and 87\% accuracy on the 10\% of articles it is most sure about.
 \end{abstract}
 
-% ------------------------------------------------------------------ 0.75 page
+% ------------------------------------------------------------------
 \section{Introduction}
-News sites publish dozens of articles a day and editors must decide early which ones to promote.
-Predicting popularity before publication, from what is known about an article at that moment,
-supports such decisions. The Online News Popularity dataset \citep{fernandes2015} made this a standard
-benchmark: 39{,}644 Mashable articles described by 58 pre-computed features, with the number of
-social-network shares as target. The common formulation turns shares into a binary label
-(``popular'' if at least 1{,}400 shares, the median) and reports accuracy or AUC on a random split.
+Editors decide every day which of dozens of new articles to promote, and popularity prediction before
+publication is meant to support that decision. The Online News Popularity dataset \citep{fernandes2015}
+is the standard benchmark: 39{,}644 Mashable articles with 58 pre-computed features and their share counts.
+Work on it mostly compares classifiers on the given features; tree ensembles reach an AUC of about 0.73--0.74.
 
-That formulation hides three choices that matter in practice. First, the articles span two years, and
-both the label and the features may change over time, so a random split can be optimistic. Second,
-some features are computed from the shares of \emph{other} articles; whether they are available at
-prediction time and what they actually encode determines whether the reported performance is usable.
-Third, the threshold is arbitrary: an editor cares about the few viral articles, not the median.
-We therefore study the reliability of the popularity label and of the evaluation, rather than
-chasing a higher score.
+A single AUC hides \emph{what} is being predicted. An article's shares depend on its context (the day,
+the section it is placed in, what else appears that day), on the news story it covers, on how it is
+written, and on chance; experiments on cultural markets show that the last part can be large
+\citep{salganik2006,martin2016}. If a model mainly recognises popular sections, it says little to an
+editor choosing between two pieces on the same story. Separating these sources needs comparisons in which
+the story is held fixed, which observational data rarely offer.
 
-\paragraph{Task.} For an article $i$ published at time $t_i$ we predict $y_i=\mathbf{1}[\text{shares}_i\geq\tau]$
-from its 58 pre-computed features $\mathbf{x}_i$, which are meant to be known at publication (RQ2 qualifies
-this). A model may only be trained on articles published before the period it is evaluated on. ROC-AUC
-measures how well articles are ranked; for an editor who can promote a few articles a week, PR-AUC and
-the precision of a weekly shortlist are the relevant measures.
-
-Our contributions are a chronological, uncertainty-aware evaluation protocol; a check of what the
-share-derived features actually contain; an analysis of how the label definition (threshold) and the
-amount of data change what we conclude about models; and a test of whether content signals that look
-predictive (topic, tone, unusualness) survive once the editorial channel is accounted for.
+We find such comparisons inside the benchmark. Mashable URLs end in a slug, a shortened headline
+(\emph{/2013/01/13/aaron-swartz/}). Articles whose slugs nearly coincide and that appear within a week
+usually cover the same story (Table~\ref{tab:twins}). These \emph{twins} turn the dataset into a
+topic-controlled natural experiment in the spirit of paired designs on Twitter \citep{tan2014} and
+Reddit \citep{lakkaraju2013}, which, to our knowledge, have not been applied to this benchmark.
 
 \paragraph{Research questions.}
-\begin{enumerate}
-  \item[RQ1] Can the label be used without an age correction, and how does performance change when
-             models are evaluated on articles published after the training period?
-  \item[RQ2] Are the features derived from earlier articles' shares point-in-time, do they encode
-             the publication date, and how much does performance depend on them?
-  \item[RQ3] How do the popularity threshold, training-set size and regularisation strength
-             affect generalisation?
-  \item[RQ4] Do articles that cluster in topic/sentiment space differ in popularity?
+\begin{enumerate}\setlength\itemsep{0pt}
+  \item[RQ1] Where does predictive skill live: in time, channel, story or the article itself? Do same-story
+             articles share their fate?
+  \item[RQ2] Which content effects survive when the story is held fixed?
+  \item[RQ3] Does the publishing context matter beyond the article: competition from other articles that
+             day, and the recent popularity of similar stories?
+  \item[RQ4] Given what remains unpredictable, what can a model honestly promise under temporal drift?
 \end{enumerate}
+\noindent Our contributions are a twin-retrieval method with a measured precision; a past-only
+decomposition of AUC into nested contexts; topic-controlled estimates of content and competition effects
+with formal tests against the naive estimates; and calibrated uncertainty under drift.
 
-% ------------------------------------------------------------------ 0.5 page
+% ------------------------------------------------------------------
 \section{Related Work}
-Fernandes et al.\ \citep{fernandes2015} introduced the dataset and reached an AUC of 0.73 with a random
-forest on rolling time windows; we add interval estimates and ask what changes over time. Attention to
-news stories saturates within days \citep{szabo2010}, external evidence we need because a single snapshot
-cannot show it (Section~\ref{sec:data}). Learning from streams of items whose labels are costly
-\citep{yang2014wsdm,yang2014cikm} motivated evaluating only on articles published after the training data.
-We test both kinds of concept drift \citep{gama2014}, check the share-derived features for leakage
-\citep{kaufman2012}, and use precision--recall measures where positives are rare \citep{saito2015}.
+\paragraph{Popularity prediction.} Fernandes et al.\ \citep{fernandes2015} introduced the dataset and reached
+an AUC of 0.73 with a random forest on rolling windows. Prediction before publication is hard
+\citep{bandari2012}; early share counts help much more \citep{szabo2010}, but are not available here.
+\paragraph{Limits to prediction.} In artificial music markets the same song succeeded or failed depending on
+social influence \citep{salganik2006}, and even with full information cascade sizes on Twitter are only partly
+predictable \citep{martin2016}. Hofman et al.\ \citep{hofman2017} argue for reporting what is predictable and
+from what. We measure this on news, decomposing skill by context.
+\paragraph{Controlled comparisons.} Tan et al.\ \citep{tan2014} compared tweets by the same author on the same
+link; Lakkaraju et al.\ \citep{lakkaraju2013} compared resubmissions of the same image on Reddit; headline A/B
+tests give randomised versions \citep{matias2021}. Our twins are a weaker, observational analogue: same story,
+but different articles.
+\paragraph{Attention and uncertainty.} Items compete for limited attention \citep{wu2007,weng2012}.
+Conformalised quantile regression \citep{romano2019} gives distribution-free intervals; adaptive conformal
+inference \citep{gibbs2021} keeps coverage under drift \citep{gama2014}; selective classification
+\citep{geifman2017} predicts only when confident. Work on learning from streams of networked items
+\citep{yang2014wsdm,yang2014cikm} motivated our strictly past-only evaluation.
 
-% ------------------------------------------------------------------ 1 page
-\section{Data}
+% ------------------------------------------------------------------
+\section{Data and Twin Articles}
 \label{sec:data}
-We use the Online News Popularity dataset \citep{fernandes2015}: 39,644 articles published by
-Mashable between 7 January 2013 and 27 December 2014, each described by 58 pre-computed features
-and the number of times it was shared on social networks. The article text is not included.
-We parse the publication date from the URL, which lets us order articles in time.
-
-\paragraph{Features.} Table~\ref{tab:features} groups the features. Two groups are derived from the
-share counts of \emph{other} articles: the keyword statistics (\texttt{kw\_*}, e.g.\ the average
-shares of earlier articles with the same keywords) and the self-reference statistics (shares of
-linked Mashable articles). Section~\ref{sec:rq2} examines whether these are computed only from
-articles published earlier.
+\paragraph{Data.} 39{,}643 articles (one row with an impossible token rate removed) published between
+7 January 2013 and 27 December 2014, with 58 features (Table~\ref{tab:features}) and shares recorded once,
+in January 2015. We parse the date and slug from the URL. Shares are heavy-tailed (median 1{,}400, mean
+3{,}395, maximum 843{,}300); we model $\log(1{+}\text{shares})$ and call an article \emph{popular} if it has at
+least 1{,}400 shares \citep{fernandes2015}. Two feature groups are built from other articles' shares: keyword
+statistics (\texttt{kw\_*}) and statistics of linked Mashable articles. The keyword statistics use only articles
+from earlier days (\texttt{kw\_max\_max} equals the running maximum of earlier shares for 99.87\% of
+articles), but take those articles' shares from the collection date, so their gains are likely optimistic,
+and three of them mostly encode the date.
 
 \begin{table}[t]
 \centering\small
-\caption{Feature groups (60 columns after cleaning).}
+\caption{Feature groups (60 columns incl.\ two cleaning flags).}
 \label{tab:features}
-\small\setlength{\tabcolsep}{2.5pt}
+\setlength{\tabcolsep}{2.5pt}
 \begin{tabular}{@{}lrl@{}}
 \toprule
 Group & \# & Examples \\
 \midrule
 Content & 12 & words, links, images, videos \\
-Keyword (\texttt{kw\_*}) & 10 & shares of keyword's articles \\
-Self-reference & 3 & min/avg/max shares of linked articles \\
+Keyword (\texttt{kw\_*}) & 10 & shares of earlier keyword articles \\
+Self-reference & 3 & shares of linked articles \\
 Channel & 6 & lifestyle, entertainment, business, \dots \\
 Weekday & 8 & day of publication, weekend \\
-LDA topics & 5 & closeness to 5 LDA topics \\
-Sentiment & 16 & polarity, subjectivity \\
+LDA topics & 5 & closeness to 5 topics \\
+Sentiment & 16 & polarity, subjectivity, word rates \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\paragraph{Cleaning.} We remove one row whose rate of unique tokens is 701 (rates are at most 1),
-leaving 39,643 articles. We keep, but flag, 1,181 articles with no content words, and we flag
-\texttt{kw\_min\_min}~$=-1$, a sentinel rather than a share count (Section~\ref{sec:rq2} shows that it
-mostly marks later articles). The two flags
-bring the feature count to 60. All further preprocessing (a sign-preserving $\log(1+|x|)$ transform
-and standardisation for the linear and nearest-neighbour models) is fitted inside each model's
-pipeline on training data only.
+\paragraph{Twins.} We represent slugs by TF-IDF vectors \citep{salton1988} of word uni- and bigrams and call two
+articles twins if their cosine similarity is at least 0.5 and they appeared at most 7 days apart (3{,}382 pairs).
+Some of these are instalments of recurring columns (\emph{viral video recap}, \emph{olympics day four} vs.\
+\emph{day eight}, episode recaps), which a rule-based filter removes (identical slugs that recur at least four
+times or are $\geq$5 days apart, slugs differing only by numbers or ordinals, both containing ``recap''),
+leaving 2{,}941 pairs in 1{,}278 stories (connected components of the twin graph).
 
-\paragraph{Target.} Shares are extremely skewed (Fig.~\ref{fig:data}a): median 1,400, mean
-3,395, 99th percentile 31,658, maximum 843,300. Following \citet{fernandes2015} we call an
-article \emph{popular} if it has at least 1,400 shares; Section~\ref{sec:rq3} varies this choice.
+To measure precision we annotated 180 pairs, 30 per similarity band from 0.3 to 1.0, as same story,
+series instalment, same broad topic, or unrelated, from slug, dates and channel. The annotation was done by
+the authors' assistant, not by independent annotators. The filter caught 27 of 33 series pairs with no false
+positives. After filtering, pairs with similarity $\geq$0.5 are the same story in 78\% [68, 85] (Wilson) and the
+same story or topic in 96\%. Without the filter, the most similar band is mostly series (Fig.~\ref{fig:precision}), so a higher
+threshold alone does not give cleaner twins. Twins are rarely in the same channel (29\%): channel labels agree only loosely
+with slug topics (e.g.\ 27\% of \emph{game of thrones} slugs are labelled entertainment), so we treat channel as
+an editorial placement rather than a topic.
 
-\paragraph{Do shares depend on article age?} The dataset records shares at one moment
-(January 2015), so an article published two years earlier had more time to collect them. Shares do not
-rise with age (Fig.~\ref{fig:data}b): the Spearman correlation is 0.03 and the median stays between
-1,300 and 1,600 in every age bin. This alone does not prove that shares saturate: because every article
-was collected on the same day, age is a one-to-one function of the publication date, so a flat curve could
-also mean that older articles had more time but were published in a less popular period. We therefore rest
-the decision on external evidence that attention to news saturates within days \citep{szabo2010}, together
-with the fact that even the youngest article is eight days old, and use raw shares without an age correction.
 
-\begin{figure*}[t]
+\begin{figure}[t]
 \centering
-\includegraphics[width=0.82\textwidth]{fig1_data.png}
-\caption{(a) Distribution of shares on a log scale; the dashed line is the popularity threshold.
-(b) Median and inter-quartile range of shares by article age at collection. Age and publication date
-coincide in this snapshot, so the flat curve is consistent with, but does not prove, saturation.}
-\label{fig:data}
-\end{figure*}
-
-% ------------------------------------------------------------------ 0.75 page
-\section{Methodology}
-\label{sec:method}
-
-\paragraph{Chronological evaluation.} Articles are sorted by publication date. The oldest 70\%
-(27,750 articles, to 25 June 2014) form the training block, the next 10\% (to 28 August 2014) the
-validation block and the newest 20\% (7,929 articles, to 27 December 2014) the test block.
-Hyper-parameters, decision cut-offs and the reference model are chosen on the validation block; models
-are then refit on training and validation together and scored on the test block. The same test block is
-reused by the secondary analyses (threshold sweep, ablations, shortlists), which are descriptive and choose
-nothing. Where we need more than
-one test period we use five rolling-origin folds: an expanding window that starts with the oldest
-40\% and is tested on each following block of 12\%. We compare this protocol with the random 80/20
-split used in earlier work.
-
-\paragraph{Threshold convention.} The main experiments label an article popular if it has at least
-1,400 shares, the full-data median used by \citet{fernandes2015}, so that results are comparable.
-When we vary the threshold (Section~\ref{sec:rq3}) we take quantiles of the training block only;
-its median is 1,500.
-
-\paragraph{Models.} A majority-class baseline; logistic regression with an L1 \citep{tibshirani1996} or
-L2 penalty; $k$-nearest neighbours \citep{cover1967}; a random forest \citep{breiman2001}; and
-histogram-based gradient boosting (HistGB) \citep{friedman2001,ke2017}. The linear and neighbour models see
-log-transformed, standardised inputs; all models are scikit-learn pipelines \citep{pedregosa2011}. Grids
-(listed in the code) cover $C$, $k$ up to 2{,}000, forest leaf size and feature fraction, and twelve HistGB
-configurations whose number of boosting rounds is chosen on the validation block (early stopping in time,
-not on a random internal split). Unsupervised analyses use $k$-means \citep{lloyd1982}, Gaussian mixtures
-fitted by EM \citep{dempster1977}, silhouettes \citep{rousseeuw1987} and Isolation Forest \citep{liu2008}.
-
-\paragraph{Metrics and uncertainty.} We report ROC-AUC, which measures ranking and is insensitive
-to the base rate, and PR-AUC, which is more informative when positives are rare
-\citep{saito2015}, plus F1 and balanced accuracy where a decision is needed. Test-set numbers carry
-95\% percentile bootstrap intervals \citep{efron1993} with 1,000 resamples. Because articles published in
-the same week share news events, Table~\ref{tab:main} and the RQ1 differences resample whole publication
-weeks (block bootstrap \citep{kunsch1989}); these intervals are about 1.4 times wider than article-level
-ones (which we keep for the secondary analyses), but rest on only 18 weekly blocks. Differences between two models or feature sets are computed
-on the \emph{same} resamples (paired bootstrap) or, across rolling folds, as paired per-fold differences with
-a $t$-interval. We call a difference \emph{detectable} only when its interval excludes zero. Association
-with channel as a confounder is tested with Mantel--Haenszel odds ratios \citep{mantel1959} and the
-Breslow--Day test of homogeneity \citep{breslow1980}.
-
-\paragraph{Reproducibility.} Seeds are fixed; every table and figure in this report is produced by
-one script in the accompanying code, and \texttt{run\_all.sh} reproduces all of them from the
-raw CSV in about 26 minutes.\footnote{The half-life sample weighting in Section~\ref{sec:rq1} was inspired
-by the TimeDecay mechanism of the open-source VCPToolBox project (\url{https://github.com/lioensky/VCPToolBox});
-our implementation is independent.}
-
-% ------------------------------------------------------------------ 3.5 pages
-\section{Results}
-\label{sec:results}
-Table~\ref{tab:main} summarises the chronological test performance after tuning on the validation block.
-Random forest and HistGB are indistinguishable (paired gap 0.001 [$-$0.003, 0.005]) and both beat L1
-logistic regression by 0.020 [0.014, 0.025] and kNN by 0.032 [0.027, 0.037]. Validation AUCs are
-0.01--0.02 above test AUCs; part of this is optimism from selecting settings on the validation block, part
-is the drift studied in RQ1.
+\includegraphics[width=\columnwidth]{v2_fig_d_twin_precision.png}
+\caption{Share of annotated pairs that cover the same story, by slug similarity (30 pairs per band, 95\% Wilson
+intervals), before and after removing recurring-series pairs.}
+\label{fig:precision}
+\end{figure}
 
 \begin{table}[t]
 \centering\small
-\caption{Chronological test results (7{,}929 newest articles, 47.9\% popular), threshold 1{,}400 shares.
-Settings and the reference model (``ref.'', highest validation AUC) chosen on the validation block;
-95\% weekly block-bootstrap intervals. ``Gap'' is the paired AUC difference to the reference model.}
-\label{tab:main}
-\setlength{\tabcolsep}{2pt}
-\begin{tabular}{@{}llll@{}}
+\caption{Four same-story twins (slug words, shares).}
+\label{tab:twins}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lr|lr@{}}
 \toprule
-Model & ROC-AUC & PR-AUC & Gap \\
+\multicolumn{2}{@{}l|}{Earlier article} & \multicolumn{2}{l@{}}{Later article} \\
 \midrule
-\multicolumn{4}{@{}l}{\emph{All features (60)}} \\
-Majority & 0.500 & 0.479 & -- \\
-L1 LogReg & 0.717 {\scriptsize[.701,.733]} & 0.696 & 0.020 {\scriptsize[.014,.025]} \\
-kNN ($k{=}500$) & 0.705 {\scriptsize[.688,.722]} & 0.682 & 0.032 {\scriptsize[.027,.037]} \\
-Random forest & 0.736 {\scriptsize[.721,.751]} & 0.715 & 0.001 {\scriptsize[$-$.003,.005]} \\
-HistGB & \textbf{0.737} {\scriptsize[.721,.752]} & \textbf{0.719} & ref. \\
-\midrule
-\multicolumn{4}{@{}l}{\emph{Without share-derived features (47)}} \\
-L1 LogReg & 0.693 {\scriptsize[.677,.710]} & 0.670 & 0.015 {\scriptsize[.010,.019]} \\
-kNN ($k{=}500$) & 0.688 {\scriptsize[.672,.704]} & 0.664 & 0.020 {\scriptsize[.015,.025]} \\
-Random forest & \textbf{0.708} {\scriptsize[.694,.722]} & \textbf{0.691} & ref. \\
-HistGB & 0.703 {\scriptsize[.687,.720]} & 0.683 & 0.005 {\scriptsize[.001,.009]} \\
+aaron swartz & 7{,}900 & aaron swartz petition & 581 \\
+game of thrones & 2{,}600 & game of thrones trailer & 22{,}300 \\
+samsung galaxy s4 mini & 6{,}300 & galaxy s4 mini & 920 \\
+typhoon hagupit philippines & 4{,}700 & typhoon hagupit & 1{,}100 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{fig2_time_features.png}
-\caption{Time and share-derived features. (a) Monthly share of popular articles; the dashed line marks the end of
-training. (b) \texttt{kw\_max\_max} (dots, daily median) follows the running maximum of earlier articles' shares
-(grey staircase), one day later. (c) ROC-AUC on Oct--Dec 2014 when training on all articles before each
-cutoff (95\% weekly block-bootstrap intervals); open diamonds: the first model scored on Jul--Sep 2014.
-(d) Drop in HistGB ROC-AUC when a feature group is removed, paired over five rolling folds (95\% $t$-intervals).}
-\label{fig:time}
-\end{figure*}
+% ------------------------------------------------------------------
+\section{Methods}
+\label{sec:method}
+\paragraph{Benchmark models.} Logistic regression (L1), $k$-NN, random forest and histogram gradient boosting
+(HistGB) \citep{tibshirani1996,cover1967,breiman2001,friedman2001,ke2017}, tuned on a chronological validation
+block (oldest 70\% train, next 10\% validation, newest 20\% test) in scikit-learn \citep{pedregosa2011}.
 
-\subsection{Temporal drift (RQ1)}
+\paragraph{Past-only scores.} All RQ1 analyses use scores from models trained only on earlier articles:
+for every month from July 2013 on, we fit HistGB (and L1 logistic regression) on all articles of earlier
+months and score that month (30{,}446 scored articles).
+
+\paragraph{Pairwise AUC within a context.} For a grouping $G$, the within-$G$ AUC is the probability that a
+popular article scores higher than an unpopular one \emph{from the same group}. With one group it is the
+usual AUC; fixing finer groups (week, day, channel, channel$\times$day) removes the skill that only tells
+groups apart. For twins we use the pairs themselves. Because the 1{,}400 cut makes many twin pairs
+``discordant'' by a few shares, we also report concordance on pairs whose shares differ by more than a factor
+of two. Intervals are cluster bootstraps \citep{efron1993} over publication weeks, or over stories for twins.
+
+\paragraph{Twin designs.} Do twins share their fate? We correlate residual log shares (after channel$\times$week
+and weekday fixed effects) of the two twins and compare with a matched neighbour: the second twin replaced by a
+random article from its channel and day. For content effects (RQ2) we regress the within-pair difference
+(earlier minus later) in log shares on differences in 13 standardised content features, a constant (the
+earlier-article advantage) and channel-difference dummies, and compare with a cross-sectional regression with
+channel$\times$week and weekday fixed effects. The difference between the two estimates is tested by combining
+independent bootstraps; twin coefficients are corrected for multiple testing \citep{benjamini1995}.
+
+\paragraph{Competition, memory and uncertainty.} RQ3 regresses log shares on the log number of articles in the
+dataset that day, with week, weekday and channel fixed effects and day-clustered errors, and checks a placebo
+(next week's volume on the same weekday), content controls and twins. A \emph{semantic memory} feature averages
+the log shares of the 20 most similar earlier slugs with time-decay weights $0.5^{\text{age}/h}$.\footnote{The
+time decay was inspired by the TimeDecay mechanism of the open-source VCPToolBox project
+(\url{https://github.com/lioensky/VCPToolBox}); our implementation is independent.} RQ4 fits 10\% and 90\% quantile
+HistGB models, conformalises them on the validation block (CQR) \citep{romano2019}, and adds adaptive conformal
+inference (ACI, step 0.005) \citep{gibbs2021}; selective prediction keeps the articles with the largest $|p-0.5|$.
+
+\paragraph{Reproducibility.} Seeds are fixed; every number and figure comes from a script in the code, and
+\texttt{run\_all.sh} reproduces all of them from the raw CSV.
+
+% ------------------------------------------------------------------
+\section{Results}
+\label{sec:results}
+\paragraph{Benchmark.} On the chronological test block (Table~\ref{tab:main}) random forest and HistGB tie
+(gap 0.001 [$-$0.003, 0.005], weekly block bootstrap) and beat L1 logistic regression by 0.020 [0.014, 0.025].
+The share-derived features are worth 0.034 [0.027, 0.040] AUC. Ranking holds up under a chronological split, and
+a later dip (Oct--Dec 2014) reflects harder articles more than an outdated model: retraining up to October
+recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples: random forest is best below
+10{,}000 training articles, and with 1{,}000 articles strong L1 regularisation gains 0.03 AUC, while with all data
+the penalty hardly matters.
+
+\begin{table}[t]
+\centering\small
+\caption{Chronological test results (7{,}929 newest articles), threshold 1{,}400 shares; settings chosen on the
+validation block; 95\% weekly block-bootstrap intervals.}
+\label{tab:main}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Model & ROC-AUC & PR-AUC \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{All features (60)}} \\
+L1 LogReg & 0.717 {\scriptsize[.701,.733]} & 0.696 \\
+kNN ($k{=}500$) & 0.705 {\scriptsize[.688,.722]} & 0.682 \\
+Random forest & 0.736 {\scriptsize[.721,.751]} & 0.715 \\
+HistGB & \textbf{0.737} {\scriptsize[.721,.752]} & \textbf{0.719} \\
+\midrule
+\multicolumn{3}{@{}l}{\emph{Without share-derived features (47)}} \\
+L1 LogReg & 0.693 {\scriptsize[.677,.710]} & 0.670 \\
+Random forest & \textbf{0.708} {\scriptsize[.694,.722]} & \textbf{0.691} \\
+HistGB & 0.703 {\scriptsize[.687,.720]} & 0.683 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\columnwidth]{v2_fig_a_anatomy.png}
+\caption{RQ1: pairwise ROC-AUC of past-only scores among articles that share a context (95\% cluster-bootstrap
+intervals: weeks, or stories for twins).}
+\label{fig:anatomy}
+\end{figure}
+
+\subsection{Where does the skill live? (RQ1)}
 \label{sec:rq1}
-The \emph{label} is not stable over time: the monthly share of popular articles fluctuates between 44\%
-and 68\% (both extremes in 2013; Fig.~\ref{fig:time}a) and is 47.9\% in the test block.
+\paragraph{Time contributes nothing, channel some, story nothing detectable.} Past-only HistGB ranks all scored
+articles at 0.734 [0.725, 0.740] (Fig.~\ref{fig:anatomy}). Comparing only articles from the same week
+(0.734) or day (0.727) barely changes this, so the model does not profit from knowing which days were good.
+Comparing within a channel costs 0.045 (0.690 [0.682, 0.696]), and within channel and day 0.675 [0.668, 0.683].
+Holding the story fixed adds no detectable loss: same-story twins are ranked at 0.719 [0.692, 0.748], and
+same-story twins in the same channel at 0.672 [0.602, 0.738], overlapping the channel-and-day level. The pattern is
+the same for logistic regression (0.709 to 0.639) and for HistGB without share-derived features (0.701 to 0.628),
+and for concordance on pairs that differ more than twofold (0.714 overall, 0.667 within channel and day,
+0.690 [0.656, 0.727] within twins). Most of what the model knows is therefore about the article, not its context:
+it separates two articles on the same story about as well as two random articles from the same section and day.
 
-Ranking quality is more robust. Random and chronological splits give the same HistGB ROC-AUC with default
-settings (0.735 vs.\ 0.737). Across time periods, however, it varies clearly more than sampling error explains: training on a fixed
-number of the most recent articles (15{,}857) and testing on each of the five rolling-origin blocks gives AUCs
-from 0.704 to 0.744 (sd 0.017; with five folds its 95\% interval is 0.010--0.049), while the weekly
-block-bootstrap standard error of a single block is 0.008. Error bars from one test set, let alone from
-random-split seeds (sd 0.002), therefore understate the uncertainty that matters when a model is deployed.
+\paragraph{Same story, different fate.} Twins hardly share their popularity. Their residual log shares correlate
+at 0.051 [0.016, 0.086], against 0.002 for matched random neighbours; within a channel at 0.103 [0.040, 0.167]
+(Fig.~\ref{fig:twins}a). The story thus accounts for roughly 5\% of the variance that week and channel leave,
+which is itself small: week, channel$\times$week and channel$\times$day means explain 1.5\%, 7.8\% and 9.7\% of
+the variance of log shares. The earlier twin gets 0.070 [0.005, 0.132] more log shares (about 7\%), whereas the
+earlier of two random same-week articles does not ($-$0.002); for the most similar twins (cosine $\geq$0.7) the
+advantage is 0.135. A follow-up on the same story competes with its predecessor, so the low correlation may partly
+reflect split attention rather than an irrelevant story; the two readings cannot be separated with one snapshot of
+shares (Section~\ref{sec:discussion}).
 
-A model trained up to 25 June 2014 ranks articles from the next three months (Jul--Sep, which include the
-validation block) better than those from Oct--Dec: 0.753 vs.\ 0.722, a difference of 0.030. This is
-\emph{not} mainly staleness. Moving the training cutoff forward to 1 August, 1 September and 1 October 2014,
-and always testing on Oct--Dec, raises HistGB only from 0.722 to 0.723, 0.726 and 0.729
-(Fig.~\ref{fig:time}c): a fully up-to-date model gains 0.006 [0.003, 0.010] (paired weekly block bootstrap;
-logistic regression 0.003 [0.001, 0.005]). Because the training set also grows (27{,}772 to 33{,}788 articles)
-and HistGB is still improving at that size, 0.006 is an upper bound on staleness. The remaining
-0.024 [0.005, 0.045] is difficulty: late-2014 articles are harder to rank for any model. Threshold-dependent metrics suffer more: models keep predicting
-49--53\% positives while the true rate is 47--49\%.
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_fig_b_twins.png}
+\caption{(a) RQ1: correlation of residual log shares (after channel$\times$week and weekday effects) between twins
+and between matched random neighbours from the same channel and day, by subset (95\% story-cluster intervals).
+(b) RQ2: effect of a one-sd increase in each content feature on log shares, across articles (channel$\times$week
+fixed effects, week-cluster intervals) and within same-story twins (story-cluster intervals).}
+\label{fig:twins}
+\end{figure*}
 
-Two remedies did \emph{not} help. Rescaling predicted probabilities to the most recent known base rate
-leaves HistGB accuracy at 0.667, because the shift happens inside the test period. Half-life sample
-weights $0.5^{\text{age}/h}$ give no detectable gain for HistGB at any $h$ and hurt at $h=30$ days
-($-0.013$ [$-0.019$, $-0.007$]); logistic regression gains a small but consistent $+0.004$ to $+0.006$
-at $h=180$--365 days. This is consistent with the small staleness effect: there is little to gain by
-emphasising recent articles.
-
-\subsection{Share-derived features (RQ2)}
+\subsection{Content with the story held fixed (RQ2)}
 \label{sec:rq2}
-The original paper does not describe how the keyword statistics were computed, and the full text does not
-settle it; what follows is inferred from the data. Their \emph{membership} is point-in-time: for 99.87\% of
-articles, \texttt{kw\_max\_max} equals the largest share count of any article published on an earlier day, and
-it jumps the day after each new record article (Fig.~\ref{fig:time}b). Their \emph{values}, however, are the
-share counts measured at collection (January 2015): the day after a record article appears, its final
-843{,}300 shares are already in the statistic, a number that could not have been known then. The features
-are therefore only approximately available at publication. In deployment the same statistics would be computed
-from incomplete counts of recent articles, which would usually make them noisier, so the gains reported
-below are likely optimistic.
-
-Three keyword columns mostly measure how large the archive was and thus encode the date
-(\texttt{kw\_min\_min}: $\rho=-0.88$ with publication date; $-1$ for 8.5\% of 2013 articles but 99.9\% of 2014
-articles). These ``clock'' columns explain only a small part of why a classifier can tell old from new
-articles (adversarial AUC 0.958 with all features, 0.940 without them, 0.810 without any \texttt{kw\_*});
-they are constant inside the test block, and removing them costs nothing (0.002 [$-0.001$, 0.005]).
-
-The predictive value lies in the non-clock statistics, i.e.\ in how popular an article's keywords have been.
-Removing only the \texttt{kw\_*} features costs default HistGB 0.016 [0.010, 0.021] on the test block. With the tuned models of Table~\ref{tab:main}, removing all share-derived features costs HistGB 0.034
-[0.027, 0.040] and the random forest 0.028 [0.022, 0.034]; without them the random forest is ahead of
-HistGB by 0.005 [0.001, 0.009], detectable on this test block but small enough that it may not hold in other periods. Over the five rolling folds (Fig.~\ref{fig:time}d, default HistGB)
-the combined share-derived group is the most valuable (0.027); on its own, \texttt{kw\_*} (0.011) is on a par
-with weekday (0.013), followed by self-reference and channel (0.008) and content (0.005), while removing the
-five LDA topics or the 16 sentiment features makes no detectable difference.
-
-\paragraph{Direction of the effects.} Importance says nothing about direction. Because many features are
-correlated, we use accumulated local effects (ALE) \citep{apley2020} rather than partial dependence, computed
-for HistGB on the training block (Fig.~\ref{fig:ale}). The probability of being popular rises steadily with the
-average historical shares of an article's keywords (by 0.15 between the 10th and 95th percentile) and,
-more weakly, with the shares of the Mashable articles it links to (0.05). Form matters less: the effect of
-the number of links is flat below ten links and rises by 0.03 up to 31 links (95th percentile), and length
-has no effect up to about 800 words and adds 0.02 by 1{,}400 words. The last bin of each curve covers the
-extreme 5\% and is estimated from few articles. Popularity is thus mostly inherited from the topic's track
-record, not from form.
+Most content effects that look clear across articles cannot be confirmed within twins, because twin
+differences are noisier: the two articles of a pair differ widely in format (their body lengths correlate at
+0.02). One effect survives and grows (Fig.~\ref{fig:twins}b): a one-sd more subjective body goes with 0.070
+[0.057, 0.084] more log shares across articles but 0.166 [0.092, 0.239] within twins (BH-adjusted $q=0.013$); the
+difference, 0.097 [0.018, 0.165], excludes zero. It holds for twins with cosine $\geq$0.6 (0.149), within the same
+channel (0.122) and for twins of similar length (0.165). An opinionated take on a story thus beats a neutral one on
+the same story more than the cross-sectional estimate suggests. Links (0.067 [0.010, 0.132]) and average word length
+($-$0.113 [$-$0.198, $-$0.030]) agree in sign with the cross-section but do not pass the multiple-testing correction.
+The video effect (0.054 [0.041, 0.068] across articles) shrinks to 0.007 [$-$0.041, 0.059] within twins (difference
+$p=0.09$), suggesting that video-heavy stories rather than videos are popular. Negative tone, measured as the share
+of negative words, has no detectable effect in either design once subjectivity and positive words are controlled.
+Across 30 near-equally accurate models (validation AUC within 0.01) the ranking of feature groups by permutation
+importance is stable at the extremes (keywords first, sentiment last) \citep{fisher2019}.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{e8_ale.png}
-\caption{Accumulated local effects of four features on the predicted probability of being popular (HistGB,
-training block). The $x$ axis is the feature's percentile, labelled with its value at the 10th, 50th and 90th
-percentile.}
-\label{fig:ale}
+\includegraphics[width=\textwidth]{v2_fig_c_context_uncertainty.png}
+\caption{(a) RQ3: change in log shares per unit of log daily volume (95\% day- or story-clustered intervals); the
+placebo uses the volume of the same weekday one week later. (b) RQ4: monthly coverage of 80\% intervals on the test
+block, conformalised once (CQR) or adaptively (ACI). (c) RQ4: accuracy when predicting only the given share of
+articles with the most confident past-only scores.}
+\label{fig:context}
 \end{figure*}
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{fig3_threshold_size_reg.png}
-\caption{(a) HistGB test metrics when ``popular'' is defined by a training-block percentile of shares
-(band: 95\% bootstrap interval of ROC-AUC). (b) Test ROC-AUC against training-set size (log scale;
-error bars over five subsamples). (c) Validation ROC-AUC of L2 logistic regression against inverse
-penalty $C$, with 1{,}000 and with all 27{,}750 training articles.}
-\label{fig:rq3}
-\end{figure*}
-
-\subsection{Threshold, data size and regularisation (RQ3)}
+\subsection{Publishing context: competition and memory (RQ3)}
 \label{sec:rq3}
-\emph{Threshold.} Moving the threshold from the median to the 95th percentile of training shares barely
-changes ROC-AUC (0.726--0.739), but PR-AUC falls from 0.67 to 0.10 as the positive rate drops
-(Fig.~\ref{fig:rq3}a). Relative to the base rate, ranking actually improves (lift 1.55 $\to$ 2.43):
-the model is better at finding very viral articles than its PR-AUC suggests, but in absolute terms most
-flagged articles are still false alarms. At the 95th percentile a classifier trained on the binary label beats
-a regressor on $\log(1+\text{shares})$ by 0.026 [0.005, 0.047] AUC, so the threshold should be fixed
-before training rather than applied afterwards.
-From an editor's point of view, a shortlist of the top 5\% of each week's articles (about 22 of 440)
-contains a viral article ($\geq$11{,}300 shares) 12\% of the time [9\%, 15\%], three times the 4\% base
-rate (Fig.~\ref{fig:prec}): about 2.7 hits a week, with one week in 18 without any.
+Articles fare worse on crowded days (Fig.~\ref{fig:context}a). With week, weekday and channel fixed effects, a
+log unit more articles that day goes with $-$0.286 [$-$0.372, $-$0.200] log shares: doubling the volume (days range
+from 12 to 105 articles, mean 55) means 18\% fewer shares. The estimate is unchanged by all content
+controls ($-$0.282), holds for long articles ($-$0.216), without the busiest 5\% of days ($-$0.309), within twins
+($-$0.200 [$-$0.324, $-$0.076]) and for both same-channel ($-$0.108) and other-channel volume ($-$0.153), while the
+placebo is small and not detectable ($-$0.059 [$-$0.131, 0.014]). It is three to four times larger in 2013 than in
+2014. We read this as competition for limited attention \citep{weng2012}, but it remains an association: busy days
+may differ in ways we do not observe.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{e4b_precision_at_top5.png}
-\caption{Weekly precision of the top 5\% of articles ranked by HistGB at the 95th-percentile threshold, against
-the weekly share of viral articles (test block, weeks with $\geq$100 articles).}
-\label{fig:prec}
-\end{figure}
+The popularity of similar earlier stories does not help. Semantic-memory features correlate with log shares at only
+0.016--0.029 for every half-life and change past-only AUC by $-$0.0008 [$-$0.0019, 0.0004]; recency-weighted training
+did not help either. What matters is the article and its day, not what similar stories did before.
 
-\emph{Data size.} Random forest is the best model below 10{,}000 training articles; HistGB overtakes it only
-with the full training set (Fig.~\ref{fig:rq3}b). Logistic regression and kNN plateau after about 3{,}000 articles, while the tree ensembles are still
-improving at the full size; below 3{,}000 articles HistGB fits its training data almost perfectly, a
-high-variance regime.
-
-\emph{Regularisation.} With all training data the penalty hardly matters (validation AUC 0.725--0.736 for every $C$);
-with 1{,}000 articles, strong regularisation gains 0.03 (0.679 at $C=100$ vs.\ 0.709 at $C=0.003$;
-Fig.~\ref{fig:rq3}c), exactly where the learning curves show high variance. The sparsest useful L1 model
-(7 features, validation AUC 0.697) keeps four channel dummies, \texttt{kw\_avg\_avg}, \texttt{is\_weekend}
-and one LDA topic.
-
-\subsection{Clustering and anomalies (RQ4)}
+\subsection{What can a model promise? (RQ4)}
 \label{sec:rq4}
-The topic/sentiment space has little cluster structure: the $k$-means silhouette is 0.09--0.12 for every
-$k$ from 2 to 10, and the Gaussian-mixture BIC keeps decreasing up to $k=10$: clusters are regions of a
-continuum rather than natural groups. Clusters nonetheless differ in popularity
-(Fig.~\ref{fig:clusters}): with $k=9$ the popular rate ranges from 38\% (world news) to 62\%
-(tech, business). This mostly re-discovers channels: the association of clusters with popularity
-(Cram\'er's $V=0.188$) is weaker than that of the channel label alone (0.245).
+An 80\% conformal interval for a typical test article runs from 776 to 5{,}017 shares, a factor of 6.2. Calibrated
+once on the validation block, it covers 79.5\% of the test articles overall but only 76.3\% in September 2014; ACI
+keeps every month between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b), assuming shares become known before the next
+article is scored, which is optimistic. Viral articles are hardest: at the 95th-percentile threshold ROC-AUC is unchanged (0.73) but PR-AUC falls
+to about 0.10, although a weekly shortlist of the top 5\% still contains three times the base rate of viral articles
+(12\% [9, 15] vs.\ 4\%). A model can still be useful when it is allowed to abstain: past-only accuracy is 0.673 on all articles, 0.785
+on the 40\% it is most sure about and 0.869 on the top 10\% (Fig.~\ref{fig:context}c).
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{fig4_clusters.png}
-\caption{Share of popular articles per $k$-means cluster ($k=9$, all articles), labelled by dominant channel and
-LDA topic. The dotted line is the rate in the full data (53.3\%); red marks the only cluster with negative mean
-sentiment polarity.}
-\label{fig:clusters}
-\end{figure}
-
-Tone matters in some channels but not in others. Articles with negative overall polarity are less often
-popular (crude odds ratio 0.69; channel-adjusted Mantel--Haenszel OR 0.81 [0.75, 0.88]), but the effect is
-not homogeneous across channels (Breslow--Day $p=0.001$), so the pooled OR is only an average. The popular
-rate of negative vs.\ other articles is 39\% vs.\ 54\% in business, 32\% vs.\ 39\% in world, 66\% vs.\ 76\% in
-social media and 38\% vs.\ 41\% in entertainment, with no difference in tech (66\% vs.\ 64\%) or among
-articles without a channel (64\% vs.\ 64\%).
-
-Unusual articles look more often viral, but mostly because of channel mix. The 2\% most unusual articles
-under an Isolation Forest reach the top 5\% of shares 1.9$\times$ as often (9.2\% vs.\ 4.9\%), but 43\% of them
-have no channel. Stratified by channel, the odds ratio is 1.17 [0.82, 1.67], 1.27 [0.98, 1.63] and
-1.21 [1.02, 1.44] when 1\%, 2\% or 5\% of articles are flagged: at most a weak effect, detectable only at
-the loosest setting.
-
-% ------------------------------------------------------------------ 0.75 page
+% ------------------------------------------------------------------
 \section{Discussion}
-\paragraph{What this means for work on the dataset.} The headline AUC of about 0.74 survives a chronological
-split, but it rests partly on keyword statistics whose values were measured after publication, so it is an
-optimistic estimate of what a deployed model would achieve. Three further caveats should accompany it.
-Uncertainty must be estimated over time, not over random seeds: period-to-period variation (sd 0.017) is
-about twice the sampling error of one test block, so a model comparison of a few thousandths of AUC, even when
-detectable on one block, is not a robust result. Threshold-dependent metrics
-such as accuracy and F1 are fragile because the base rate drifts, and no correction based on past rates can
-anticipate that. And at high thresholds, which is what editors care about, PR-AUC or shortlist precision
-rather than ROC-AUC should be reported, since ranking quality and practical precision diverge.
+\label{sec:discussion}
+\paragraph{What the 0.74 is made of.} The benchmark's AUC is mostly article-level skill. Time contributes nothing,
+the editorial channel about 0.045, and the story nothing we can detect. This changes how to read the benchmark: a
+better model is not one that recognises popular sections but one that separates articles that compete for the same
+readers. Within such pairs the most robust content signal is subjectivity of the body.
 
-\paragraph{Choosing a model.} Tree ensembles are consistently better than linear models and kNN, but the
-choice between random forest and gradient boosting matters little at this size; with fewer than
-10{,}000 articles a random forest or a strongly regularised linear model is the safer choice.
-Recency weighting, a natural idea under drift, does not help the best model.
+\paragraph{Story irrelevance or split attention?} Same-story articles correlate weakly. Two readings fit: the story
+matters little, or it matters but its audience is split between articles, which would also lower the correlation.
+The earlier-twin advantage and the volume effect support some splitting. Separating them would need share histories
+or randomised versions \citep{matias2021}; with one snapshot we report the twin correlation as an upper bound on how
+much ``the story'' alone tells, given this splitting.
 
-\paragraph{Advice for future work on this dataset.} (i) Split chronologically and report intervals
-over time periods, not seeds. (ii) Report PR-AUC or precision at a fixed budget alongside ROC-AUC, and state
-the threshold. (iii) Treat gains from the keyword statistics as likely optimistic, drop the three clock columns, which cost nothing
-and otherwise let a model recognise the period, and ideally recompute the statistics from lagged counts. (iv) Do not expect retraining or recency weighting to fix
-late-2014 performance: the drop comes from harder articles. (v) Before concluding that unusual or
-negative-tone articles behave differently, adjust for channel and check that the effect is homogeneous.
+\paragraph{Limitations.} Twins are found from slugs only and are 78\% precise; the remaining same-topic pairs bias
+correlations and effects towards cross-sectional values. Annotation was not independent. Twin differences remove the
+story and the week but not everything else (an editor may give a scoop more prominence). The daily volume counts
+articles in this dataset, which may not equal Mashable's true output. Shares were recorded once, so age and
+publication date cannot be separated, and keyword statistics use post-publication shares of earlier articles. All
+results come from one outlet in 2013--2014.
 
-\paragraph{Limitations.} We only have pre-computed features, not the article text, so topic and tone
-come from a fixed LDA model and a lexicon. The data cover one outlet in 2013--2014, so absolute
-numbers will not transfer. Because shares were recorded once, the effect of article age cannot be
-separated from that of the publication period, and the size of the post-publication information in the
-keyword statistics cannot be measured without the raw share histories. Our clustering and odds-ratio analyses
-are associational: channel adjustment removes one obvious confounder, not all of them.
+\paragraph{Advice for work on this dataset.} Evaluate chronologically with past-only models; report within-context
+AUC next to pooled AUC; treat cross-sectional content effects as topic-confounded until checked with twins; and
+report calibrated intervals or selective accuracy, since much of popularity is not predictable from these features.
 
 \section{Conclusion}
-The popularity label drifts over time; models still rank new articles well, and the lower AUC in late 2014
-reflects harder articles rather than an outdated model, while period-to-period variation is clearly larger than
-single-test-set error bars suggest (RQ1). The share-derived keyword features use only earlier articles but
-carry share counts from the collection date; they hold most of the signal, their gains are likely
-optimistic, and a few of them merely act as a clock (RQ2). The threshold changes what can be achieved far more
-than the choice of model, and regularisation matters only for small training sets (RQ3). Topic/sentiment
-clusters mainly recover editorial channels, and the negative-tone effect is real in some channels but absent
-in others (RQ4).
+Hidden in the URLs of a standard benchmark are thousands of same-story twins. They show that news popularity is
+predictable mostly at the level of the individual article (RQ1), that same-story articles share little of their fate
+and that the first one has an edge (RQ1), that only body subjectivity among content features survives topic control
+and even grows (RQ2), that articles lose shares on crowded days while similar past stories carry no memory (RQ3), and
+that honest predictions are wide but can be kept calibrated under drift and sharpened by abstaining (RQ4).
 
 \bibliographystyle{plainnat}
 \bibliography{references}

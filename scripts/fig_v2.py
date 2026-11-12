@@ -110,5 +110,25 @@ def fig_c():
     fig.savefig(FIG / "v2_fig_c_context_uncertainty.png", dpi=300)
 
 
-fig_a(); fig_b(); fig_c()
+def fig_d():
+    T = pd.read_csv(TAB / "s1b_twin_precision.csv")
+    T = T[T.subset.str.startswith("band")]
+    bands = sorted(T.subset.unique())
+    fig, ax = plt.subplots(figsize=(3.4, 2.1))
+    x = np.arange(len(bands))
+    for filt, col, mk, off, name in [(False, GREY, "s", -0.1, "all pairs"), (True, ACC, "o", 0.1, "series removed")]:
+        t = T[T.series_filtered == filt].set_index("subset").loc[bands]
+        ax.errorbar(x + off, t.precision, yerr=[t.precision - t.lo, t.hi - t.precision], fmt=mk + "-", ms=3.5, color=col, label=name, lw=1)
+    ax.axvline(1.5, color="0.7", ls="--", lw=0.8)
+    ax.text(1.6, 0.12, "threshold used", fontsize=7, color="0.4")
+    ax.set_xticks(x, [b.replace("band ", "").replace("[", "").replace(")", "").replace(",", "-") for b in bands], fontsize=7)
+    ax.set_xlabel("slug cosine similarity band")
+    ax.set_ylabel("share same story")
+    ax.set_ylim(0, 1.05)
+    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    fig.tight_layout()
+    fig.savefig(FIG / "v2_fig_d_twin_precision.png", dpi=300)
+
+
+fig_a(); fig_b(); fig_c(); fig_d()
 print("figures written")
