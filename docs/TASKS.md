@@ -36,9 +36,11 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Get LaTeX compiling (#15): `report/build.sh`; in a fresh container first run `apt-get update && apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-bibtex-extra`
 - [x] Report: Data section + Table 1 (feature groups) + Fig. 1 (shares histogram / shares vs age) (#16)
 - [x] Report: Methodology section (#17)
-- [ ] Report: Results RQ1 + RQ2 (combined figure: drift + ablation)
-- [ ] Report: Results RQ3 (one combined figure: threshold, learning curve, regularisation)
-- [ ] Report: Results RQ4 (cluster figure)
+- [x] Report: Results RQ1 + RQ2 (combined figure: drift + ablation)
+- [x] Report: Results RQ3 (one combined figure: threshold, learning curve, regularisation)
+- [x] Report: Results RQ4 (cluster figure)
+- [x] Report: Table 2 (main results, tuned on validation)
+- [ ] Report: final float placement / layout pass (Fig. 3 and 4 currently float to the last page)
 - [ ] Report: Introduction, Related Work, Discussion, Conclusion, Abstract
 - [ ] Verify every reference against its source; fill the two Yang et al. 2014 titles
 - [ ] Check page count ≤ 8; cut or merge figures if needed
