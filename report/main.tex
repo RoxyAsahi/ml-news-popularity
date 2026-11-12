@@ -48,12 +48,64 @@ leakage / point-in-time features \citep{kaufman2012}; concept drift \citep{gama2
 
 % ------------------------------------------------------------------ 1 page
 \section{Data}
-\todo{39,644 Mashable articles, 2013-01-07 to 2014-12-27, 58 features in 7 groups (table).
-Cleaning: 1 corrupt row, 1,181 empty articles, kw\_min\_min = -1 as missing flag.
-Shares heavy-tailed (median 1,400, 99th pct 31,658). Shares vs age: Spearman 0.03 $\Rightarrow$
-no age correction needed (RQ1, part 1).}
-% \begin{figure}[t]\centering\includegraphics[width=\columnwidth]{e0_shares_hist.png}
-% \caption{...}\end{figure}
+\label{sec:data}
+We use the Online News Popularity dataset \citep{fernandes2015}: 39,644 articles published by
+Mashable between 7 January 2013 and 27 December 2014, each described by 58 pre-computed features
+and the number of times it was shared on social networks. The article text is not included.
+We parse the publication date from the URL, which lets us order articles in time.
+
+\paragraph{Features.} Table~\ref{tab:features} groups the features. Two groups are derived from the
+share counts of \emph{other} articles: the keyword statistics (\texttt{kw\_*}, e.g.\ the average
+shares of earlier articles with the same keywords) and the self-reference statistics (shares of
+linked Mashable articles). Section~\ref{sec:rq2} examines whether these are computed only from
+articles published earlier.
+
+\begin{table}[t]
+\centering\small
+\caption{Feature groups (60 columns after cleaning).}
+\label{tab:features}
+\begin{tabular}{@{}lrl@{}}
+\toprule
+Group & \# & Examples \\
+\midrule
+Content & 12 & words in title/body, links, images, videos \\
+Keyword (\texttt{kw\_*}) & 10 & min/avg/max shares of keyword articles \\
+Self-reference & 3 & min/avg/max shares of linked articles \\
+Channel & 6 & lifestyle, entertainment, business, \dots \\
+Weekday & 8 & day of publication, weekend \\
+LDA topics & 5 & closeness to 5 LDA topics \\
+Sentiment & 16 & polarity, subjectivity (body and title) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Cleaning.} We remove one row whose rate of unique tokens is 701 (rates are at most 1),
+leaving 39,643 articles. We keep, but flag, 1,181 articles with no content words, and we flag
+\texttt{kw\_min\_min}~$=-1$, which encodes a missing value rather than a share count. The two flags
+bring the feature count to 60. All further preprocessing (a sign-preserving $\log(1+|x|)$ transform
+and standardisation for the linear and nearest-neighbour models) is fitted inside each model's
+pipeline on training data only.
+
+\paragraph{Target.} Shares are extremely skewed (Fig.~\ref{fig:data}a): median 1,400, mean
+3,395, 99th percentile 31,658, maximum 843,300. Following \citet{fernandes2015} we call an
+article \emph{popular} if it has at least 1,400 shares; Section~\ref{sec:rq3} varies this choice.
+
+\paragraph{Do shares depend on article age?} The dataset records shares at one moment
+(January 2015), so an article published two years earlier had more time to collect them. If shares
+kept growing with age, the label would partly measure age rather than appeal. They do not
+(Fig.~\ref{fig:data}b): the Spearman correlation between age and shares is 0.03, and the median
+stays between 1,300 and 1,600 across all age bins. Even the youngest article is eight days old,
+and online attention typically saturates within days \citep{szabo2010}. We therefore use raw shares
+without an age correction.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.82\textwidth]{fig1_data.png}
+\caption{(a) Distribution of shares on a log scale; the dashed line is the popularity threshold.
+(b) Median and inter-quartile range of shares by article age at collection: shares do not grow
+with age, so the label needs no age correction.}
+\label{fig:data}
+\end{figure*}
 
 % ------------------------------------------------------------------ 0.75 page
 \section{Methodology}
@@ -76,6 +128,7 @@ E2: half-life weighting: no gain for HistGB (30 d hurts, -0.013); LogReg +0.004-
 % Fig: e1_drift_monthly.png
 
 \subsection{Share-derived features (RQ2)}
+\label{sec:rq2}
 \todo{E3 (see docs/results/e3\_share\_features.md): point-in-time check (kw\_max\_max = running max
 of earlier shares for 99.87\%); three clock columns constant in the test block, removing them
 costs 0.002 [-0.001, 0.005]; dropping all kw\_* costs 0.016 [0.010, 0.021]. Never call it leakage.
@@ -83,6 +136,7 @@ Limitation: earlier shares measured in Jan 2015.}
 % Fig: e3b_staircase.png (+ e3_ablation.png)
 
 \subsection{Threshold, data size and regularisation (RQ3)}
+\label{sec:rq3}
 \todo{E4: ROC 0.726--0.739, PR-AUC 0.67$\to$0.10, lift 1.55$\to$2.43; classifier beats regressor by 0.026 [0.005, 0.047] at 95th pct.
 E5: RF best $<$10k, HistGB with full data, linear plateaus at 3k.
 E6: regularisation only matters at 1k articles (+0.03); 7-feature L1 model.}
