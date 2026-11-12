@@ -27,7 +27,8 @@ def get_model(name: str, seed: int = 0, **params):
         l1 = params.get("penalty", "l2") == "l1"
         return _scaled(LogisticRegression(max_iter=5000, C=params.get("C", 1.0),
                                           penalty="l1" if l1 else "l2",
-                                          solver="liblinear" if l1 else "lbfgs"))
+                                          solver="liblinear" if l1 else "lbfgs",
+                                          random_state=seed))
     if name == "knn":
         return _scaled(KNeighborsClassifier(n_neighbors=params.get("k", 50)))
     if name == "rf":

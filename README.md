@@ -21,7 +21,7 @@ Pilot findings (untuned, `scripts/01_pilot.py`):
 - Gradient boosting reaches ROC-AUC ≈ 0.74 on a chronological split; dropping `kw_*` and `self_reference_*` costs ≈ 0.04.
 - Half-life recency weighting did not beat unweighted training in the pilot.
 
-The full plan is in [`docs/PLAN.md`](docs/PLAN.md).
+The full plan is in [`docs/PLAN.md`](docs/PLAN.md); results notes per experiment are in [`docs/results/`](docs/results/), and the remaining work is queued in [`docs/TASKS.md`](docs/TASKS.md).
 
 ## Setup
 
