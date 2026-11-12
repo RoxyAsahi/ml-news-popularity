@@ -33,9 +33,15 @@ def get_model(name: str, seed: int = 0, **params):
         return _scaled(KNeighborsClassifier(n_neighbors=params.get("k", 50)))
     if name == "rf":
         return RandomForestClassifier(n_estimators=params.get("n_estimators", 300),
-                                      min_samples_leaf=5, n_jobs=-1, random_state=seed)
+                                      min_samples_leaf=params.get("min_samples_leaf", 5),
+                                      max_features=params.get("max_features", "sqrt"),
+                                      n_jobs=-1, random_state=seed)
     if name == "hgb":
-        return HistGradientBoostingClassifier(random_state=seed)
+        return HistGradientBoostingClassifier(learning_rate=params.get("learning_rate", 0.1),
+                                              max_leaf_nodes=params.get("max_leaf_nodes", 31),
+                                              l2_regularization=params.get("l2_regularization", 0.0),
+                                              max_iter=params.get("max_iter", 100),
+                                              random_state=seed)
     raise ValueError(f"unknown model {name!r}")
 
 
