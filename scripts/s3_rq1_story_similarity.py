@@ -72,18 +72,27 @@ rows.append(summarise("same channel", P[P.same_channel]))
 rows.append(summarise("different channel", P[~P.same_channel]))
 for th in [0.6, 0.7]:
     rows.append(summarise(f"sim >= {th}", P[P.sim >= th]))
-R = pd.DataFrame(rows).round(4)
-R.to_csv(ROOT / "results" / "tables" / "s3_story_similarity.csv", index=False)
-print(R.to_string(index=False))
-
-# random same-week pairs ordered by date: does the earlier article also win there? (time-trend control)
+# control: random same-week pairs ordered by date. Does the earlier article also win there?
+# (rules out a within-week time trend; CI from a week-cluster bootstrap)
 wk = pd.Series(week).groupby(week).indices
 a = rng.integers(0, len(df), 200_000)
 b = np.array([rng.choice(wk[week[x]]) for x in a])
 ok = day[a] != day[b]
 first = np.where(day[a] < day[b], a, b)[ok]
 later = np.where(day[a] < day[b], b, a)[ok]
-print("random same-week pairs: first minus later (residual)", round((res[first] - res[later]).mean(), 4))
+dlt = res[first] - res[later]
+wlab, winv = np.unique(week[first], return_inverse=True)
+wsum, wcnt = np.bincount(winv, weights=dlt), np.bincount(winv)
+wb = []
+for _ in range(500):
+    pick = rng.integers(0, len(wlab), len(wlab))
+    wb.append(wsum[pick].sum() / wcnt[pick].sum())
+rows.append(dict(subset="control: random same-week pairs", pairs=int(ok.sum()), first_minus_later=dlt.mean(),
+                 fml_lo=np.quantile(wb, 0.025), fml_hi=np.quantile(wb, 0.975)))
+
+R = pd.DataFrame(rows).round(4)
+R.to_csv(ROOT / "results" / "tables" / "s3_story_similarity.csv", index=False)
+print(R.to_string(index=False))
 
 
 # nested variance shares (adjusted for the number of group means fitted)
