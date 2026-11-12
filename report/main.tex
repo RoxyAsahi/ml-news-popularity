@@ -1,0 +1,99 @@
+% ML Final Group Project -- Online News Popularity
+% Limit: 8 pages INCLUDING figures and references. Page budget per section in comments.
+\documentclass[10pt,a4paper,twocolumn]{article}
+\usepackage[margin=2cm]{geometry}
+\usepackage{graphicx,booktabs,amsmath,hyperref,xcolor,caption}
+\usepackage[numbers,sort&compress]{natbib}
+\graphicspath{{../results/figures/}}
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+
+\title{When Is an Article ``Popular''?\\
+Label Reliability, Temporal Drift and Feature Leakage in Online News Popularity Prediction}
+\author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
+\date{December 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\todo{~150 words, write last. Problem; the four RQs; headline numbers:
+chronological ROC-AUC 0.74 (0.70 without share-derived features);
+PR-AUC 0.68$\to$0.10 from median to 95th-percentile threshold;
+weak cluster structure; outliers 1.9$\times$ as likely to go viral.}
+\end{abstract}
+
+% ------------------------------------------------------------------ 0.75 page
+\section{Introduction}
+\todo{Why popularity prediction matters (editors, recommendation). Prior work on this dataset
+reports accuracy/AUC on random splits with a fixed 1400-share threshold \citep{fernandes2015}.
+We ask how much of that performance is real and stable. State RQ1--RQ4 and contributions.}
+
+\paragraph{Research questions.}
+\begin{enumerate}
+  \item[RQ1] Do shares depend on article age, and how does performance change when models are
+             evaluated on articles published after the training period?
+  \item[RQ2] How much does performance depend on features derived from other articles' shares?
+  \item[RQ3] How do the popularity threshold, training-set size and regularisation strength
+             affect generalisation?
+  \item[RQ4] Do articles that cluster in topic/sentiment space differ in popularity?
+\end{enumerate}
+
+% ------------------------------------------------------------------ 0.5 page
+\section{Related Work}
+\todo{Dataset paper \citep{fernandes2015}; early saturation of popularity \citep{szabo2010};
+learning with few labels / temporal change in social data \citep{yang2014wsdm,yang2014cikm};
+leakage \citep{kaufman2012}; concept drift \citep{gama2014}; PR vs ROC under imbalance
+\citep{saito2015}. Footnote: half-life weighting inspired by VCPToolBox TimeDecay.}
+
+% ------------------------------------------------------------------ 1 page
+\section{Data}
+\todo{39,644 Mashable articles, 2013-01-07 to 2014-12-27, 58 features in 7 groups (table).
+Cleaning: 1 corrupt row, 1,181 empty articles, kw\_min\_min = -1 as missing flag.
+Shares heavy-tailed (median 1,400, 99th pct 31,658). Shares vs age: Spearman 0.03 $\Rightarrow$
+no age correction needed (RQ1, part 1).}
+% \begin{figure}[t]\centering\includegraphics[width=\columnwidth]{e0_shares_hist.png}
+% \caption{...}\end{figure}
+
+% ------------------------------------------------------------------ 0.75 page
+\section{Methodology}
+\todo{Chronological 70/10/20 split + 5-fold rolling origin; thresholds from training quantiles;
+metrics ROC-AUC, PR-AUC, F1, balanced accuracy; models (majority, L1/L2 LogReg, kNN, RF,
+HistGB); all preprocessing in pipelines; seeds; one script per experiment.}
+
+% ------------------------------------------------------------------ 3.5 pages
+\section{Results}
+
+\subsection{Temporal drift (RQ1)}
+\todo{E1: random vs chronological AUC equal (0.735 vs 0.737) but rolling sd 0.02 vs seed sd
+0.002; monthly positive rate 44--68\%; monthly AUC 0.75$\to$0.71--0.74; adversarial AUC 0.958.
+E2: half-life weighting gives no gain.}
+% Fig: e1_drift_monthly.png
+
+\subsection{Share-derived features (RQ2)}
+\todo{E3: ablation 0.730$\to$0.703; grouped permutation; kw\_min\_min $\rho=-0.88$ with date.
+Careful wording: time dependence, not proven leakage.}
+% Fig: e3_ablation.png (+ e3_grouped_permutation.png as subfigure)
+
+\subsection{Threshold, data size and regularisation (RQ3)}
+\todo{E4: ROC flat, PR-AUC 0.68$\to$0.10, lift 1.56$\to$2.45; regressor vs classifier.
+E5: RF best $<$10k, HistGB with full data, linear plateaus at 3k.
+E6: regularisation only matters at 1k articles (+0.03); 7-feature L1 model.}
+% Figs: e4_threshold.png, e5_learning_curve.png, e6_regularisation.png (combine!)
+
+\subsection{Clustering and anomalies (RQ4)}
+\todo{E7: silhouette $\le$ 0.12; k=9 Cram\'er's V 0.188 vs channel 0.245; negative-polarity
+cluster; Isolation Forest outliers 9.2\% vs 4.9\% in top 5\%.}
+% Fig: e7_clusters.png
+
+% ------------------------------------------------------------------ 0.75 page
+\section{Discussion}
+\todo{What the results mean for anyone using this dataset: report chronological splits and
+PR-AUC; treat kw\_* with care; small data $\Rightarrow$ regularise / prefer RF. Limitations:
+no article text, single outlet, 2013--14 only, pre-computed LDA.}
+
+\section{Conclusion}
+\todo{3--4 sentences answering RQ1--RQ4.}
+
+\bibliographystyle{plainnat}
+\bibliography{references}
+\end{document}
