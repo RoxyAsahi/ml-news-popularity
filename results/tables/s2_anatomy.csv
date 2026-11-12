@@ -1,0 +1,25 @@
+model,stratum,auc,lo,hi,pairs,conc_2x,conc_pairs,conc_lo,conc_hi
+hgb_all,all pairs,0.7336,0.725,0.7401,231396333.0,0.7139,1040919,,
+hgb_all,same week,0.7344,0.7261,0.7416,3011640.0,0.7143,1021620,,
+hgb_all,same day,0.7271,0.7185,0.735,480885.0,0.7113,995735,,
+hgb_all,same channel,0.6897,0.6817,0.696,37498081.0,0.6761,973108,,
+hgb_all,same channel x week,0.6846,0.6766,0.6916,511343.0,0.673,926362,,
+hgb_all,same channel x day,0.6752,0.6676,0.6832,82049.0,0.667,851971,,
+hgb_all,same-story twins,0.7189,0.6919,0.7477,1014.0,0.6903,1056,0.6557,0.7273
+hgb_all,"same-story twins, same channel",0.6718,0.602,0.7377,195.0,0.6545,191,0.5892,0.7255
+logreg_all,all pairs,0.7089,0.7011,0.7162,231396333.0,0.6867,1040919,,
+logreg_all,same week,0.7114,0.7031,0.7194,3011640.0,0.6892,1021620,,
+logreg_all,same day,0.7021,0.6922,0.7109,480885.0,0.6843,995735,,
+logreg_all,same channel,0.6579,0.6502,0.665,37498081.0,0.6401,973108,,
+logreg_all,same channel x week,0.6557,0.6483,0.6629,511343.0,0.6403,926362,,
+logreg_all,same channel x day,0.6385,0.6299,0.6472,82049.0,0.6317,851971,,
+logreg_all,same-story twins,0.7002,0.6715,0.7338,1014.0,0.6998,1056,0.6641,0.7319
+logreg_all,"same-story twins, same channel",0.6974,0.627,0.76,195.0,0.6649,191,0.5934,0.7326
+hgb_noshare,all pairs,0.7012,0.6931,0.7091,231396333.0,0.6766,1040919,,
+hgb_noshare,same week,0.7066,0.6987,0.7143,3011640.0,0.6816,1021620,,
+hgb_noshare,same day,0.6981,0.6898,0.7065,480885.0,0.6777,995735,,
+hgb_noshare,same channel,0.6423,0.6332,0.6497,37498081.0,0.6249,973108,,
+hgb_noshare,same channel x week,0.6451,0.6367,0.6526,511343.0,0.63,926362,,
+hgb_noshare,same channel x day,0.6283,0.6185,0.637,82049.0,0.619,851971,,
+hgb_noshare,same-story twins,0.6933,0.6557,0.7292,1014.0,0.6742,1056,0.6405,0.7075
+hgb_noshare,"same-story twins, same channel",0.7179,0.6519,0.782,195.0,0.6597,191,0.5885,0.7299

@@ -1,0 +1,181 @@
+pair_id,i,j,date_i,date_j,channel_i,channel_j,slug_i,slug_j,sim,band,label
+0,7221,7361,2013-05-21,2013-05-23,entertainment,entertainment,xbox one,xbox one hangout,0.663,"[0.6,0.7)",S
+1,2615,2685,2013-02-21,2013-02-22,tech,tech,chromebook pixel google,chromebook pixel brief,0.622,"[0.6,0.7)",S
+2,20275,20520,2014-02-11,2014-02-15,socmed,entertainment,top moments olympics day four,top moments olympics day eight,0.678,"[0.6,0.7)",R
+3,7480,7818,2013-05-27,2013-06-03,other,other,viral video recap,viral video recap,1.0,"[0.8,1.0)",R
+4,28086,28130,2014-07-01,2014-07-01,entertainment,bus,hype video usa belgium world cup,usa vs belgium world cup instagram,0.425,"[0.4,0.5)",S
+5,2701,2795,2013-02-22,2013-02-25,other,entertainment,mashup best picture oscars,best picture oscar,0.432,"[0.4,0.5)",S
+6,20819,20950,2014-02-21,2014-02-24,bus,tech,samsung galaxy s5 trailer,samsung galaxy s5 carriers,0.566,"[0.5,0.6)",S
+7,26857,27255,2014-06-12,2014-06-18,bus,world,game of thrones tbt,game of thrones brady bunch,0.351,"[0.3,0.4)",T
+8,32371,32372,2014-09-09,2014-09-09,tech,bus,apple pay competitors,apple pay,0.631,"[0.6,0.7)",S
+9,32758,32988,2014-09-15,2014-09-18,entertainment,bus,air france strike,air france strike continues,0.787,"[0.7,0.8)",S
+10,20697,20779,2014-02-19,2014-02-20,tech,world,top moments olympics day twelve,top moments olympics day thirteen,0.652,"[0.6,0.7)",R
+11,4983,5326,2013-04-06,2013-04-13,tech,tech,top 10 tech this week,top 10 tech,0.698,"[0.6,0.7)",R
+12,19758,19876,2014-02-02,2014-02-04,bus,tech,peyton manning twitter reactions,microsoft ceo twitter reactions,0.317,"[0.3,0.4)",U
+13,31617,32027,2014-08-27,2014-09-03,entertainment,tech,samsung gear s,samsung gear vr,0.688,"[0.6,0.7)",T
+14,35526,35771,2014-10-26,2014-10-29,tech,world,game of thrones halloween,george r r martin game of thrones trivia,0.343,"[0.3,0.4)",T
+15,14331,14636,2013-10-10,2013-10-16,tech,tech,fitbit force,fitbit force review,0.784,"[0.7,0.8)",S
+16,30726,30751,2014-08-12,2014-08-13,bus,tech,robin williams mosaic,allison williams peter pan robin williams,0.356,"[0.3,0.4)",T
+17,7784,7966,2013-06-03,2013-06-06,other,other,funniest game of thrones red wedding,game of thrones red wedding remix,0.703,"[0.7,0.8)",S
+18,12778,12801,2013-09-10,2013-09-10,other,tech,iphone 5c hands on,things iphone 5c looks like,0.308,"[0.3,0.4)",S
+19,26987,27017,2014-06-13,2014-06-14,other,world,world cup fans,world cup fans manaus,0.728,"[0.7,0.8)",T
+20,20196,20352,2014-02-10,2014-02-12,socmed,bus,top moments olympics day,top moments olympics day five,0.833,"[0.8,1.0)",R
+21,7097,7146,2013-05-19,2013-05-20,socmed,bus,yahoo tumblr poll,wordpress yahoo tumblr,0.467,"[0.4,0.5)",S
+22,16840,16927,2013-12-01,2013-12-03,lifestyle,bus,awful christmas sweaters,christmas sweaters cat ladies,0.431,"[0.4,0.5)",T
+23,10346,10348,2013-07-23,2013-07-23,bus,entertainment,apple q3 earnings,apple q3 earnings,1.0,"[0.8,1.0)",S
+24,34244,34616,2014-10-08,2014-10-13,lifestyle,world,airport ebola screening,hazmat boston airport ebola,0.417,"[0.4,0.5)",S
+25,8717,8817,2013-06-20,2013-06-22,other,socmed,instagram video,instagram video louie anderson,0.486,"[0.4,0.5)",S
+26,24460,24658,2014-04-30,2014-05-05,tech,socmed,south korean ferry students video,civilian diver dies south korean ferry,0.425,"[0.4,0.5)",S
+27,31128,31285,2014-08-20,2014-08-22,other,tech,als ice bucket challenge haters,firefighters electrocuted als ice bucket challenge,0.579,"[0.5,0.6)",S
+28,22147,22148,2014-03-20,2014-03-20,entertainment,tech,international day of happiness playlist,international day of happiness,0.852,"[0.8,1.0)",S
+29,35225,35643,2014-10-21,2014-10-28,tech,bus,u s ebola travel restrictions,australia ebola travel ban,0.417,"[0.4,0.5)",T
+30,15813,15825,2013-11-07,2013-11-08,bus,other,twitter ipo pictures,banana republic twitter ipo,0.334,"[0.3,0.4)",S
+31,5414,5654,2013-04-16,2013-04-20,world,world,boston marathon twitter mentions,boston marathon twitter map,0.627,"[0.6,0.7)",S
+32,37415,37640,2014-11-20,2014-11-24,world,other,yik yak threats lockdown,yik yak 62 million,0.427,"[0.4,0.5)",T
+33,20650,20651,2014-02-19,2014-02-19,world,other,facebook whatsapp independent,facebook whatsapp,0.66,"[0.6,0.7)",S
+34,1448,1498,2013-01-31,2013-02-01,tech,lifestyle,mentalkase iphone case,cup holder iphone case,0.349,"[0.3,0.4)",T
+35,3492,3524,2013-03-08,2013-03-09,socmed,socmed,sxsw i day,sxsw i day,1.0,"[0.8,1.0)",R
+36,8905,9248,2013-06-24,2013-07-01,tech,tech,viral video recap,viral video recap,1.0,"[0.8,1.0)",R
+37,18274,18640,2014-01-03,2014-01-10,bus,entertainment,bill de blasio shovels snow sidewalk,bill de blasio pizza scandal,0.416,"[0.4,0.5)",T
+38,29554,29633,2014-07-24,2014-07-25,other,bus,community panel comic con,game of thrones panel comic con,0.569,"[0.5,0.6)",T
+39,30822,31132,2014-08-14,2014-08-20,entertainment,entertainment,back to school photography,back to school tips,0.62,"[0.6,0.7)",T
+40,22378,22379,2014-03-25,2014-03-25,socmed,bus,htc one m8 water,htc one m8,0.81,"[0.8,1.0)",S
+41,9962,10198,2013-07-15,2013-07-19,other,bus,trayvon martin tumblr,obama trayvon martin,0.625,"[0.6,0.7)",S
+42,23750,24152,2014-04-18,2014-04-25,tech,tech,elon musk spacex grasshopper launch,elon musk spacex booster stage atlantic,0.43,"[0.4,0.5)",T
+43,35113,35203,2014-10-20,2014-10-21,tech,world,oscar de la renta dies dead,oscar de la renta hollywood,0.699,"[0.6,0.7)",S
+44,16436,16499,2013-11-20,2013-11-21,bus,tech,xbox one review,youtube xbox one,0.479,"[0.4,0.5)",S
+45,13378,13761,2013-09-21,2013-09-28,bus,other,top 10 tech this week,top 10 tech this week,1.0,"[0.8,1.0)",R
+46,11903,12170,2013-08-22,2013-08-28,tech,bus,gold iphone 5s photos,alleged gold iphone 5s housing video,0.451,"[0.4,0.5)",S
+47,13147,13546,2013-09-17,2013-09-24,tech,entertainment,social good summit world meetups,social good summit tweets,0.509,"[0.5,0.6)",S
+48,37780,38034,2014-11-26,2014-12-02,world,world,star wars force awakens online,force awakens overthinking,0.446,"[0.4,0.5)",S
+49,14918,14946,2013-10-22,2013-10-22,tech,socmed,apple live stream ipad event,how to watch apple ipad event,0.328,"[0.3,0.4)",S
+50,31870,32090,2014-09-01,2014-09-04,entertainment,world,joan rivers coma lawsuit,joan rivers jokes,0.422,"[0.4,0.5)",S
+51,6795,7128,2013-05-13,2013-05-20,bus,bus,social media advice column 5,social media advice column 5,1.0,"[0.8,1.0)",R
+52,35314,35406,2014-10-22,2014-10-23,world,tech,twitter fabric,twitter fabric developers,0.744,"[0.7,0.8)",S
+53,25558,25637,2014-05-20,2014-05-21,bus,other,world cup preview group a,world cup preview group d,1.0,"[0.8,1.0)",R
+54,33646,33824,2014-09-29,2014-10-01,other,other,hong kong democracy protests,hong kong protests updates thursday,0.354,"[0.3,0.4)",S
+55,32119,32333,2014-09-04,2014-09-08,other,tech,scottish independence,pros cons scottish independence,0.615,"[0.6,0.7)",S
+56,28488,28535,2014-07-08,2014-07-09,world,world,records germany brazil world cup,brazil world cup fans germany,0.52,"[0.5,0.6)",S
+57,36411,36501,2014-11-06,2014-11-08,other,tech,wax david hasselhoff berlin wall,berlin wall art installation,0.32,"[0.3,0.4)",S
+58,20932,20990,2014-02-24,2014-02-25,tech,bus,mark zuckerberg mobile world congress,camme mobile world congress,0.535,"[0.5,0.6)",T
+59,1614,1653,2013-02-04,2013-02-04,bus,entertainment,brands super bowl social media,super bowl social media,0.814,"[0.8,1.0)",S
+60,8517,8644,2013-06-17,2013-06-19,bus,tech,kimye baby,kimye baby name,0.768,"[0.7,0.8)",S
+61,12672,13007,2013-09-08,2013-09-15,socmed,other,dont miss these 25 digital media resources,digital media resources,0.507,"[0.5,0.6)",R
+62,6446,6722,2013-05-06,2013-05-11,other,entertainment,star wars infomercials,star wars tunisia,0.331,"[0.3,0.4)",T
+63,37800,37878,2014-11-26,2014-11-28,world,other,walmart black friday,walmart black friday strike,0.799,"[0.7,0.8)",S
+64,2108,2407,2013-02-12,2013-02-17,other,other,marco rubio water,marco rubio snl,0.649,"[0.6,0.7)",S
+65,7757,7892,2013-06-02,2013-06-05,tech,bus,iradio apple,audio ads iradio apple,0.646,"[0.6,0.7)",S
+66,26572,26717,2014-06-07,2014-06-10,bus,world,super smash bros first person,mii characters and nfc toys coming to super smash bros,0.326,"[0.3,0.4)",T
+67,7818,8194,2013-06-03,2013-06-10,other,other,viral video recap,viral video recap,1.0,"[0.8,1.0)",R
+68,30180,30497,2014-08-04,2014-08-08,world,world,american ebola,american ebola patient,0.734,"[0.7,0.8)",S
+69,37564,37630,2014-11-23,2014-11-24,world,tech,surviving thanksgiving travel,thanksgiving travel problems,0.492,"[0.4,0.5)",T
+70,20553,20908,2014-02-16,2014-02-23,world,other,viral video recap snow,viral video recap marketing,0.551,"[0.5,0.6)",R
+71,20954,21025,2014-02-24,2014-02-25,tech,entertainment,samsung gear 2 gear 2 neo and gear fit,samsung gear fit hans on,0.447,"[0.4,0.5)",S
+72,3980,4167,2013-03-18,2013-03-21,tech,bus,google keep,google keep brief,0.739,"[0.7,0.8)",S
+73,20270,20346,2014-02-11,2014-02-12,bus,world,sochi winners day,sochi winners day,1.0,"[0.8,1.0)",R
+74,18708,18724,2014-01-12,2014-01-12,world,entertainment,golden globes red carpet,vine booth golden globes red carpet fashion,0.702,"[0.7,0.8)",S
+75,16610,16879,2013-11-25,2013-12-02,world,world,british airways billboard,dominos british airways,0.528,"[0.5,0.6)",T
+76,4296,4641,2013-03-24,2013-03-31,socmed,socmed,reddit facts 3,reddit facts 3,1.0,"[0.8,1.0)",R
+77,20311,20458,2014-02-12,2014-02-14,tech,socmed,house of cards valentines,house of cards valentines day,0.901,"[0.8,1.0)",S
+78,31155,31160,2014-08-20,2014-08-20,world,socmed,ice bucket challenge fails,kermit ice bucket challenge,0.584,"[0.5,0.6)",S
+79,4271,4384,2013-03-23,2013-03-26,entertainment,other,star trek hulu,irs star trek parody video,0.337,"[0.3,0.4)",U
+80,8656,9022,2013-06-19,2013-06-26,entertainment,world,miami heat fans,ravens miami heat fans tweet,0.722,"[0.7,0.8)",T
+81,12277,12590,2013-08-29,2013-09-05,bus,bus,photo challenge silhouette,up above photo challenge,0.304,"[0.3,0.4)",R
+82,34992,35074,2014-10-17,2014-10-20,tech,world,scandal season 4 episode 4 recap,downton abbey season 5 episode 5 recap,0.523,"[0.5,0.6)",R
+83,1543,1954,2013-02-02,2013-02-09,tech,tech,apps you dont want to miss 2,apps you dont want to miss 2,1.0,"[0.8,1.0)",R
+84,33784,33841,2014-09-30,2014-10-01,entertainment,entertainment,windows 10 hands on,popkey hands on,0.311,"[0.3,0.4)",U
+85,34166,34205,2014-10-07,2014-10-07,world,other,blue led nobel prize physics,nobel prize physics women,0.625,"[0.6,0.7)",S
+86,25033,25416,2014-05-12,2014-05-18,tech,other,cdc confirms second case mers us,third case mers u s,0.381,"[0.3,0.4)",S
+87,35626,35670,2014-10-27,2014-10-28,world,world,twitter q3 earnings preview,facebook q3 earnings preview,0.715,"[0.7,0.8)",T
+88,14913,15282,2013-10-22,2013-10-29,tech,tech,apple ipad,apple ipad air review,0.567,"[0.5,0.6)",S
+89,27849,27929,2014-06-26,2014-06-28,tech,socmed,world cup fans illustrated,brazilian world cup fans,0.543,"[0.5,0.6)",T
+90,28254,28256,2014-07-03,2014-07-03,world,tech,hurricane arthur instagram,hurricane arthur weather forecasters nightmare,0.417,"[0.4,0.5)",S
+91,7068,7431,2013-05-18,2013-05-25,tech,tech,top 10 tech,top 10 tech this week,0.698,"[0.6,0.7)",R
+92,18182,18184,2013-12-31,2013-12-31,other,world,new years eve around the world,new years eve parties,0.504,"[0.5,0.6)",S
+93,31154,31160,2014-08-20,2014-08-20,bus,socmed,ice bucket challenge facebook,kermit ice bucket challenge,0.61,"[0.6,0.7)",S
+94,10899,11037,2013-08-02,2013-08-06,tech,socmed,enders game final trailer battle preview,enders game trailer,0.443,"[0.4,0.5)",S
+95,14710,14885,2013-10-17,2013-10-21,entertainment,world,google q3 earnings,netflix q3 earnings,0.573,"[0.5,0.6)",T
+96,5670,5871,2013-04-20,2013-04-24,world,world,robot boston bombing,reddit boston bombing,0.561,"[0.5,0.6)",S
+97,21905,21978,2014-03-15,2014-03-17,bus,tech,st patricks day questions,st patricks day infographic,0.674,"[0.6,0.7)",T
+98,14540,14902,2013-10-14,2013-10-21,other,other,viral video recap,viral video recap,1.0,"[0.8,1.0)",R
+99,24286,24491,2014-04-28,2014-05-01,world,world,paul simon edie brickell arrested,edie brickell paul simon song,0.666,"[0.6,0.7)",S
+100,25222,25386,2014-05-14,2014-05-17,world,other,new york times jill abramson resigns,new york times jill abramson statement,0.758,"[0.7,0.8)",S
+101,1269,1428,2013-01-29,2013-01-31,socmed,socmed,facebook hoax,facebook hoax ghost,0.71,"[0.7,0.8)",T
+102,25781,25837,2014-05-24,2014-05-26,tech,world,memorial day,memorial day 2014 pics,0.608,"[0.6,0.7)",T
+103,6398,6549,2013-05-05,2013-05-08,entertainment,tech,snl google glass parody,google glass update,0.3,"[0.3,0.4)",T
+104,332,388,2013-01-13,2013-01-14,other,other,bill clinton at golden globes,golden globes gifs,0.405,"[0.4,0.5)",S
+105,7122,7202,2013-05-20,2013-05-21,world,other,oklahoma tornado social media,oklahoma tornado rainbow vine,0.441,"[0.4,0.5)",S
+106,4438,4549,2013-03-27,2013-03-28,bus,bus,brands marriage equality facebook,tumblr brands marriage equality,0.728,"[0.7,0.8)",S
+107,15898,16003,2013-11-10,2013-11-12,world,socmed,lady gaga,ps22 chorus lady gaga medley glamour,0.424,"[0.4,0.5)",T
+108,33973,34464,2014-10-03,2014-10-10,world,entertainment,ebola outbreak u s questions,ebola outbreak impact,0.504,"[0.5,0.6)",S
+109,4976,5080,2013-04-06,2013-04-09,tech,tech,google fiber austin,google fiber austin,1.0,"[0.8,1.0)",S
+110,10324,10325,2013-07-22,2013-07-22,bus,other,royal baby twitter record,royal baby twitter,0.808,"[0.8,1.0)",S
+111,3404,3647,2013-03-07,2013-03-12,socmed,socmed,how to watch facebook live news feed,facebook news feed evolution,0.331,"[0.3,0.4)",S
+112,28454,28796,2014-07-08,2014-07-12,tech,other,brazil germany world cup third place,world cup third place preview,0.677,"[0.6,0.7)",S
+113,26622,26872,2014-06-09,2014-06-12,socmed,world,game of thrones first birthday,jazzy game of thrones cover,0.307,"[0.3,0.4)",T
+114,23649,23834,2014-04-16,2014-04-20,world,tech,south korean ferry texts,south korean ferry confusion,0.613,"[0.6,0.7)",S
+115,19712,19737,2014-01-31,2014-02-01,other,world,super bowl halftime show intro,super bowl halftime history,0.529,"[0.5,0.6)",S
+116,29129,29228,2014-07-17,2014-07-18,entertainment,world,malaysia airlines ukraine russia rebel,sara firth rt malaysia airlines ukraine,0.378,"[0.3,0.4)",S
+117,25705,25706,2014-05-22,2014-05-22,world,lifestyle,world cup preview group f,world cup preview group g,1.0,"[0.8,1.0)",R
+118,4353,4467,2013-03-25,2013-03-27,tech,tech,windows blue brief,microsoft windows blue,0.6,"[0.6,0.7)",S
+119,26638,27088,2014-06-09,2014-06-16,bus,entertainment,kindness challenge,kindness challenge results,0.783,"[0.7,0.8)",S
+120,5674,6034,2013-04-20,2013-04-27,socmed,socmed,top comments,top comments,1.0,"[0.8,1.0)",R
+121,31333,31742,2014-08-23,2014-08-29,bus,tech,harsh light photo challenge,harsh light photo challenge roundup,0.89,"[0.8,1.0)",S
+122,6701,6744,2013-05-10,2013-05-12,socmed,other,twitter mothers day,mothers day comic,0.539,"[0.5,0.6)",T
+123,22795,22797,2014-04-02,2014-04-02,tech,tech,amazon fire tv,amazon fire tv game controller,0.656,"[0.6,0.7)",S
+124,35738,35833,2014-10-28,2014-10-29,other,bus,world series game 6 royals fan,world series game,0.662,"[0.6,0.7)",S
+125,25636,25706,2014-05-21,2014-05-22,entertainment,lifestyle,world cup preview group c,world cup preview group g,1.0,"[0.8,1.0)",R
+126,4264,4606,2013-03-23,2013-03-30,socmed,socmed,digital media resources 3,digital media resources,1.0,"[0.8,1.0)",R
+127,22799,22878,2014-04-02,2014-04-03,world,world,amazon fire tv why,amazon fire tv gaming,0.589,"[0.5,0.6)",S
+128,5958,6017,2013-04-25,2013-04-27,entertainment,entertainment,video water games,5 games 4,0.336,"[0.3,0.4)",U
+129,3750,3886,2013-03-13,2013-03-15,world,world,pope francis facebook,pope francis 92 seconds,0.437,"[0.4,0.5)",T
+130,7793,8042,2013-06-03,2013-06-07,tech,entertainment,makerbot factory,makerbot factory brooklyn,0.763,"[0.7,0.8)",S
+131,39370,39371,2014-12-22,2014-12-22,world,other,de blasio speaks nypd,de blasio speaks up about nypd,0.648,"[0.6,0.7)",S
+132,968,1107,2013-01-23,2013-01-25,socmed,bus,twitter vine videos,twitter vine brands,0.512,"[0.5,0.6)",T
+133,36600,37142,2014-11-10,2014-11-17,world,entertainment,good wife season 6 episode 8 recap,the walking dead season 5 episode 6 recap,0.433,"[0.4,0.5)",R
+134,28325,28515,2014-07-04,2014-07-08,world,other,world cup day,world cup brazil germany,0.337,"[0.3,0.4)",T
+135,24531,24535,2014-05-01,2014-05-01,world,entertainment,turkey may day,ukraine may day,0.54,"[0.5,0.6)",T
+136,22704,22729,2014-03-31,2014-04-01,bus,lifestyle,simple april fools day pranks,april fools tech,0.413,"[0.4,0.5)",T
+137,26647,26980,2014-06-09,2014-06-13,socmed,tech,orange is the new black episodes 10 12 recaps,songs orange is the new black season 2 music soundtrack,0.378,"[0.3,0.4)",T
+138,29586,30030,2014-07-24,2014-07-31,bus,world,pandora q2 earnings,samsung earnings q2,0.305,"[0.3,0.4)",T
+139,22795,23016,2014-04-02,2014-04-05,tech,other,amazon fire tv,amazon fire tv review,0.804,"[0.8,1.0)",S
+140,12958,13167,2013-09-13,2013-09-18,tech,tech,iphone 5c cases,apple iphone 5c ad,0.437,"[0.4,0.5)",S
+141,39403,39463,2014-12-22,2014-12-23,bus,other,north korea internet outage,north korea internet outage what happened,0.75,"[0.7,0.8)",S
+142,8084,8461,2013-06-08,2013-06-15,socmed,bus,digital media resources,digital media resources,1.0,"[0.8,1.0)",R
+143,16772,16790,2013-11-28,2013-11-29,lifestyle,bus,kittens black friday,black friday supercut,0.428,"[0.4,0.5)",T
+144,35201,35203,2014-10-21,2014-10-21,other,world,oscar de la renta designs,oscar de la renta hollywood,0.731,"[0.7,0.8)",S
+145,20831,20842,2014-02-21,2014-02-21,entertainment,tech,ukraine yulia tymoshenko free,yulia tymoshenko ukraine,0.648,"[0.6,0.7)",S
+146,7005,7096,2013-05-16,2013-05-19,socmed,bus,yahoo tumblr,yahoo tumblr,1.0,"[0.8,1.0)",S
+147,38079,38474,2014-12-02,2014-12-08,world,world,sony hack passwords,sony hack unprecedented undetectable,0.347,"[0.3,0.4)",S
+148,2431,2442,2013-02-18,2013-02-18,bus,other,burger king twitter account hacked,reactions to burger king twitter hacked,0.547,"[0.5,0.6)",S
+149,15284,15312,2013-10-29,2013-10-29,tech,tech,ashton kutcher lenovo,lenovo ashton kutcher,0.716,"[0.7,0.8)",S
+150,33026,33350,2014-09-18,2014-09-24,other,other,iphone 6 iphone 6 plus questions answered,apple iphone 6 plus bendgate,0.313,"[0.3,0.4)",T
+151,31804,31837,2014-08-30,2014-08-31,tech,world,made in america cover songs,kanye west made in america recap quotes,0.403,"[0.4,0.5)",T
+152,2553,2643,2013-02-20,2013-02-21,bus,bus,live chat announcer dealgooder,live chat giveforward,0.335,"[0.3,0.4)",R
+153,12063,12303,2013-08-26,2013-08-30,world,tech,apple iphone trade in program,apple iphone trade ins,0.511,"[0.5,0.6)",S
+154,38174,38440,2014-12-03,2014-12-08,tech,socmed,protests eric garner,eric garner protests pro sports,0.514,"[0.5,0.6)",S
+155,20951,21059,2014-02-24,2014-02-26,tech,world,samsung galaxy s5 iphone 5s,galaxy s5 clone goophone,0.303,"[0.3,0.4)",T
+156,32089,32261,2014-09-04,2014-09-07,tech,tech,joan rivers funeral,joan rivers funeral nyc,0.839,"[0.8,1.0)",S
+157,5941,6223,2013-04-25,2013-05-01,socmed,socmed,photo challenge hometown,photo challenge hometown escapes,0.775,"[0.7,0.8)",S
+158,9463,9785,2013-07-05,2013-07-11,entertainment,socmed,sharknado,sharknado twitter,0.597,"[0.5,0.6)",S
+159,38553,38650,2014-12-09,2014-12-10,entertainment,tech,prosecutors appeal oscar pistorius,pistorius prosecutors appeal,0.68,"[0.6,0.7)",S
+160,38809,38941,2014-12-12,2014-12-15,world,world,korean air lines apology,korean air lines nut rage,0.572,"[0.5,0.6)",S
+161,12146,12332,2013-08-27,2013-08-30,bus,world,new york times down hack,new york times hack prevention,0.455,"[0.4,0.5)",S
+162,19959,20084,2014-02-05,2014-02-07,socmed,world,winter olympics opening ceremony,winter olympics opening ceremony photos videos,0.788,"[0.7,0.8)",S
+163,4709,4710,2013-04-01,2013-04-01,other,socmed,troll appreciation day tickets,troll appreciation day,0.838,"[0.8,1.0)",S
+164,7748,8096,2013-06-01,2013-06-08,tech,other,top 10 tech,top 10 tech,1.0,"[0.8,1.0)",R
+165,7005,7156,2013-05-16,2013-05-20,socmed,bus,yahoo tumblr,yahoo tumblr advertising,0.701,"[0.7,0.8)",S
+166,21299,21636,2014-03-03,2014-03-10,entertainment,entertainment,most social small biz facebook,most social small biz images,0.755,"[0.7,0.8)",R
+167,36066,36332,2014-11-03,2014-11-06,bus,world,alex from target meme,alex from target ellen,0.669,"[0.6,0.7)",S
+168,15533,15720,2013-11-02,2013-11-06,other,tech,apples ipad air shortage,ipad air weight,0.331,"[0.3,0.4)",T
+169,31870,32261,2014-09-01,2014-09-07,entertainment,tech,joan rivers coma lawsuit,joan rivers funeral nyc,0.357,"[0.3,0.4)",S
+170,1999,2418,2013-02-10,2013-02-17,other,other,viral video recap must,viral video recap,0.745,"[0.7,0.8)",R
+171,1490,1616,2013-02-01,2013-02-04,bus,bus,audi super bowl ad,coke super bowl ad,0.533,"[0.5,0.6)",T
+172,10931,11268,2013-08-03,2013-08-10,world,socmed,digital media resources,25 digital media resources,0.782,"[0.7,0.8)",R
+173,13399,13740,2013-09-22,2013-09-28,world,other,ios and android apps you dont want to miss,7 apps you dont want to miss,0.788,"[0.7,0.8)",R
+174,28989,28992,2014-07-15,2014-07-15,other,tech,summer guide austin,summer guide seattle,0.513,"[0.5,0.6)",R
+175,31325,31350,2014-08-22,2014-08-23,lifestyle,other,what if randall munroe mashreads,what if randall munroe excerpt,0.741,"[0.7,0.8)",S
+176,31273,31648,2014-08-22,2014-08-28,other,world,burning man,burning man death,0.736,"[0.7,0.8)",S
+177,28319,28440,2014-07-04,2014-07-07,entertainment,entertainment,semifinals,world cup semifinals,0.582,"[0.5,0.6)",S
+178,22671,22794,2014-03-31,2014-04-02,other,entertainment,how i met your mother finale photos,alternate ending how i met your mother finale,0.715,"[0.7,0.8)",S
+179,16575,16816,2013-11-24,2013-11-29,world,entertainment,amazon black friday,winning black friday,0.471,"[0.4,0.5)",T

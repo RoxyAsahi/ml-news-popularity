@@ -69,10 +69,10 @@ Independent review after each milestone (end of each week).
 
 ### Week 1 (13–19 Nov): infrastructure + RQ1 "what is AUC 0.74 made of?"
 
-- [ ] `newspop.stories`: slug parsing (strip trailing ids), TF-IDF slug vectors (1–2 grams, sublinear), twin pairs (cos ≥ 0.5, ≤ 7 days apart), story = connected components of the twin graph; channel and day helpers; tests on a few known pairs; script writes `results/tables/stories_pairs.csv` summary (counts by threshold, same-channel share)
-- [ ] Twin precision: sample 200 pairs stratified by similarity band, annotate "same story / same topic / unrelated" from slug + date + channel (`data/annotations/twins_200.csv`, committed; annotation protocol and annotator disclosed in docs); precision per band with Wilson CI; choose the threshold used downstream
-- [ ] RQ1 hierarchical pairwise AUC, strictly past-only: rolling-origin out-of-sample scores (HistGB + LogReg), pairwise AUC over all / same week / same day / same channel / same channel-day / twins / same-channel twins; weekly cluster bootstrap CIs; figure (ladder plot)
-- [ ] RQ1 nested variance decomposition of log shares: random effects week ⊃ channel×week ⊃ story ⊃ residual (statsmodels MixedLM or REML via variance components); share of variance at each level with bootstrap CIs; how much of each level the model's out-of-sample score captures
+- [x] (#25) `newspop.stories`: slug parsing (strip trailing ids), TF-IDF slug vectors (1–2 grams, sublinear), twin pairs (cos ≥ 0.5, ≤ 7 days apart), story = connected components of the twin graph; channel and day helpers; tests on a few known pairs; script writes `results/tables/stories_pairs.csv` summary (counts by threshold, same-channel share)
+- [x] (#25, 180 pairs, series filter added after review 3) Twin precision: sample 200 pairs stratified by similarity band, annotate "same story / same topic / unrelated" from slug + date + channel (`data/annotations/twins_200.csv`, committed; annotation protocol and annotator disclosed in docs); precision per band with Wilson CI; choose the threshold used downstream
+- [x] (#25) RQ1 hierarchical pairwise AUC, strictly past-only: rolling-origin out-of-sample scores (HistGB + LogReg), pairwise AUC over all / same week / same day / same channel / same channel-day / twins / same-channel twins; weekly cluster bootstrap CIs; figure (ladder plot)
+- [x] (#25, done as fixed-effect variance shares + twin correlation vs matched neighbours + first-vs-later) RQ1 nested variance decomposition of log shares: random effects week ⊃ channel×week ⊃ story ⊃ residual (statsmodels MixedLM or REML via variance components); share of variance at each level with bootstrap CIs; how much of each level the model's out-of-sample score captures
 - [ ] Milestone review 1 (independent reviewer thread) → apply fixes
 
 ### Week 2 (20–26 Nov): RQ2 content within stories + RQ3 attention competition
