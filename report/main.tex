@@ -25,9 +25,9 @@ headline. Retrieving near-identical headlines published within a week, we find 2
 experiment. With strictly past-only models we find that (i) publication time contributes no ranking skill,
 the editorial channel about 0.045 AUC, and fixing the story no detectable further amount: within a channel
 and day the model still ranks at 0.675; (ii) same-story articles barely share their fate (residual
-correlation 0.05), and the earlier twin gets about 7\% more shares, a sign that follow-ups split attention;
-(iii) of 13 content features, only the subjectivity of the body survives topic control, and it more than
-doubles (0.07 to 0.17 log shares per sd); (iv) articles fare worse on crowded days (doubling daily volume:
+correlation 0.05), and the earlier twin gets about 7\% more shares, consistent with split attention but also
+with follow-ups simply being smaller; (iii) of 13 content features, only the subjectivity of the body survives
+topic control, with a larger point estimate within twins than across articles (0.17 vs.\ 0.07 log shares per sd); (iv) articles fare worse on crowded days (doubling daily volume:
 $-$18\% shares; also within twins, not in a placebo). Since much remains chance, we show what a model can
 honestly promise: 80\% intervals spanning a factor of six, kept calibrated under drift by adaptive conformal
 inference, and 87\% accuracy on the 10\% of articles it is most sure about.
@@ -62,7 +62,7 @@ Reddit \citep{lakkaraju2013}, which, to our knowledge, have not been applied to 
              day, and the recent popularity of similar stories?
   \item[RQ4] Given what remains unpredictable, what can a model honestly promise under temporal drift?
 \end{enumerate}
-\noindent Our contributions are a twin-retrieval method with a measured precision; a past-only
+\noindent Our contributions are a twin-retrieval procedure with a measured precision; a past-only
 decomposition of AUC into nested contexts; topic-controlled estimates of content and competition effects
 with formal tests against the naive estimates; and calibrated uncertainty under drift.
 
@@ -102,7 +102,7 @@ and three of them mostly encode the date.
 \centering\small
 \caption{Feature groups (60 columns incl.\ two cleaning flags).}
 \label{tab:features}
-\setlength{\tabcolsep}{2.5pt}
+\setlength{\tabcolsep}{1pt}
 \begin{tabular}{@{}lrl@{}}
 \toprule
 Group & \# & Examples \\
@@ -126,8 +126,9 @@ times or are $\geq$5 days apart, slugs differing only by numbers or ordinals, bo
 leaving 2{,}941 pairs in 1{,}278 stories (connected components of the twin graph).
 
 To measure precision we annotated 180 pairs, 30 per similarity band from 0.3 to 1.0, as same story,
-series instalment, same broad topic, or unrelated, from slug, dates and channel. The annotation was done by
-the authors' assistant, not by independent annotators. The filter caught 27 of 33 series pairs with no false
+series instalment, same broad topic, or unrelated, from slug, dates and channel. The labels were produced by an
+AI assistant (Claude) following written rules, not by human annotators; they are released with the code so that they
+can be checked. The filter caught 27 of 33 series pairs with no false
 positives. After filtering, pairs with similarity $\geq$0.5 are the same story in 78\% [68, 85] (Wilson) and the
 same story or topic in 96\%. Without the filter, the most similar band is mostly series (Fig.~\ref{fig:precision}), so a higher
 threshold alone does not give cleaner twins. Twins are rarely in the same channel (29\%): channel labels agree only loosely
@@ -144,10 +145,10 @@ intervals), before and after removing recurring-series pairs.}
 \end{figure}
 
 \begin{table}[t]
-\centering\small
+\centering\footnotesize
 \caption{Four same-story twins (slug words, shares).}
 \label{tab:twins}
-\setlength{\tabcolsep}{3pt}
+\setlength{\tabcolsep}{1pt}
 \begin{tabular}{@{}lr|lr@{}}
 \toprule
 \multicolumn{2}{@{}l|}{Earlier article} & \multicolumn{2}{l@{}}{Later article} \\
@@ -241,6 +242,25 @@ intervals: weeks, or stories for twins).}
 \label{fig:anatomy}
 \end{figure}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_fig_b_twins.png}
+\caption{(a) RQ1: correlation of residual log shares (after channel$\times$week and weekday effects) between twins
+and between matched random neighbours from the same channel and day, by subset (95\% story-cluster intervals).
+(b) RQ2: effect of a one-sd increase in each content feature on log shares, across articles (channel$\times$week
+fixed effects, week-cluster intervals) and within same-story twins (story-cluster intervals).}
+\label{fig:twins}
+\end{figure*}
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{v2_fig_c_context_uncertainty.png}
+\caption{(a) RQ3: change in log shares per unit of log daily volume (95\% day- or story-clustered intervals); the
+placebo uses the volume of the same weekday one week later. (b) RQ4: monthly coverage of 80\% intervals on the test
+block, conformalised once (CQR) or adaptively (ACI). (c) RQ4: accuracy when predicting only the given share of
+articles with the most confident past-only scores.}
+\label{fig:context}
+\end{figure*}
+
 \subsection{Where does the skill live? (RQ1)}
 \label{sec:rq1}
 \paragraph{Time contributes nothing, channel some, story nothing detectable.} Past-only HistGB ranks all scored
@@ -259,20 +279,14 @@ at 0.051 [0.016, 0.086], against 0.002 for matched random neighbours; within a c
 (Fig.~\ref{fig:twins}a). The story thus accounts for roughly 5\% of the variance that week and channel leave,
 which is itself small: week, channel$\times$week and channel$\times$day means explain 1.5\%, 7.8\% and 9.7\% of
 the variance of log shares. The earlier twin gets 0.070 [0.005, 0.132] more log shares (about 7\%), whereas the
-earlier of two random same-week articles does not ($-$0.002); for the most similar twins (cosine $\geq$0.7) the
-advantage is 0.135. A follow-up on the same story competes with its predecessor, so the low correlation may partly
-reflect split attention rather than an irrelevant story; the two readings cannot be separated with one snapshot of
-shares (Section~\ref{sec:discussion}).
+earlier of two random same-week articles does not ($-$0.002 [$-$0.019, 0.012]); for the most similar twins (cosine
+$\geq$0.7) the gap is 0.135. It is not robust, though: controlling for content differences it shrinks to 0.041
+[$-$0.006, 0.092], and for twins 3--7 days apart it is 0.035 [$-$0.067, 0.121]. It is consistent with a follow-up
+competing with its predecessor, so that the low correlation partly reflects split attention, but also with
+follow-ups simply being smaller pieces (a petition, a trailer; Table~\ref{tab:twins}). One snapshot of shares
+cannot separate these readings (Section~\ref{sec:discussion}).
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{v2_fig_b_twins.png}
-\caption{(a) RQ1: correlation of residual log shares (after channel$\times$week and weekday effects) between twins
-and between matched random neighbours from the same channel and day, by subset (95\% story-cluster intervals).
-(b) RQ2: effect of a one-sd increase in each content feature on log shares, across articles (channel$\times$week
-fixed effects, week-cluster intervals) and within same-story twins (story-cluster intervals).}
-\label{fig:twins}
-\end{figure*}
+
 
 \subsection{Content with the story held fixed (RQ2)}
 \label{sec:rq2}
@@ -280,25 +294,18 @@ Most content effects that look clear across articles cannot be confirmed within 
 differences are noisier: the two articles of a pair differ widely in format (their body lengths correlate at
 0.02). One effect survives and grows (Fig.~\ref{fig:twins}b): a one-sd more subjective body goes with 0.070
 [0.057, 0.084] more log shares across articles but 0.166 [0.092, 0.239] within twins (BH-adjusted $q=0.013$); the
-difference, 0.097 [0.018, 0.165], excludes zero. It holds for twins with cosine $\geq$0.6 (0.149), within the same
-channel (0.122) and for twins of similar length (0.165). An opinionated take on a story thus beats a neutral one on
-the same story more than the cross-sectional estimate suggests. Links (0.067 [0.010, 0.132]) and average word length
+difference, 0.097 [0.018, 0.165], excludes zero. The point estimate is stable across twin variants: cosine $\geq$0.6 (0.149, $q=0.052$), same
+channel (0.122, $q=0.33$) and similar length (0.165, $q=0.013$), but the difference from the cross-section is
+detectable only in the main sample ($p=0.11$, $0.41$ and $0.08$ in the variants). An opinionated take on a story
+thus beats a neutral one on the same story at least as much as the cross-sectional estimate suggests. Links (0.067 [0.010, 0.132]) and average word length
 ($-$0.113 [$-$0.198, $-$0.030]) agree in sign with the cross-section but do not pass the multiple-testing correction.
 The video effect (0.054 [0.041, 0.068] across articles) shrinks to 0.007 [$-$0.041, 0.059] within twins (difference
-$p=0.09$), suggesting that video-heavy stories rather than videos are popular. Negative tone, measured as the share
+$p=0.09$); video-heavy stories rather than videos may be what is popular, but the evidence is weak. Negative tone, measured as the share
 of negative words, has no detectable effect in either design once subjectivity and positive words are controlled.
 Across 30 near-equally accurate models (validation AUC within 0.01) the ranking of feature groups by permutation
 importance is stable at the extremes (keywords first, sentiment last) \citep{fisher2019}.
 
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{v2_fig_c_context_uncertainty.png}
-\caption{(a) RQ3: change in log shares per unit of log daily volume (95\% day- or story-clustered intervals); the
-placebo uses the volume of the same weekday one week later. (b) RQ4: monthly coverage of 80\% intervals on the test
-block, conformalised once (CQR) or adaptively (ACI). (c) RQ4: accuracy when predicting only the given share of
-articles with the most confident past-only scores.}
-\label{fig:context}
-\end{figure*}
+
 
 \subsection{Publishing context: competition and memory (RQ3)}
 \label{sec:rq3}
@@ -307,8 +314,9 @@ log unit more articles that day goes with $-$0.286 [$-$0.372, $-$0.200] log shar
 from 12 to 105 articles, mean 55) means 18\% fewer shares. The estimate is unchanged by all content
 controls ($-$0.282), holds for long articles ($-$0.216), without the busiest 5\% of days ($-$0.309), within twins
 ($-$0.200 [$-$0.324, $-$0.076]) and for both same-channel ($-$0.108) and other-channel volume ($-$0.153), while the
-placebo is small and not detectable ($-$0.059 [$-$0.131, 0.014]). It is three to four times larger in 2013 than in
-2014. We read this as competition for limited attention \citep{weng2012}, but it remains an association: busy days
+placebo is small and not detectable ($-$0.059 [$-$0.131, 0.014]). It is about four times larger in 2013 ($-$0.48) than in
+2014 ($-$0.12). We cannot explain this: 2014 days were busier on average (59 vs.\ 51 articles) but varied as much
+in log volume, so a narrower range is not the reason. We read this as competition for limited attention \citep{weng2012}, but it remains an association: busy days
 may differ in ways we do not observe.
 
 The popularity of similar earlier stories does not help. Semantic-memory features correlate with log shares at only
@@ -319,7 +327,7 @@ did not help either. What matters is the article and its day, not what similar s
 \label{sec:rq4}
 An 80\% conformal interval for a typical test article runs from 776 to 5{,}017 shares, a factor of 6.2. Calibrated
 once on the validation block, it covers 79.5\% of the test articles overall but only 76.3\% in September 2014; ACI
-keeps every month between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b), assuming shares become known before the next
+keeps September to December 2014 between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b), assuming shares become known before the next
 article is scored, which is optimistic. Viral articles are hardest: at the 95th-percentile threshold ROC-AUC is unchanged (0.73) but PR-AUC falls
 to about 0.10, although a weekly shortlist of the top 5\% still contains three times the base rate of viral articles
 (12\% [9, 15] vs.\ 4\%). A model can still be useful when it is allowed to abstain: past-only accuracy is 0.673 on all articles, 0.785
@@ -329,18 +337,20 @@ on the 40\% it is most sure about and 0.869 on the top 10\% (Fig.~\ref{fig:conte
 \section{Discussion}
 \label{sec:discussion}
 \paragraph{What the 0.74 is made of.} The benchmark's AUC is mostly article-level skill. Time contributes nothing,
-the editorial channel about 0.045, and the story nothing we can detect. This changes how to read the benchmark: a
+the editorial channel about 0.045, and the story nothing we can detect: within a channel and day about three quarters
+of the skill above chance remains (0.175 of 0.234). The test has limited power, since the same-channel twin interval
+[0.60, 0.74] cannot rule out a further loss of up to about 0.07. This changes how to read the benchmark: a
 better model is not one that recognises popular sections but one that separates articles that compete for the same
-readers. Within such pairs the most robust content signal is subjectivity of the body.
+readers. Within such pairs the only content signal that survives multiple testing is subjectivity of the body.
 
 \paragraph{Story irrelevance or split attention?} Same-story articles correlate weakly. Two readings fit: the story
 matters little, or it matters but its audience is split between articles, which would also lower the correlation.
-The earlier-twin advantage and the volume effect support some splitting. Separating them would need share histories
-or randomised versions \citep{matias2021}; with one snapshot we report the twin correlation as an upper bound on how
-much ``the story'' alone tells, given this splitting.
+The volume effect, and less firmly the earlier-twin advantage, are consistent with some splitting. Separating them would need share histories
+or randomised versions \citep{matias2021}; with one snapshot the twin correlation is best read as a lower bound on how
+much ``the story'' alone tells, since both splitting and the 22\% of twins that are not the same story pull it down.
 
 \paragraph{Limitations.} Twins are found from slugs only and are 78\% precise; the remaining same-topic pairs bias
-correlations and effects towards cross-sectional values. Annotation was not independent. Twin differences remove the
+correlations and effects towards cross-sectional values. Annotation was done by an AI assistant, not by independent human annotators. Twin differences remove the
 story and the week but not everything else (an editor may give a scoop more prominence). The daily volume counts
 articles in this dataset, which may not equal Mashable's true output. Shares were recorded once, so age and
 publication date cannot be separated, and keyword statistics use post-publication shares of earlier articles. All
@@ -353,8 +363,8 @@ report calibrated intervals or selective accuracy, since much of popularity is n
 \section{Conclusion}
 Hidden in the URLs of a standard benchmark are thousands of same-story twins. They show that news popularity is
 predictable mostly at the level of the individual article (RQ1), that same-story articles share little of their fate
-and that the first one has an edge (RQ1), that only body subjectivity among content features survives topic control
-and even grows (RQ2), that articles lose shares on crowded days while similar past stories carry no memory (RQ3), and
+with at most a modest edge for the first one (RQ1), that only body subjectivity among content features survives topic control
+(RQ2), that articles lose shares on crowded days while similar past stories carry no memory (RQ3), and
 that honest predictions are wide but can be kept calibrated under drift and sharpened by abstaining (RQ4).
 
 \bibliographystyle{plainnat}
