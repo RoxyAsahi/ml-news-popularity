@@ -19,11 +19,12 @@ Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popu
 Online news popularity is usually predicted as a binary label (``at least 1{,}400 shares'') and evaluated
 on a random split. Using 39{,}643 Mashable articles from 2013--2014, we ask how far that set-up can be trusted,
 and report three findings. First, ranking quality survives a chronological split (ROC-AUC 0.74, with random
-forest and gradient boosting tied), but it varies far more between time periods than between random seeds;
-a later drop in AUC comes from harder articles, not from an outdated model, since retraining recovers only
+forest and gradient boosting tied), but it varies between time periods about twice as much as sampling
+error alone would explain; a later drop in AUC comes from harder articles, not from an outdated model, since retraining recovers only
 0.006 of it. Second, the strongest features, keyword statistics built from earlier articles' shares, use
 only earlier articles but take their share counts from the collection date, and a few of them act as a
-clock; they are worth 0.03 AUC and should be treated as an upper bound on usable signal. Third, what can be
+clock. Together with the self-reference statistics they are worth 0.03 AUC (keyword statistics alone
+0.016), and these gains are likely optimistic. Third, what can be
 achieved depends far more on the threshold than on the model: at the 95th percentile PR-AUC is 0.10, while
 a weekly shortlist of the top 5\% is still three times richer in viral articles than chance.
 \end{abstract}
@@ -58,8 +59,8 @@ predictive (topic, tone, unusualness) survive once the editorial channel is acco
 
 \paragraph{Research questions.}
 \begin{enumerate}
-  \item[RQ1] Do shares depend on article age, and how does performance change when models are
-             evaluated on articles published after the training period?
+  \item[RQ1] Can the label be used without an age correction, and how does performance change when
+             models are evaluated on articles published after the training period?
   \item[RQ2] Are the features derived from earlier articles' shares point-in-time, do they encode
              the publication date, and how much does performance depend on them?
   \item[RQ3] How do the popularity threshold, training-set size and regularisation strength
@@ -70,17 +71,12 @@ predictive (topic, tone, unusualness) survive once the editorial channel is acco
 % ------------------------------------------------------------------ 0.5 page
 \section{Related Work}
 Fernandes et al.\ \citep{fernandes2015} introduced the dataset and reached an AUC of 0.73 with a random
-forest evaluated on rolling time windows; we extend that idea with interval estimates and an analysis
-of what changes over time. Szabo and Huberman \citep{szabo2010} showed that early counts predict later
-popularity and that attention to news stories (on Digg) saturates within days; we rely on this external
-evidence because a single snapshot of share counts cannot establish saturation by itself (Section~\ref{sec:data}).
-Work on learning from streaming data \citep{yang2014wsdm,yang2014cikm}, where items arrive over time and
-labels are costly, motivated our insistence on evaluating only on articles published after the training data.
-Concept drift \citep{gama2014} distinguishes changes in the label distribution from changes in the inputs; we
-test both. Leakage \citep{kaufman2012} arises when a feature uses information unavailable at
-prediction time, which is why we examine the share-derived features explicitly. Finally, under
-class imbalance precision--recall curves are more informative than ROC curves \citep{saito2015},
-which matters once the threshold moves to the top percentiles.
+forest on rolling time windows; we add interval estimates and ask what changes over time. Attention to
+news stories saturates within days \citep{szabo2010}, external evidence we need because a single snapshot
+cannot show it (Section~\ref{sec:data}). Learning from streams of items whose labels are costly
+\citep{yang2014wsdm,yang2014cikm} motivated evaluating only on articles published after the training data.
+We test both kinds of concept drift \citep{gama2014}, check the share-derived features for leakage
+\citep{kaufman2012}, and use precision--recall measures where positives are rare \citep{saito2015}.
 
 % ------------------------------------------------------------------ 1 page
 \section{Data}
@@ -181,7 +177,7 @@ to the base rate, and PR-AUC, which is more informative when positives are rare
 95\% percentile bootstrap intervals \citep{efron1993} with 1,000 resamples. Because articles published in
 the same week share news events, Table~\ref{tab:main} and the RQ1 differences resample whole publication
 weeks (block bootstrap \citep{kunsch1989}); these intervals are about 1.4 times wider than article-level
-ones, which we keep for the secondary analyses. Differences between two models or feature sets are computed
+ones (which we keep for the secondary analyses), but rest on only 18 weekly blocks. Differences between two models or feature sets are computed
 on the \emph{same} resamples (paired bootstrap) or, across rolling folds, as paired per-fold differences with
 a $t$-interval. We call a difference \emph{detectable} only when its interval excludes zero. Association
 with channel as a confounder is tested with Mantel--Haenszel odds ratios \citep{mantel1959} and the
@@ -246,19 +242,20 @@ The \emph{label} is not stable over time: the monthly share of popular articles 
 and 68\% (both extremes in 2013; Fig.~\ref{fig:time}a) and is 47.9\% in the test block.
 
 Ranking quality is more robust. Random and chronological splits give the same HistGB ROC-AUC with default
-settings (0.735 vs.\ 0.737). Across time periods, however, it varies much more than across random seeds:
-training on a fixed number of the most recent articles (15{,}857) and testing on each of the five
-rolling-origin blocks gives AUCs from 0.704 to 0.744 (sd 0.017), against an sd of 0.002 over five
-random-split seeds and about 0.008 for the sampling error of a single test block. Error bars from random
-splits therefore understate the uncertainty that matters when a model is deployed.
+settings (0.735 vs.\ 0.737). Across time periods, however, it varies clearly more than sampling error explains: training on a fixed
+number of the most recent articles (15{,}857) and testing on each of the five rolling-origin blocks gives AUCs
+from 0.704 to 0.744 (sd 0.017; with five folds its 95\% interval is 0.010--0.049), while the weekly
+block-bootstrap standard error of a single block is 0.008. Error bars from one test set, let alone from
+random-split seeds (sd 0.002), therefore understate the uncertainty that matters when a model is deployed.
 
 A model trained up to 25 June 2014 ranks articles from the next three months (Jul--Sep, which include the
 validation block) better than those from Oct--Dec: 0.753 vs.\ 0.722, a difference of 0.030. This is
 \emph{not} mainly staleness. Moving the training cutoff forward to 1 August, 1 September and 1 October 2014,
 and always testing on Oct--Dec, raises HistGB only from 0.722 to 0.723, 0.726 and 0.729
 (Fig.~\ref{fig:time}c): a fully up-to-date model gains 0.006 [0.003, 0.010] (paired weekly block bootstrap;
-logistic regression 0.003 [0.001, 0.005]). The remaining 0.024 [0.005, 0.045] is difficulty: late-2014
-articles are harder to rank for any model. Threshold-dependent metrics suffer more: models keep predicting
+logistic regression 0.003 [0.001, 0.005]). Because the training set also grows (27{,}772 to 33{,}788 articles)
+and HistGB is still improving at that size, 0.006 is an upper bound on staleness. The remaining
+0.024 [0.005, 0.045] is difficulty: late-2014 articles are harder to rank for any model. Threshold-dependent metrics suffer more: models keep predicting
 49--53\% positives while the true rate is 47--49\%.
 
 Two remedies did \emph{not} help. Rescaling predicted probabilities to the most recent known base rate
@@ -276,9 +273,9 @@ articles, \texttt{kw\_max\_max} equals the largest share count of any article pu
 it jumps the day after each new record article (Fig.~\ref{fig:time}b). Their \emph{values}, however, are the
 share counts measured at collection (January 2015): the day after a record article appears, its final
 843{,}300 shares are already in the statistic, a number that could not have been known then. The features
-are therefore only approximately available at publication. The bias favours them: in deployment the same
-statistics would be computed from incomplete counts of recent articles, so the gains reported below are an
-upper bound on their usable value.
+are therefore only approximately available at publication. In deployment the same statistics would be computed
+from incomplete counts of recent articles, which would usually make them noisier, so the gains reported
+below are likely optimistic.
 
 Three keyword columns mostly measure how large the archive was and thus encode the date
 (\texttt{kw\_min\_min}: $\rho=-0.88$ with publication date; $-1$ for 8.5\% of 2013 articles but 99.9\% of 2014
@@ -287,9 +284,9 @@ articles (adversarial AUC 0.958 with all features, 0.940 without them, 0.810 wit
 they are constant inside the test block, and removing them costs nothing (0.002 [$-0.001$, 0.005]).
 
 The predictive value lies in the non-clock statistics, i.e.\ in how popular an article's keywords have been.
-With the tuned models of Table~\ref{tab:main}, removing all share-derived features costs HistGB 0.034
+Removing only the \texttt{kw\_*} features costs default HistGB 0.016 [0.010, 0.021] on the test block. With the tuned models of Table~\ref{tab:main}, removing all share-derived features costs HistGB 0.034
 [0.027, 0.040] and the random forest 0.028 [0.022, 0.034]; without them the random forest is ahead of
-HistGB by a small but detectable 0.005. Over the five rolling folds (Fig.~\ref{fig:time}d, default HistGB)
+HistGB by 0.005 [0.001, 0.009], detectable on this test block but small enough that it may not hold in other periods. Over the five rolling folds (Fig.~\ref{fig:time}d, default HistGB)
 the combined share-derived group is the most valuable (0.027); on its own, \texttt{kw\_*} (0.011) is on a par
 with weekday (0.013), followed by self-reference and channel (0.008) and content (0.005), while removing the
 five LDA topics or the 16 sentiment features makes no detectable difference.
@@ -391,8 +388,9 @@ the loosest setting.
 \paragraph{What this means for work on the dataset.} The headline AUC of about 0.74 survives a chronological
 split, but it rests partly on keyword statistics whose values were measured after publication, so it is an
 optimistic estimate of what a deployed model would achieve. Three further caveats should accompany it.
-Uncertainty must be estimated over time, not over random seeds: period-to-period variation (sd 0.017) dwarfs
-seed variation, and a model comparison of 0.001--0.005 AUC is not a robust result. Threshold-dependent metrics
+Uncertainty must be estimated over time, not over random seeds: period-to-period variation (sd 0.017) is
+about twice the sampling error of one test block, so a model comparison of a few thousandths of AUC, even when
+detectable on one block, is not a robust result. Threshold-dependent metrics
 such as accuracy and F1 are fragile because the base rate drifts, and no correction based on past rates can
 anticipate that. And at high thresholds, which is what editors care about, PR-AUC or shortlist precision
 rather than ROC-AUC should be reported, since ranking quality and practical precision diverge.
@@ -404,7 +402,7 @@ Recency weighting, a natural idea under drift, does not help the best model.
 
 \paragraph{Advice for future work on this dataset.} (i) Split chronologically and report intervals
 over time periods, not seeds. (ii) Report PR-AUC or precision at a fixed budget alongside ROC-AUC, and state
-the threshold. (iii) Treat the keyword statistics as an upper bound, drop the three clock columns, which cost nothing
+the threshold. (iii) Treat gains from the keyword statistics as likely optimistic, drop the three clock columns, which cost nothing
 and otherwise let a model recognise the period, and ideally recompute the statistics from lagged counts. (iv) Do not expect retraining or recency weighting to fix
 late-2014 performance: the drop comes from harder articles. (v) Before concluding that unusual or
 negative-tone articles behave differently, adjust for channel and check that the effect is homogeneous.
@@ -418,10 +416,10 @@ are associational: channel adjustment removes one obvious confounder, not all of
 
 \section{Conclusion}
 The popularity label drifts over time; models still rank new articles well, and the lower AUC in late 2014
-reflects harder articles rather than an outdated model, while period-to-period variation is far larger than
-random-split error bars suggest (RQ1). The share-derived keyword features use only earlier articles but
-carry share counts from the collection date; they hold most of the signal and should be read as an upper
-bound, and a few of them merely act as a clock (RQ2). The threshold changes what can be achieved far more
+reflects harder articles rather than an outdated model, while period-to-period variation is clearly larger than
+single-test-set error bars suggest (RQ1). The share-derived keyword features use only earlier articles but
+carry share counts from the collection date; they hold most of the signal, their gains are likely
+optimistic, and a few of them merely act as a clock (RQ2). The threshold changes what can be achieved far more
 than the choice of model, and regularisation matters only for small training sets (RQ3). Topic/sentiment
 clusters mainly recover editorial channels, and the negative-tone effect is real in some channels but absent
 in others (RQ4).
