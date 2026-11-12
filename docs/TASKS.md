@@ -55,6 +55,35 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Build the submission zip: `./make_submission.sh` -> `dist/group3_news_popularity.zip` (report.pdf + code/, no data)
 - [x] Review round 3 (adversarial grading, items 2–8): age not identifiable, kw values from collection date (upper bound), weekly block bootstrap, sliding-window variance, validation-chosen reference model, wider kNN grid, HistGB temporal early stopping, Breslow–Day + per-channel effects, all Isolation Forest settings, method citations, VCPToolBox footnote, figure fonts, abstract rewrite; 8 pages
 - [x] Review round 4 fixes (kw alone 0.016, 'likely optimistic', per-fold block SE 0.008 vs period sd 0.017, staleness as upper bound, RQ1 wording, Related Work compressed, larger Fig 3/4 fonts)
-- [ ] Prose tightening pass: the report is at exactly 8 pages; cut ~0.3 page (repetition between Results and Discussion, long captions) so later additions fit
-- [ ] Seed robustness of the main comparison: refit RF and HistGB with 5 seeds, report the spread of test AUC next to Table 2 (one sentence + table column or footnote)
-- [ ] Calibration under drift: reliability curve of HistGB on validation vs test blocks (Brier, ECE); one sentence in RQ1 if it fits, else docs only
+- [~] ~~Prose tightening, seed robustness, calibration~~ superseded by the v2 storyline below (2026-11-12).
+
+## v2 storyline (decided 2026-11-12)
+
+Plan: https://claude.ai/artifact/H5xxBoLJgx5Qad7ADPgKrc ("新闻热度项目 v2"). Working title:
+*Same Story, Different Fate: Context, Content and Chance in Online News Popularity.*
+Feasibility code: branch `claude/project-thread-byh7ye`, folder `explore/` (f1–f9). Formal versions
+live in `src/newspop/` + `scripts/` and are **strictly past-only**: every score used for an RQ comes
+from a model trained on articles published before the scored article (rolling origin), never
+from cross-fitting. Report rewrite happens on main only once the RQ results exist.
+Independent review after each milestone (end of each week).
+
+### Week 1 (13–19 Nov): infrastructure + RQ1 "what is AUC 0.74 made of?"
+
+- [ ] `newspop.stories`: slug parsing (strip trailing ids), TF-IDF slug vectors (1–2 grams, sublinear), twin pairs (cos ≥ 0.5, ≤ 7 days apart), story = connected components of the twin graph; channel and day helpers; tests on a few known pairs; script writes `results/tables/stories_pairs.csv` summary (counts by threshold, same-channel share)
+- [ ] Twin precision: sample 200 pairs stratified by similarity band, annotate "same story / same topic / unrelated" from slug + date + channel (`data/annotations/twins_200.csv`, committed; annotation protocol and annotator disclosed in docs); precision per band with Wilson CI; choose the threshold used downstream
+- [ ] RQ1 hierarchical pairwise AUC, strictly past-only: rolling-origin out-of-sample scores (HistGB + LogReg), pairwise AUC over all / same week / same day / same channel / same channel-day / twins / same-channel twins; weekly cluster bootstrap CIs; figure (ladder plot)
+- [ ] RQ1 nested variance decomposition of log shares: random effects week ⊃ channel×week ⊃ story ⊃ residual (statsmodels MixedLM or REML via variance components); share of variance at each level with bootstrap CIs; how much of each level the model's out-of-sample score captures
+- [ ] Milestone review 1 (independent reviewer thread) → apply fixes
+
+### Week 2 (20–26 Nov): RQ2 content within stories + RQ3 attention competition
+- [ ] RQ2: twin-difference regression vs cross-sectional regression of log shares on content features (length, subjectivity, polarity, images/videos, links); paired CIs; which effects survive topic control
+- [ ] RQ3: same-day volume effect (week + weekday + channel FE, day-clustered CIs), robustness to content controls; semantic-memory time decay as negative result (merges old E2)
+- [ ] Milestone review 2
+
+### Week 3 (27 Nov–3 Dec): RQ4 honest uncertainty + packaging
+- [ ] RQ4: CQR + adaptive conformal (ACI) monthly coverage under drift; selective prediction risk–coverage (merges old E1/E4)
+- [ ] Figures, `run_all.sh` update, clean-environment reproduction
+- [ ] Milestone review 3
+
+### Week 4 (4–10 Dec): report rewrite on main (old E3→RQ1 context, E1/E4→RQ4, E2→RQ3, E5/E6 one sentence + appendix, E7 dropped from report, E7b/E8 replaced by RQ2)
+### 11–13 Dec: review only, no new experiments
