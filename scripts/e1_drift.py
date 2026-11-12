@@ -16,10 +16,10 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import accuracy_score, brier_score_loss, roc_auc_score
 
 from newspop.data import ROOT, feature_set, load, make_label
-from newspop.evaluate import classification_report
+from newspop.evaluate import bootstrap_ci, classification_report
 from newspop.models import fit, get_model
 from newspop.splits import random_split, rolling_origin, temporal_split
 
@@ -72,13 +72,60 @@ def monthly(df, X, y, n):
             sel = month[after] == mo
             if sel.sum() < 200:      # skip a partial month at the split boundary
                 continue
+            auc, lo, hi = bootstrap_ci(y[after][sel], p[sel], n_boot=500)
             rows.append({"month": mo, "model": m, "n": int(sel.sum()),
                          "pos_rate": y[after][sel].mean(),
                          "pred_pos_rate": (p[sel] >= 0.5).mean(),
-                         "roc_auc": roc_auc_score(y[after][sel], p[sel])})
+                         "roc_auc": auc, "auc_lo": lo, "auc_hi": hi})
     base = (pd.DataFrame({"month": month, "y": y}).groupby("month")["y"]
             .agg(pos_rate="mean", n="size").reset_index())
     return pd.DataFrame(rows), base, month[tr[-1]]
+
+
+def early_vs_late(df, X, y, n, months=3):
+    """AUC on the first vs the last `months` full months after the training cutoff,
+    with independent bootstrap intervals for the difference (two disjoint test sets)."""
+    tr, _, _ = temporal_split(n, 0.7, 0.1)
+    after = np.arange(len(tr), n)
+    month = df["publish_date"].dt.to_period("M").to_numpy()[after]
+    full = [mo for mo in pd.unique(month) if (month == mo).sum() >= 1000]
+    early, late = np.isin(month, full[:months]), np.isin(month, full[-months:])
+    rng = np.random.default_rng(0)
+    rows = []
+    for m in ["logreg", "hgb"]:
+        p = fit(get_model(m, 0), X[tr], y[tr]).predict_proba(X[after])[:, 1]
+        ya, pa = y[after], p
+        e_idx, l_idx = np.where(early)[0], np.where(late)[0]
+        diffs = []
+        for _ in range(1000):
+            ie = rng.choice(e_idx, len(e_idx)); il = rng.choice(l_idx, len(l_idx))
+            diffs.append(roc_auc_score(ya[ie], pa[ie]) - roc_auc_score(ya[il], pa[il]))
+        d = roc_auc_score(ya[e_idx], pa[e_idx]) - roc_auc_score(ya[l_idx], pa[l_idx])
+        lo, hi = np.quantile(diffs, [0.025, 0.975])
+        rows.append({"model": m, "early_months": ",".join(map(str, full[:months])),
+                     "late_months": ",".join(map(str, full[-months:])),
+                     "auc_early": roc_auc_score(ya[e_idx], pa[e_idx]), "auc_late": roc_auc_score(ya[l_idx], pa[l_idx]),
+                     "decay": d, "decay_lo": lo, "decay_hi": hi})
+    return pd.DataFrame(rows)
+
+
+def label_shift(X, y, n):
+    """Prior-shift correction: rescale probabilities from the training positive rate to the
+    validation block's positive rate (the most recent rate known before test time)."""
+    tr, va, te = temporal_split(n, 0.7, 0.1)
+    pi_tr, pi_va = y[tr].mean(), y[va].mean()
+    rows = []
+    for m in ["logreg", "hgb"]:
+        p = fit(get_model(m, 0), X[tr], y[tr]).predict_proba(X[te])[:, 1]
+        a = p * pi_va / pi_tr
+        b = (1 - p) * (1 - pi_va) / (1 - pi_tr)
+        q = a / (a + b)
+        for name, s in [("uncorrected", p), ("prior-shift corrected", q)]:
+            rows.append({"model": m, "variant": name, "pi_train": pi_tr, "pi_val": pi_va,
+                         "pi_test": y[te].mean(), "pred_pos_rate": (s >= 0.5).mean(),
+                         "accuracy": accuracy_score(y[te], s >= 0.5), "brier": brier_score_loss(y[te], s),
+                         "roc_auc": roc_auc_score(y[te], s)})
+    return pd.DataFrame(rows)
 
 
 def adversarial(X, n):
@@ -111,6 +158,13 @@ def main():
     mon, base, last_train_month = monthly(df, X, y, n)
     mon.to_csv(TAB / "e1_monthly_eval.csv", index=False)
 
+    ev = early_vs_late(df, X, y, n)
+    ev.to_csv(TAB / "e1_early_vs_late.csv", index=False)
+    print(ev.round(3).to_string())
+    ls = label_shift(X, y, n)
+    ls.to_csv(TAB / "e1_label_shift.csv", index=False)
+    print(ls.round(3).to_string())
+
     adv = {}
     for fs in ["all", "no_kw_ref"]:
         adv[fs] = adversarial(df[feature_set(df, fs)].to_numpy(), n)
@@ -130,9 +184,11 @@ def main():
     ax1.set_ylabel("share popular\n(>= 1400 shares)")
     for m, c in [("hgb", "C0"), ("logreg", "0.5")]:
         s = mon[mon.model == m]
-        ax2.plot(pd.PeriodIndex(s["month"], freq="M").to_timestamp(), s["roc_auc"],
-                 marker="o", ms=3, color=c, label={"hgb": "gradient boosting", "logreg": "logistic regression"}[m])
-    ax2.set_ylabel("ROC-AUC per month"); ax2.legend(fontsize=8, loc="lower left")
+        xs = pd.PeriodIndex(s["month"], freq="M").to_timestamp() + pd.Timedelta(days=4 if m == "hgb" else -4)
+        ax2.errorbar(xs, s["roc_auc"], yerr=[s["roc_auc"] - s["auc_lo"], s["auc_hi"] - s["roc_auc"]],
+                     marker="o", ms=3, capsize=2, color=c,
+                     label={"hgb": "gradient boosting", "logreg": "logistic regression"}[m])
+    ax2.set_ylabel("ROC-AUC per month\n(95% bootstrap CI)"); ax2.legend(fontsize=8, loc="lower left")
     fig.autofmt_xdate(); fig.tight_layout()
     fig.savefig(FIG / "e1_drift_monthly.png", dpi=200)
 

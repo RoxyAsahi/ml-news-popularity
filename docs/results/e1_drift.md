@@ -18,7 +18,17 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
 
 2. **Threshold-dependent metrics do degrade.** PR-AUC drops from 0.756 to 0.719 (HistGB) and F1 from 0.699 to 0.674, mostly because the share of popular articles falls from 53% (whole data) to 48% in the newest 20%. Month by month after training, the models predict 49–53% positives while the true rate is 47–49% (Sep–Dec 2014): a calibration drift, not a ranking failure.
 
-3. **Mild decay with distance from training data.** Monthly ROC-AUC of HistGB goes from 0.75–0.77 in the first four months after the training cutoff (Jun–Sep 2014) to 0.71–0.74 in Oct–Dec 2014.
+3. **Ranking quality decays with distance from the training data, by about 0.03.** Training
+   on the oldest 70%, AUC on the first three full months after the cutoff (Jul–Sep 2014) vs the
+   last three (Oct–Dec 2014): HistGB 0.754 → 0.722, decay 0.032 [0.014, 0.049]; logistic
+   regression 0.736 → 0.707, decay 0.030 [0.012, 0.048] (independent bootstrap, 95% CI). Monthly
+   AUCs with intervals are in `e1_drift_monthly.png`; single months are too noisy (±0.02–0.03) to
+   read on their own.
+
+   **Correcting for the label shift does not help.** Rescaling probabilities from the training
+   positive rate (54.8%) to the most recent known one (validation block, 54.0%) leaves HistGB
+   accuracy at 0.667 and Brier at 0.209 (logistic regression 0.658 → 0.660). The shift happens
+   *inside* the test period (47.9% positive), so no rate known at training time can anticipate it.
 
 4. **Old and new articles are easy to tell apart, largely because some keyword columns act as a
    clock.** A classifier separates the oldest 70% from the newest 30% with ROC-AUC 0.958 on all
@@ -29,7 +39,8 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
 
 ## Figures
 
-- `e1_drift_monthly.png` — top: monthly share of popular articles (44%–68%); bottom: per-month ROC-AUC after the training cutoff.
+- `e1_drift_monthly.png` — top: monthly share of popular articles (44%–68%); bottom: per-month ROC-AUC after the training cutoff with 95% bootstrap intervals.
+- Tables: `e1_early_vs_late.csv`, `e1_label_shift.csv`, `e1_monthly_eval.csv` (with CIs).
 - `e1_split_comparison.png` — random vs chronological ROC-AUC per model.
 
 ## Caveats
