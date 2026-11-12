@@ -60,13 +60,13 @@ recovered for this benchmark before; that, and what they reveal, is our contribu
   \item[RQ2] Which content effects survive when the story is held fixed?
   \item[RQ3] Do articles compete for attention, and if so for the audience of their \emph{story} (split
              attention) or for the attention of the \emph{day}?
-  \item[RQ4] How much of popularity is predictable at all from these data, and what can a model promise?
+  \item[RQ4] How much of popularity can we explain from these data, and what can a model promise?
 \end{enumerate}
 \noindent Our contributions: (i) a procedure that recovers same-story pairs from URLs, with measured
 precision; (ii) a past-only decomposition of ranking skill into time, channel, story and article, extending
 the content-versus-context comparison of \citet{hessel2017} to nested contexts; (iii) a test of split attention
-that links the twin and competition analyses; and (iv) a budget of what is predictable, with honest
-uncertainty for what is not.
+that links the twin and competition analyses; and (iv) a decomposition of how much of popularity we can explain, with honest
+uncertainty for the rest.
 
 % ------------------------------------------------------------------
 \section{Related Work}
@@ -80,7 +80,7 @@ standard in recommender evaluation as group AUC \citep{zhou2018}.
 \paragraph{Limits to prediction.} In artificial music markets the same song succeeded or failed depending on
 social influence \citep{salganik2006}; cascade size is only partly predictable even with early signals
 \citep{cheng2014} or full information \citep{martin2016}. \citet{hofman2017} argue for reporting what is
-predictable and from what; we give such a budget for news.
+predictable and from what; we give such a decomposition for news.
 \paragraph{Controlled comparisons.} Tan et al.\ \citep{tan2014} compared tweets by the same author on the same
 link; Lakkaraju et al.\ \citep{lakkaraju2013} compared resubmissions of the same image on Reddit; headline A/B
 tests give randomised versions \citep{matias2021}, in which negative headline words raise clicks
@@ -384,7 +384,7 @@ The popularity of similar earlier stories does not help. Semantic-memory feature
 0.016--0.029 for every half-life and change past-only AUC by $-$0.0008 [$-$0.0019, 0.0004]; recency-weighted training
 did not help either. What matters is the article and its day, not what similar stories did before.
 
-\subsection{How much is chance, and what can a model promise? (RQ4)}
+\subsection{How much can we explain, and what can a model promise? (RQ4)}
 \label{sec:rq4}
 A past-only HistGB regressor explains 16.2\% [15.3, 17.1] of the variance of log shares out of sample; adding
 channel$\times$day fixed effects (in sample, df-adjusted) raises this to 17.8\% [16.7, 18.9] (week-cluster
@@ -419,11 +419,12 @@ correlations and effects towards cross-sectional values. Annotation was done by 
 story and the week but not everything else (an editor may give a scoop more prominence). The daily volume counts
 articles in this dataset, which may not equal Mashable's true output. Shares were recorded once, so age and
 publication date cannot be separated, and keyword statistics use post-publication shares of earlier articles. All
-results come from one outlet in 2013--2014.
+results come from one outlet in 2013--2014. Going further would need human-annotated twins, better text
+representations to raise twin recall (at most 30\% now), and share time series, none of which this dataset offers.
 
 \paragraph{Advice for work on this dataset.} Evaluate chronologically with past-only models; report within-context
 AUC next to pooled AUC; treat cross-sectional content effects as topic-confounded until checked with twins; and
-report calibrated intervals or selective accuracy, since much of popularity is not predictable from these features.
+report calibrated intervals or selective accuracy, since much of popularity is not explained by these features.
 
 \section{Conclusion}
 Hidden in the URLs of a standard benchmark are thousands of same-story twins. They show that news popularity is
