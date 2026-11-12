@@ -21,10 +21,18 @@ Deadline: Sun 13 Dec 2026, 23:59 CET.
 - [x] E4–E6 threshold, learning curves, regularisation (#3)
 - [x] E7 clustering and anomalies (#4)
 - [x] Report skeleton + run_all.sh (#5)
-- [x] Task queue + deterministic L1 logistic regression (this PR)
-- [ ] **Revise E3 + E1 after review (2026-11-12):** `kw_*` are point-in-time features (kw_max_max ≤ max shares of earlier articles for 99.99% of rows, equal for 99.7%; kw_min_min = -1 in 8.5% of 2013 vs 99.9% of 2014 rows). Reframe RQ2 from "leakage audit" to "are these features point-in-time, and do they carry a clock?"; add a staircase figure of kw_max_max vs running max of earlier shares over time; soften E1's "strong covariate shift" (kw_max_max / kw_min_min are near-constant inside the chronological test block). Remaining caveat for limitations: earlier articles' shares were measured at collection time (Jan 2015). Wait for the full review notes before finalising.
-- [ ] Work through the remaining points of the independent review (CI, tuning, E2, E4 threshold, E7 confounding)
-- [ ] E2 proper: half-life weighting under rolling-origin folds, HistGB and LogReg, 5 half-lives
+- [x] Task queue + deterministic L1 logistic regression (#6)
+
+Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr — items R1–R8 below follow its priority order.
+
+- [ ] **R1 E3 rewrite:** `kw_*` are point-in-time features that carry a clock, not leakage (kw_max_max = max shares of earlier articles for 99.7% of rows; kw_min_min = -1 in 8.5% of 2013 vs 99.9% of 2014). New point-in-time check script + staircase figure (kw_max_max vs running max over time). Drop pure clock columns (kw_max_max, kw_min_min, kw_min_min_missing; if needed kw_max_min, kw_min_max) and redo adversarial validation and predictive AUC. Rename RQ2 accordingly. Limitation: earlier articles' shares measured at collection time (Jan 2015).
+- [ ] **R2 Main results table:** tune HistGB, RF, LogReg, kNN on the validation block; touch test once; bootstrap 95% CIs for everything. Add bootstrap + paired-comparison helpers to `newspop/evaluate.py`. Reviewer's HistGB test AUC 0.733 [0.720, 0.743] → 0.01-level differences are "no detectable difference".
+- [ ] **R3 E1:** error bars on monthly AUC (else no "decay" claim); rewrite "strong covariate shift" per the clock finding; add label-shift correction (shift probabilities to validation positive rate) as a one-line negative result (accuracy 0.667→0.661, Brier worse).
+- [ ] **R4 E3 ablation:** report paired differences across rolling folds with intervals, not two means with separate sds.
+- [ ] **R5 E4:** decision threshold currently set with `np.quantile` on test scores (transductive peeking) → set it on the validation block. Paired bootstrap CI for regressor vs classifier at the 95th percentile (~300 positives).
+- [ ] **R6 E7:** negative-sentiment effect is confounded by channel → CMH test or logistic regression with channel. Isolation Forest: profile the outliers; contamination 1% and 5% too.
+- [ ] **R7 E2:** half-life weighting under rolling-origin folds, paired differences, written as a negative result tied to "ranking is stable".
+- [ ] **R8 Misc:** state the threshold convention once (overall median 1,400 vs training-block median 1,500); drop jupyter from requirements.txt; compile LaTeX early.
 - [ ] Get LaTeX compiling (tectonic or TeX Live in the container; fall back to documenting Overleaf)
 - [ ] Report: Data section + Table 1 (feature groups) + Fig. 1 (shares histogram / shares vs age)
 - [ ] Report: Methodology section
