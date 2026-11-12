@@ -18,10 +18,13 @@ ROC-AUC, threshold 1400, 80/20 split:
 
 | Split | Features | LogReg | kNN (k=50) | HistGB |
 | --- | --- | --- | --- | --- |
-| random | all | 0.711 | 0.699 | 0.743 |
+| random | all | 0.709 | 0.704 | 0.737 |
+| random | no `kw_*`, no `self_reference_*` | 0.686 | 0.687 | 0.713 |
 | temporal | all | 0.717 | 0.693 | 0.737 |
 | temporal | no `kw_*` | 0.700 | 0.683 | 0.721 |
 | temporal | no `kw_*`, no `self_reference_*` | 0.696 | 0.679 | 0.700 |
+
+Note: random and chronological splits give the same AUC for boosting, but removing the share-derived features hurts more under the chronological split (−0.037 vs −0.024).
 
 - Threshold at 50/75/90/95th percentile: ROC-AUC stays 0.73–0.74, PR-AUC falls 0.68 → 0.10.
 - Learning curve: 3% of training data (~950 articles) already gives ROC-AUC ≈ 0.70; logistic regression plateaus after 10%, boosting keeps improving.
