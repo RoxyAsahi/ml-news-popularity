@@ -43,7 +43,7 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [ ] Report: final float placement / layout pass (Fig. 3 and 4 currently float to the last page)
 - [x] Report: Introduction, Related Work, Discussion, Conclusion, Abstract (first full draft, 6 pages)
 - [x] Fill the two Yang et al. 2014 titles + DOIs (checked via web search)
-- [ ] Verify the remaining references, and the claim in Related Work that Fernandes et al. report AUC 0.73 with a random forest on rolling windows (needs the paper PDF; doi/crossref hosts are blocked here)
-- [ ] Check page count ≤ 8; cut or merge figures if needed
+- [x] Review round 2: E1b staleness vs difficulty, ALE figure (E8), weekly precision@top-5% (E4b), text corrections, all references with DOIs/pages (Fernandes claim confirmed from abstract + .names file)
+- [x] Check page count ≤ 8 (7 pages after review round 2)
 - [ ] Clean-environment reproduction: fresh venv, `pip install`, `./run_all.sh`, diff results
 - [ ] Build the submission zip (report PDF + code, no data) and hand it to Roxy for upload

@@ -69,4 +69,4 @@ Tables `results/tables/e3b_*.csv`, `e3_*.csv`; figures `e3b_staircase.png`, `e3_
 The shares of earlier articles used to build these statistics were measured when the dataset
 was collected (Jan 2015), not when the later article was published. For an article published
 in 2013 the statistics therefore use share counts that were not yet final at that time. Because
-shares saturate within about a week (E0), the effect should be small; mention it as a limitation.
+shares show no age dependence beyond eight days (E0), the effect should be small; mention it as a limitation.
