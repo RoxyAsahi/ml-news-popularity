@@ -19,7 +19,7 @@ Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popu
 \todo{~150 words, write last. Problem; the four RQs; headline numbers:
 chronological ROC-AUC 0.74 (0.70 without share-derived features);
 PR-AUC 0.68$\to$0.10 from median to 95th-percentile threshold;
-weak cluster structure; outliers 1.9$\times$ as likely to go viral.}
+weak cluster structure; negative sentiment lowers popularity odds within channels (OR 0.81).}
 \end{abstract}
 
 % ------------------------------------------------------------------ 0.75 page
@@ -87,8 +87,8 @@ E6: regularisation only matters at 1k articles (+0.03); 7-feature L1 model.}
 % Figs: e4_threshold.png, e5_learning_curve.png, e6_regularisation.png (combine!)
 
 \subsection{Clustering and anomalies (RQ4)}
-\todo{E7: silhouette $\le$ 0.12; k=9 Cram\'er's V 0.188 vs channel 0.245; negative-polarity
-cluster; Isolation Forest outliers 9.2\% vs 4.9\% in top 5\%.}
+\todo{E7: silhouette $\le$ 0.12; k=9 Cram\'er's V 0.188 vs channel 0.245; negative polarity: crude OR 0.69,
+channel-adjusted 0.81 [0.75, 0.88], not in tech; outliers 1.9$\times$ crude but channel-adjusted OR 1.27 [0.98, 1.63].}
 % Fig: e7_clusters.png
 
 % ------------------------------------------------------------------ 0.75 page

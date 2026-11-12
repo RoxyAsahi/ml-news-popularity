@@ -30,7 +30,7 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] **R3 E1 (#10):** error bars on monthly AUC (else no "decay" claim); rewrite "strong covariate shift" per the clock finding; add label-shift correction (shift probabilities to validation positive rate) as a one-line negative result (accuracy 0.667→0.661, Brier worse).
 - [x] **R4 E3 ablation (#11):** report paired differences across rolling folds with intervals, not two means with separate sds.
 - [x] **R5 E4 (#12):** decision threshold currently set with `np.quantile` on test scores (transductive peeking) → set it on the validation block. Paired bootstrap CI for regressor vs classifier at the 95th percentile (~300 positives).
-- [ ] **R6 E7:** negative-sentiment effect is confounded by channel → CMH test or logistic regression with channel. Isolation Forest: profile the outliers; contamination 1% and 5% too.
+- [x] **R6 E7 (#13):** negative-sentiment effect is confounded by channel → CMH test or logistic regression with channel. Isolation Forest: profile the outliers; contamination 1% and 5% too.
 - [ ] **R7 E2:** half-life weighting under rolling-origin folds, paired differences, written as a negative result tied to "ranking is stable".
 - [ ] **R8 Misc:** state the threshold convention once (overall median 1,400 vs training-block median 1,500); drop jupyter from requirements.txt; compile LaTeX early.
 - [ ] Get LaTeX compiling (tectonic or TeX Live in the container; fall back to documenting Overleaf)
