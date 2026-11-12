@@ -109,11 +109,39 @@ with age, so the label needs no age correction.}
 
 % ------------------------------------------------------------------ 0.75 page
 \section{Methodology}
-\todo{Chronological 70/10/20 split + 5-fold rolling origin. Threshold convention (state once): main
-experiments use 1,400 shares (median of the full data, as in \citep{fernandes2015}); the threshold
-sweep (E4) uses quantiles of the training block, whose median is 1,500;
-metrics ROC-AUC, PR-AUC, F1, balanced accuracy; models (majority, L1/L2 LogReg, kNN, RF,
-HistGB); all preprocessing in pipelines; seeds; one script per experiment.}
+\label{sec:method}
+
+\paragraph{Chronological evaluation.} Articles are sorted by publication date. The oldest 70\%
+(27,750 articles, to 25 June 2014) form the training block, the next 10\% (to 28 August 2014) the
+validation block and the newest 20\% (7,929 articles, to 27 December 2014) the test block.
+Hyper-parameters and decision cut-offs are chosen on the validation block; models are then refit
+on training and validation together and scored once on the test block. Where we need more than
+one test period we use five rolling-origin folds: an expanding window that starts with the oldest
+40\% and is tested on each following block of 12\%. We compare this protocol with the random 80/20
+split used in earlier work.
+
+\paragraph{Threshold convention.} The main experiments label an article popular if it has at least
+1,400 shares, the full-data median used by \citet{fernandes2015}, so that results are comparable.
+When we vary the threshold (Section~\ref{sec:rq3}) we take quantiles of the training block only;
+its median is 1,500.
+
+\paragraph{Models.} A majority-class baseline; logistic regression with an L1 or L2 penalty;
+$k$-nearest neighbours; a random forest; and histogram-based gradient boosting (HistGB). The linear
+and neighbour models see log-transformed, standardised inputs; all models are scikit-learn
+pipelines \citep{pedregosa2011}. The search grids are small (4--8 settings per model) and listed in
+the code.
+
+\paragraph{Metrics and uncertainty.} We report ROC-AUC, which measures ranking and is insensitive
+to the base rate, and PR-AUC, which is more informative when positives are rare
+\citep{saito2015}, plus F1 and balanced accuracy where a decision is needed. Every test-set number
+carries a 95\% percentile bootstrap interval (1,000 resamples of test articles). Differences
+between two models, or between two feature sets, are computed on the \emph{same} resampled articles
+(paired bootstrap) or, across rolling folds, as paired per-fold differences with a $t$-interval.
+We call a difference \emph{detectable} only when its interval excludes zero.
+
+\paragraph{Reproducibility.} Seeds are fixed; every table and figure in this report is produced by
+one script in the accompanying code, and \texttt{run\_all.sh} reproduces all of them from the
+raw CSV in about 30 minutes.
 
 % ------------------------------------------------------------------ 3.5 pages
 \section{Results}
