@@ -20,7 +20,12 @@ Tables in `results/tables/e1_*.csv`, figures `results/figures/e1_*.png`.
 
 3. **Mild decay with distance from training data.** Monthly ROC-AUC of HistGB goes from 0.75–0.77 in the first four months after the training cutoff (Jun–Sep 2014) to 0.71–0.74 in Oct–Dec 2014.
 
-4. **Strong covariate shift, mostly in the share-derived features.** A classifier can tell the oldest 70% from the newest 30% of articles with ROC-AUC **0.958** using all features, but only **0.804** without `kw_*` and `self_reference_*`. These features encode *when* an article was published, which motivates the leakage audit in E3.
+4. **Old and new articles are easy to tell apart, largely because some keyword columns act as a
+   clock.** A classifier separates the oldest 70% from the newest 30% with ROC-AUC 0.958 on all
+   features and 0.804 without `kw_*`/`self_reference_*`. E3 shows the keyword statistics are
+   point-in-time and that three of them mostly encode archive size (constant inside the test
+   block). The remaining separability (0.80 from content features) is real covariate drift, but
+   point 1 shows it does not hurt ranking.
 
 ## Figures
 

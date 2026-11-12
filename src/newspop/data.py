@@ -90,6 +90,8 @@ def feature_set(df: pd.DataFrame, name: str = "all") -> list[str]:
     all       : every predictive column
     no_kw     : drop keyword-share statistics (kw_*)
     no_kw_ref : also drop self_reference_* (shares of linked Mashable articles)
+    no_clock  : drop only the keyword columns that act as a clock (CLOCK_COLUMNS)
+    no_clock_strict : also drop CLOCK_COLUMNS_EXTRA
     """
     g = feature_groups(df)
     every = [c for group in g.values() for c in group]
@@ -99,7 +101,19 @@ def feature_set(df: pd.DataFrame, name: str = "all") -> list[str]:
         return [c for c in every if c not in g["keyword"]]
     if name == "no_kw_ref":
         return [c for c in every if c not in g["keyword"] + g["self_reference"]]
+    if name == "no_clock":
+        return [c for c in every if c not in CLOCK_COLUMNS]
+    if name == "no_clock_strict":
+        return [c for c in every if c not in CLOCK_COLUMNS + CLOCK_COLUMNS_EXTRA]
     raise ValueError(f"unknown feature set {name!r}")
+
+
+# Keyword statistics are point-in-time (computed from articles published earlier), but some
+# of them mostly measure *how large the archive was* at publication time: a built-in clock.
+# |Spearman with publication date| > 0.8 for kw_min_min / its -1 flag, 0.74 for kw_max_max.
+CLOCK_COLUMNS = ["kw_max_max", "kw_min_min", "kw_min_min_missing"]
+# next tier (|rho| 0.45-0.52); dropped only in the strict variant
+CLOCK_COLUMNS_EXTRA = ["kw_avg_max", "kw_avg_min"]
 
 
 def make_label(shares: pd.Series, threshold: float) -> np.ndarray:

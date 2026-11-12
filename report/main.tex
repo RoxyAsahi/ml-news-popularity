@@ -8,7 +8,7 @@
 \newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
 
 \title{When Is an Article ``Popular''?\\
-Label Reliability, Temporal Drift and Feature Leakage in Online News Popularity Prediction}
+Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popularity Prediction}
 \author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
 \date{December 2026}
 
@@ -32,7 +32,8 @@ We ask how much of that performance is real and stable. State RQ1--RQ4 and contr
 \begin{enumerate}
   \item[RQ1] Do shares depend on article age, and how does performance change when models are
              evaluated on articles published after the training period?
-  \item[RQ2] How much does performance depend on features derived from other articles' shares?
+  \item[RQ2] Are the features derived from earlier articles' shares point-in-time, do they encode
+             the publication date, and how much does performance depend on them?
   \item[RQ3] How do the popularity threshold, training-set size and regularisation strength
              affect generalisation?
   \item[RQ4] Do articles that cluster in topic/sentiment space differ in popularity?
@@ -42,7 +43,7 @@ We ask how much of that performance is real and stable. State RQ1--RQ4 and contr
 \section{Related Work}
 \todo{Dataset paper \citep{fernandes2015}; early saturation of popularity \citep{szabo2010};
 learning with few labels / temporal change in social data \citep{yang2014wsdm,yang2014cikm};
-leakage \citep{kaufman2012}; concept drift \citep{gama2014}; PR vs ROC under imbalance
+leakage / point-in-time features \citep{kaufman2012}; concept drift \citep{gama2014}; PR vs ROC under imbalance
 \citep{saito2015}. Footnote: half-life weighting inspired by VCPToolBox TimeDecay.}
 
 % ------------------------------------------------------------------ 1 page
@@ -70,9 +71,11 @@ E2: half-life weighting gives no gain.}
 % Fig: e1_drift_monthly.png
 
 \subsection{Share-derived features (RQ2)}
-\todo{E3: ablation 0.730$\to$0.703; grouped permutation; kw\_min\_min $\rho=-0.88$ with date.
-Careful wording: time dependence, not proven leakage.}
-% Fig: e3_ablation.png (+ e3_grouped_permutation.png as subfigure)
+\todo{E3 (see docs/results/e3\_share\_features.md): point-in-time check (kw\_max\_max = running max
+of earlier shares for 99.87\%); three clock columns constant in the test block, removing them
+costs 0.002 [-0.001, 0.005]; dropping all kw\_* costs 0.016 [0.010, 0.021]. Never call it leakage.
+Limitation: earlier shares measured in Jan 2015.}
+% Fig: e3b_staircase.png (+ e3_ablation.png)
 
 \subsection{Threshold, data size and regularisation (RQ3)}
 \todo{E4: ROC flat, PR-AUC 0.68$\to$0.10, lift 1.56$\to$2.45; regressor vs classifier.

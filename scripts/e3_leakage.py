@@ -1,5 +1,6 @@
-"""E3 (RQ2) - How much does performance depend on features derived from other
-articles' share counts (kw_*, self_reference_*)?
+"""E3 (RQ2) - How much does performance depend on features derived from earlier
+articles' share counts (kw_*, self_reference_*)? These are point-in-time, not leakage;
+see scripts/e3b_point_in_time.py.
 
 1. Feature-set ablation under the chronological split and rolling-origin folds.
 2. Drop-one-group ablation for every feature group.
