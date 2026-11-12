@@ -24,6 +24,10 @@ def load(split: str) -> pd.DataFrame:
     return d.reset_index(drop=True)
 
 
+def tokens(s: str) -> list[str]:
+    return re.findall(r"[a-z']+", str(s).lower())
+
+
 _POL: dict[str, float] = {}
 
 
