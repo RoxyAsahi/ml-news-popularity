@@ -44,6 +44,8 @@ The file has 39,644 rows and 61 columns (the course PDF's 39,797 is the pre-clea
 ## Running
 
 ```bash
+./run_all.sh                  # every experiment, ~10 min
+# or one at a time:
 python scripts/00_eda.py      # E0: figures + summary tables
 python scripts/01_pilot.py    # pilot numbers used in the plan (~1 min)
 ```
@@ -61,7 +63,7 @@ src/newspop/       shared code — import this, don't copy-paste it
 scripts/           one script per experiment (00_eda.py, 01_pilot.py, e1_*.py, …)
 notebooks/         scratch exploration only; nothing in the report comes from here
 results/           generated figures and tables
-report/            LaTeX source of the report
+report/            LaTeX source of the report (main.tex, references.bib; Overleaf-compatible)
 docs/PLAN.md       research plan, protocol, timeline
 ```
 
