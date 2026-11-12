@@ -23,13 +23,13 @@ or \emph{how} it is written. The benchmark ships no text, yet every article's UR
 headline. Retrieving near-identical headlines published within a week, we recover 2{,}941 pairs of same-story
 ``twin'' articles (about 71\% precision) and use them as a topic-controlled comparison. With strictly past-only
 models we find that (i) time contributes no ranking skill and the editorial channel about 0.045 AUC; fixing the
-story costs no detectable further skill (at most 0.07), and adding the headline words to the model adds none;
-(ii) same-story articles barely share their fate (residual correlation 0.05); (iii) this is not because a story's
-audience is split among its articles: an article's shares do not fall with the number of articles on its story,
-whereas each doubling of the day's other articles costs about 18\% of shares; (iv) of 13 content features only
-body subjectivity survives topic control (0.17 log shares per sd within twins). A predictability budget shows
-that model, context and story together explain at most about a quarter of the variance of log shares; for the
-rest, we show what a model can honestly promise under drift.
+story costs no detectable further skill (at most 0.07), and a bag-of-words model of the headline adds none;
+(ii) same-story articles barely share their fate (residual correlation 0.05); (iii) articles compete for the
+attention of the day (each doubling of the day's other articles costs about 18\% of shares), while we find no
+evidence, with tests of limited power, that a story's audience is split among its articles; (iv) of 13 content features only
+body subjectivity survives topic control (0.17 log shares per sd within twins). Model, context and story
+together explain about a quarter of the variance of log shares; for the rest, we show what a model can honestly
+promise under drift.
 \end{abstract}
 
 % ------------------------------------------------------------------
@@ -201,10 +201,10 @@ independent bootstraps; twin coefficients are corrected for multiple testing \ci
 
 \paragraph{Split attention.} A story is a connected component of the twin graph (singletons are stories of
 one). If a story has a fixed audience that its $k$ articles share, an article's log shares fall one-for-one with
-$\log k$ and the story's total does not grow with $k$; if articles draw independent audiences, the first slope
-is 0 and the second 1. Because bigger stories are also more newsworthy, both slopes are biased upwards, so a
-slope near 0 for single articles is evidence against splitting. We also split daily volume into same-story
-articles within two days and all other articles that day. Errors are clustered by story.
+$\log k$; if articles draw independent audiences, the slope is 0. Bigger stories are also more newsworthy, which
+biases the slope upwards. We also split daily volume into same-story articles within two days and all other
+articles that day, and compare earlier twins whose follow-up came one day versus 3--7 days later. Errors are
+clustered by story.
 
 \paragraph{Competition, memory and uncertainty.} RQ3 regresses log shares on the log number of articles in the
 dataset that day, with week, weekday and channel fixed effects and day-clustered errors, and checks a placebo
@@ -308,9 +308,9 @@ but not a loss as large as the channel's own 0.045. The pattern is
 the same for logistic regression (0.709 to 0.639) and for HistGB without share-derived features (0.701 to 0.628),
 and for concordance on pairs that differ more than twofold (0.714 overall, 0.667 within channel and day,
 0.690 [0.656, 0.727] within twins). Most of what the model knows is therefore about the article, not its context:
-it separates two articles on the same story about as well as two random articles from the same section and day. Headline words do not change this: adding a past-only ridge score of the slug's words to HistGB
-changes AUC by 0.000 [$-$0.001, 0.001] overall, 0.001 [0.000, 0.003] within channel and day, and $-$0.007
-[$-$0.018, 0.006] within twins (the score alone correlates with log shares at 0.05).
+it separates two articles on the same story about as well as two random articles from the same section and day. A bag-of-words model of the headline does not change this: adding a past-only ridge score of the slug's words
+to HistGB changes AUC by 0.000 [$-$0.001, 0.001] overall and 0.001 [0.000, 0.003] within channel and day (the
+score alone correlates with log shares at 0.05). Richer text models might do better; this one does not.
 
 \paragraph{Same story, different fate.} Twins hardly share their popularity. Their residual log shares correlate
 at 0.051 [0.016, 0.086], against 0.002 for matched random neighbours; within a channel at 0.103 [0.040, 0.167]
@@ -352,15 +352,19 @@ importance is stable at the extremes (keywords first, sentiment last) \citep{fis
 
 \subsection{Split attention or a crowded day? (RQ3)}
 \label{sec:rq3}
-\paragraph{No sign of split attention within stories.} If a story's audience were divided among its articles,
-an article in a story with more articles would get fewer shares. It does not: with week, weekday and channel
-fixed effects and all content controls, log shares change by $-$0.011 [$-$0.035, 0.014] per log unit of story
-size ($-$0.025 [$-$0.055, 0.005] for stories of at most ten articles), far from the $-$1 that a fixed audience
-implies, and a story's total shares grow faster than proportionally with its size (slope 1.18 [1.14, 1.22]),
-as newsworthy stories attract both more articles and more readers. Same-story articles published within two
-days do not hurt either ($-$0.013 [$-$0.044, 0.017]), while all other articles that day do ($-$0.281 [$-$0.349,
-$-$0.212]) in the same regression. Competition is thus for the attention of the day, not of the story; the low
-twin correlation (RQ1) is not an artefact of splitting.
+\paragraph{No evidence of split attention within stories.} If a story's audience were divided among its
+articles, an article in a story with more articles would get fewer shares. With week, weekday and channel fixed
+effects and all content controls, log shares change by $-$0.011 [$-$0.035, 0.014] per log unit of story size
+($-$0.025 [$-$0.055, 0.005] for stories of at most ten articles), far from the $-$1 of a fixed audience. Same-story
+articles published within two days do not detectably hurt ($-$0.013 [$-$0.044, 0.017]), while all other articles
+that day do ($-$0.281 [$-$0.349, $-$0.212]) in the same regression. Two caveats limit this. First, story size is
+measured with error: pairs with slug similarity 0.3--0.5, which we do not link, contain about twice as many
+same-story pairs as we find (recall at most about 30\%), so many multi-article stories count as single articles
+and the slope is attenuated towards zero. Second, partial splitting offset by newsworthiness would also give a
+small slope. A timing check is less exposed to newsworthiness: if splitting mattered, an earlier twin should do
+worse when its follow-up comes one day later than when it comes 3--7 days later; the difference is 0.012
+[$-$0.095, 0.121]. We therefore find no evidence of story-level splitting but can rule out only strong
+splitting; the competition we can measure is for the attention of the day.
 
 \paragraph{Crowded days.}
 Articles fare worse on crowded days (Fig.~\ref{fig:context}a). With week, weekday and channel fixed effects, a
@@ -373,7 +377,8 @@ placebo is small and not detectable ($-$0.059 [$-$0.131, 0.014]). It is about fo
 in log volume, so a narrower range is not the reason. We read this as competition for limited attention \citep{weng2012}, but it remains an association: busy days
 may differ in ways we do not observe. An unobserved confounder would have to explain 4.1\% of the residual variance of both
 volume and shares to remove the effect (3.1\% to make it insignificant) \citep{cinelli2020}; the strongest content
-feature explains 0.3\% of the residual variance of shares.
+feature explains 0.3\% of the residual variance of shares. This is fragile: plausible confounders such as a big
+news day are not content features, so the benchmark is not reassuring.
 
 The popularity of similar earlier stories does not help. Semantic-memory features correlate with log shares at only
 0.016--0.029 for every half-life and change past-only AUC by $-$0.0008 [$-$0.0019, 0.0004]; recency-weighted training
@@ -381,10 +386,12 @@ did not help either. What matters is the article and its day, not what similar s
 
 \subsection{How much is chance, and what can a model promise? (RQ4)}
 \label{sec:rq4}
-A past-only HistGB regressor explains 16.2\% of the variance of log shares out of sample; adding channel$\times$day
-fixed effects raises this to 17.8\%. Corrected for non-story twins, the twin correlation is 0.071 [0.019, 0.143],
-so knowing the story could add at most about 6 points: model, context and story together explain at most about
-24\% [19, 29], and roughly three quarters of the variance is not predictable from what this dataset records.
+A past-only HistGB regressor explains 16.2\% [15.3, 17.1] of the variance of log shares out of sample; adding
+channel$\times$day fixed effects (in sample, df-adjusted) raises this to 17.8\% [16.7, 18.9] (week-cluster
+intervals). Corrected for non-story twins, the twin correlation is 0.071 [0.019, 0.143]; as an upper value for
+what the story adds, this gives about 24\% [20, 29] in total. The model term is a lower bound on what these
+features can predict and the story term an upper value, so the total is neither bound: it is the share we can
+explain, about a quarter, and the rest is unexplained by this decomposition.
 What remains can still be stated honestly. An 80\% conformal interval for a typical article runs from 776 to
 5{,}017 shares; calibrated once, it undercovers in September 2014 (76.3\%), while ACI keeps September to December
 between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b; assuming shares are known before the next article is
@@ -401,12 +408,11 @@ further loss above about 0.07, not smaller ones. This changes how to read the be
 better model is not one that recognises popular sections but one that separates articles that compete for the same
 readers. Within such pairs the only content signal that survives multiple testing is subjectivity of the body.
 
-\paragraph{Story irrelevance, not split attention.} Same-story articles correlate weakly. Two readings fit
-this alone: the story matters little, or its audience is split between articles. The split-attention test
-favours the first: more articles on a story do not lower each one's shares, and same-story neighbours do not
-compete, while the day's other articles do. Even corrected for non-story twins, the story explains only a few
-percent of the variance that context leaves (Section~\ref{sec:rq4}). Share histories or randomised versions
-\citep{matias2021} would be needed to rule out splitting that is offset exactly by newsworthiness.
+\paragraph{A weak story, or split attention?} Same-story articles correlate weakly. Two readings fit this
+alone: the story matters little, or its audience is split between articles. We find no evidence of splitting,
+but our tests are weak (recall of at most 30\%, wide timing intervals), and the corrected twin correlation,
+0.071 [0.019, 0.143], leaves room for the story to explain as much as the model does. Share histories or
+randomised versions \citep{matias2021} would be needed to separate the two readings.
 
 \paragraph{Limitations.} Twins are found from slugs only and are about 71\% precise; the remaining same-topic pairs bias
 correlations and effects towards cross-sectional values. Annotation was done by two AI (language-model) annotators, not by humans. Twin differences remove the
@@ -421,10 +427,11 @@ report calibrated intervals or selective accuracy, since much of popularity is n
 
 \section{Conclusion}
 Hidden in the URLs of a standard benchmark are thousands of same-story twins. They show that news popularity is
-predictable mostly at the level of the individual article, not its time, section or story (RQ1); that only body
+predictable mostly at the level of the individual article, not its time or section, and fixing the story costs
+at most 0.07 AUC (RQ1); that only body
 subjectivity among content features survives topic control (RQ2); that articles compete for the attention of the
-day rather than for the audience of their story (RQ3); and that model, context and story together leave about three
-quarters of the variance unexplained, so honest predictions must be wide or selective (RQ4).
+day, with no evidence (from weak tests) of competition within a story (RQ3); and that model, context and story
+together explain about a quarter of the variance, so honest predictions must be wide or selective (RQ4).
 
 \bibliographystyle{plainnat}
 \bibliography{references}
