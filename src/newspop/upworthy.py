@@ -24,6 +24,16 @@ def load(split: str) -> pd.DataFrame:
     return d.reset_index(drop=True)
 
 
+def cell_key(d: pd.DataFrame) -> np.ndarray:
+    """Randomization cell: packages of one test that share image and lede, so only the headline varies.
+    Missing image ids must not turn the key into NaN (pandas string dtype keeps NaN through astype(str),
+    and factorize would pool all such packages across tests into one cell)."""
+    key = d.test.astype(str) + "|" + d.eyecatcher_id.fillna("none").astype(str) + "|" + d.lede_clean
+    codes = pd.factorize(key)[0]
+    assert (codes >= 0).all()
+    return codes
+
+
 def tokens(s: str) -> list[str]:
     return re.findall(r"[a-z']+", str(s).lower())
 

@@ -48,7 +48,7 @@ def load_glove(vocab: set[str]) -> dict[str, np.ndarray]:
 def setup(split: str) -> Setup:
     d = up.load(split)
     d["ctr"] = d.clicks / d.impressions
-    d["cell"] = pd.factorize(d.test.astype(str) + "|" + d.eyecatcher_id.astype(str) + "|" + d.lede_clean)[0]
+    d["cell"] = up.cell_key(d)
     H = pd.Series(d.headline.astype(str).unique())
     hid = pd.Index(H).get_indexer(d.headline.astype(str))
     F15 = up.headline_features(H)
@@ -80,6 +80,7 @@ def setup(split: str) -> Setup:
         keep = hid[idx[a]] != hid[idx[b]]
         ea.append(idx[a][keep]), eb.append(idx[b][keep])
     ea, eb = np.concatenate(ea), np.concatenate(eb)
+    assert (tix[ea] == tix[eb]).all(), "evaluation pairs must lie within one test"
     c, n = d.clicks.to_numpy(), d.impressions.to_numpy()
     p1, p2 = c[ea] / n[ea], c[eb] / n[eb]
     pp = (c[ea] + c[eb]) / (n[ea] + n[eb])
@@ -115,6 +116,7 @@ def evaluate(S: Setup, score_rows: np.ndarray, pred_rows: np.ndarray, te_tests) 
     pred[score_rows] = pred_rows
     te = np.isin(S.tix[S.ev_a], te_tests)
     dp = pred[S.ev_a[te]] - pred[S.ev_b[te]]
+    assert not np.isnan(dp).any(), "every evaluation pair must be scored"
     ok = np.where(dp == 0, 0.5, (np.sign(dp) == np.sign(S.zz[te])).astype(float))
     sig = np.abs(S.zz[te]) > 1.96
     sub = S.d.iloc[score_rows][["cell", "ctr"]].assign(p=pred_rows, h=S.hid[score_rows])

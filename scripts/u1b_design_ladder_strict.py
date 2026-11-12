@@ -60,7 +60,7 @@ def demean(A, g):
 other = [s for s in SPLITS if s != split]
 dt = pd.concat([parts[s] for s in other], ignore_index=True)
 Xo = ((pd.concat([Fall[s] for s in other], ignore_index=True) - mu) / sd).to_numpy()
-cell = pd.factorize(dt.test.astype(str) + "|" + dt.eyecatcher_id.astype(str) + "|" + dt.lede_clean)[0]
+cell = up.cell_key(dt)
 nh = pd.Series(dt.headline.to_numpy()).groupby(cell).transform("nunique").to_numpy()
 w = nh >= 2
 cw = pd.factorize(cell[w])[0]

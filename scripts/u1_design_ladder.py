@@ -61,7 +61,7 @@ def demean(A, g):
 
 
 # ---- truth: within test x image x lede
-cell = pd.factorize(d.test.astype(str) + "|" + d.eyecatcher_id.astype(str) + "|" + d.lede_clean)[0]
+cell = up.cell_key(d)
 nh = pd.Series(d.headline.to_numpy()).groupby(cell).transform("nunique").to_numpy()
 w = nh >= 2
 cw = pd.factorize(cell[w])[0]

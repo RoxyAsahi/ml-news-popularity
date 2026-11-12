@@ -52,7 +52,7 @@ ALPHAS = np.logspace(-1, 4, 11)
 REPS = ["H15", "TF-IDF", "GloVe+H15"] if split == "exploratory" else ["H15", "GloVe+H15"]
 d = up.load(split)
 d["ctr"] = d.clicks / d.impressions
-d["cell"] = pd.factorize(d.test.astype(str) + "|" + d.eyecatcher_id.astype(str) + "|" + d.lede_clean)[0]
+d["cell"] = up.cell_key(d)
 
 # ---- headline representations (per unique headline)
 H = pd.Series(d.headline.astype(str).unique())
@@ -98,6 +98,7 @@ for _, idx in d.groupby("cell").indices.items():
     keep = hid[idx[a]] != hid[idx[b]]
     ev_a.append(idx[a][keep]), ev_b.append(idx[b][keep])
 ev_a, ev_b = np.concatenate(ev_a), np.concatenate(ev_b)
+assert (tix[ev_a] == tix[ev_b]).all(), "evaluation pairs must lie within one test"
 p1, p2 = d.ctr.to_numpy()[ev_a], d.ctr.to_numpy()[ev_b]
 n1, n2 = d.impressions.to_numpy()[ev_a], d.impressions.to_numpy()[ev_b]
 pp = (d.clicks.to_numpy()[ev_a] + d.clicks.to_numpy()[ev_b]) / (n1 + n2)

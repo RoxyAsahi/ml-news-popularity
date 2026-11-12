@@ -36,14 +36,29 @@ rng = np.random.default_rng(0)
 print(f"{split}: {len(S.tests)} tests, {S.article.max() + 1} articles", flush=True)
 
 rows = []
+SIG = np.where(np.abs(S.zz) > 1.96)[0]          # significant within-test pairs, scored once (in their fold)
+CORR = {}                                         # config -> correctness per significant pair
+
+
+def record(name, k, rep, score_rows, pred_rows, te):
+    pred = np.full(len(S.d), np.nan)
+    pred[score_rows] = pred_rows
+    m = np.isin(S.tix[S.ev_a[SIG]], te)
+    dp = pred[S.ev_a[SIG[m]]] - pred[S.ev_b[SIG[m]]]
+    v = CORR.setdefault((name, k, rep), np.full(len(SIG), np.nan))
+    v[m] = np.where(dp == 0, 0.5, (np.sign(dp) == np.sign(S.zz[SIG[m]])).astype(float))
+
+
 for fold, (tr, te) in enumerate(GroupKFold(5).split(np.zeros(len(S.tests)), groups=S.article)):
     obs = ur.one_per_test(S, tr, rng)
     O = RidgeCV(alphas=ALPHAS).fit(Z[S.hid[obs]], ur.week_demeaned(S, obs))
     score_rows = np.where(np.isin(S.tix, te))[0]
     Zte = Z[S.hid[score_rows]]
     rows.append(dict(fold=fold, method="O", k=0, rep=0, **ur.evaluate(S, score_rows, O.predict(Zte), te)))
+    record("O", 0, 0, score_rows, O.predict(Zte), te)
     O_raw = RidgeCV(alphas=ALPHAS).fit(Z[S.hid[obs]], S.y[obs])
     rows.append(dict(fold=fold, method="O-raw", k=0, rep=0, **ur.evaluate(S, score_rows, O_raw.predict(Zte), te)))
+    record("O-raw", 0, 0, score_rows, O_raw.predict(Zte), te)
     exp_tests = np.unique(S.tix[ur.within_rows(S, tr)[0]])
     Xo, yo = Z[S.hid[obs]], ur.week_demeaned(S, obs)
     for k in KS + [len(exp_tests)]:
@@ -60,9 +75,15 @@ for fold, (tr, te) in enumerate(GroupKFold(5).split(np.zeros(len(S.tests)), grou
             P = RidgeCV(alphas=ALPHAS).fit(np.r_[Xo, Xe], np.r_[yo, ye])
             D = RidgeCV(alphas=ALPHAS, fit_intercept=False, cv=cv).fit(Xe, ye - Xe @ O.coef_)
             for name, pred in [("E", Zte @ E.coef_), ("POOL", P.predict(Zte)), ("PRIOR", Zte @ (O.coef_ + D.coef_))]:
-                rows.append(dict(fold=fold, method=name, k=k if k < len(exp_tests) else -1, rep=rep, **ur.evaluate(S, score_rows, pred, te)))
+                kk = k if k < len(exp_tests) else -1
+                rows.append(dict(fold=fold, method=name, k=kk, rep=rep, **ur.evaluate(S, score_rows, pred, te)))
+                record(name, kk, rep, score_rows, pred, te)
             print(fold, k, rep, {r["method"]: round(r["within_acc_sig"], 3) for r in rows[-3:]}, flush=True)
 
+keys = sorted(CORR, key=str)
+np.savez_compressed(ROOT / "results" / "tables" / f"u3_pairs_{split}.npz",
+                    configs=np.array(["|".join(map(str, c)) for c in keys]), correct=np.array([CORR[c] for c in keys]),
+                    article=S.article[S.tix[S.ev_a[SIG]]])
 R = pd.DataFrame(rows)
 R.to_csv(ROOT / "results" / "tables" / f"u3_fusion_{split}.csv", index=False)
 print(R.groupby(["method", "k"])[["within_acc_sig", "within_acc", "lift_pct"]].mean().round(4).to_string())
