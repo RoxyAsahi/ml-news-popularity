@@ -27,3 +27,9 @@ report/*.synctex.gz
 
 # submission build
 dist/
+report/*.pdf
+report/*.aux
+report/*.log
+report/*.bbl
+report/*.blg
+report/*.out
