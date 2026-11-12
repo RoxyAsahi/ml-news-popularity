@@ -16,17 +16,37 @@ Label Reliability, Temporal Drift and Point-in-Time Features in Online News Popu
 \maketitle
 
 \begin{abstract}
-\todo{~150 words, write last. Problem; the four RQs; headline numbers:
-chronological ROC-AUC 0.74 (0.70 without share-derived features);
-PR-AUC 0.68$\to$0.10 from median to 95th-percentile threshold;
-weak cluster structure; negative sentiment lowers popularity odds within channels (OR 0.81).}
+Predicting which online news articles will become popular is usually framed as binary
+classification with a fixed share threshold and evaluated on a random split. Using 39{,}643
+Mashable articles from 2013--2014, we ask how reliable that set-up is. Shares do not grow with article
+age, but the share of ``popular'' articles drifts from 44\% to 68\% across months. A chronological
+split leaves ranking quality intact (ROC-AUC 0.739 for gradient boosting, tied with a random forest),
+yet AUC decays by 0.03 within four months and random-split error bars are ten times too narrow.
+The strongest features, keyword statistics derived from earlier articles' shares, are computed
+point-in-time but partly encode the publication date; removing the date-like columns costs nothing,
+removing all share-derived features costs 0.03. Raising the threshold to the 95th percentile keeps
+ROC-AUC but drops PR-AUC from 0.67 to 0.10. Topic/sentiment clusters mostly rediscover editorial
+channels, and negative tone lowers the odds of popularity within channels (OR 0.81).
 \end{abstract}
 
 % ------------------------------------------------------------------ 0.75 page
 \section{Introduction}
-\todo{Why popularity prediction matters (editors, recommendation). Prior work on this dataset
-reports accuracy/AUC on random splits with a fixed 1400-share threshold \citep{fernandes2015}.
-We ask how much of that performance is real and stable. State RQ1--RQ4 and contributions.}
+News sites publish dozens of articles a day and editors must decide early which ones to promote.
+Predicting popularity before publication, from what is known about an article at that moment,
+supports such decisions. The Online News Popularity dataset \citep{fernandes2015} made this a standard
+benchmark: 39{,}644 Mashable articles described by 58 pre-computed features, with the number of
+social-network shares as target. The common formulation turns shares into a binary label
+(``popular'' if at least 1{,}400 shares, the median) and reports accuracy or AUC on a random split.
+
+That formulation hides three choices that matter in practice. First, the articles span two years, and
+both the label and the features may change over time, so a random split can be optimistic. Second,
+some features are computed from the shares of \emph{other} articles; whether they are available at
+prediction time and what they actually encode determines whether the reported performance is usable.
+Third, the threshold is arbitrary: an editor cares about the few viral articles, not the median.
+We therefore study the reliability of the popularity label and of the evaluation, rather than
+chasing a higher score. Our contributions are a chronological, uncertainty-aware evaluation
+protocol; a point-in-time check of the share-derived features; and a study of how threshold, data
+size and regularisation interact, complemented by an unsupervised analysis of topic and tone.
 
 \paragraph{Research questions.}
 \begin{enumerate}
@@ -41,10 +61,19 @@ We ask how much of that performance is real and stable. State RQ1--RQ4 and contr
 
 % ------------------------------------------------------------------ 0.5 page
 \section{Related Work}
-\todo{Dataset paper \citep{fernandes2015}; early saturation of popularity \citep{szabo2010};
-learning with few labels / temporal change in social data \citep{yang2014wsdm,yang2014cikm};
-leakage / point-in-time features \citep{kaufman2012}; concept drift \citep{gama2014}; PR vs ROC under imbalance
-\citep{saito2015}. Footnote: half-life weighting inspired by VCPToolBox TimeDecay.}
+Fernandes et al.\ \citep{fernandes2015} introduced the dataset and reached an AUC of 0.73 with a random
+forest evaluated on rolling time windows; we extend that idea with interval estimates and an analysis
+of what changes over time. Szabo and Huberman \citep{szabo2010} showed that the popularity of online content saturates
+quickly and that early counts predict later ones, which motivates our check that shares do not
+depend on article age.
+Learning when data arrive over time and labels are expensive is studied in active learning for
+networked and streaming data \citep{yang2014wsdm,yang2014cikm}; we borrow the streaming view,
+evaluating models only on articles published after their training data. Concept drift
+\citep{gama2014} distinguishes changes in the label distribution from changes in the inputs; we
+test both. Leakage \citep{kaufman2012} arises when a feature uses information unavailable at
+prediction time, which is why we verify the share-derived features explicitly. Finally, under
+class imbalance precision--recall curves are more informative than ROC curves \citep{saito2015},
+which matters once the threshold moves to the top percentiles.
 
 % ------------------------------------------------------------------ 1 page
 \section{Data}
@@ -64,17 +93,18 @@ articles published earlier.
 \centering\small
 \caption{Feature groups (60 columns after cleaning).}
 \label{tab:features}
+\small\setlength{\tabcolsep}{3pt}
 \begin{tabular}{@{}lrl@{}}
 \toprule
 Group & \# & Examples \\
 \midrule
-Content & 12 & words in title/body, links, images, videos \\
-Keyword (\texttt{kw\_*}) & 10 & min/avg/max shares of keyword articles \\
+Content & 12 & words, links, images, videos \\
+Keyword (\texttt{kw\_*}) & 10 & shares of keyword's articles \\
 Self-reference & 3 & min/avg/max shares of linked articles \\
 Channel & 6 & lifestyle, entertainment, business, \dots \\
 Weekday & 8 & day of publication, weekend \\
 LDA topics & 5 & closeness to 5 LDA topics \\
-Sentiment & 16 & polarity, subjectivity (body and title) \\
+Sentiment & 16 & polarity, subjectivity \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -287,12 +317,34 @@ in tech. The 2\% most unusual articles under an Isolation Forest reach the top 5
 
 % ------------------------------------------------------------------ 0.75 page
 \section{Discussion}
-\todo{What the results mean for anyone using this dataset: report chronological splits and
-PR-AUC; treat kw\_* with care; small data $\Rightarrow$ regularise / prefer RF. Limitations:
-no article text, single outlet, 2013--14 only, pre-computed LDA.}
+\paragraph{What this means for work on the dataset.} The headline AUC of about 0.74 is real in the
+sense that it survives a chronological split, and the share-derived features that drive it are
+legitimately available at publication time. Three caveats should accompany it. Uncertainty must be
+estimated over time, not over random seeds: fold-to-fold variation (0.02) dwarfs seed variation,
+and a single model comparison of 0.003 AUC is not a result. Threshold-dependent metrics such as
+accuracy and F1 are fragile because the base rate drifts, and no correction based on past rates can
+anticipate that. And at high thresholds, which is what editors care about, PR-AUC rather than ROC-AUC
+should be reported, since ranking quality and practical precision diverge.
+
+\paragraph{Choosing a model.} Tree ensembles are consistently better than linear models and kNN, but the
+choice between random forest and gradient boosting does not matter at this size; with fewer than
+10{,}000 articles a random forest or a strongly regularised linear model is the safer choice.
+Recency weighting, a natural idea under drift, does not help the best model.
+
+\paragraph{Limitations.} We only have pre-computed features, not the article text, so topic and tone
+come from a fixed LDA model and a lexicon. The data cover one outlet in 2013--2014, so absolute
+numbers will not transfer. Earlier articles' shares were measured at collection time, which slightly
+favours the keyword statistics for early articles. Our clustering and odds-ratio analyses are
+associational: channel adjustment removes one obvious confounder, not all of them.
 
 \section{Conclusion}
-\todo{3--4 sentences answering RQ1--RQ4.}
+Shares do not depend on article age, but the popularity label drifts; models still rank new articles
+well, with a slow decay of about 0.03 AUC over four months (RQ1). The share-derived keyword features
+are point-in-time and carry most of the signal; a few of them act as a clock but contribute nothing
+(RQ2). The threshold changes what can be achieved far more than the model does, regularisation matters
+only for small training sets, and random forests are the best choice when data are scarce (RQ3).
+Topic/sentiment clusters mainly recover editorial channels, while negative tone has a modest
+within-channel effect (RQ4).
 
 \bibliographystyle{plainnat}
 \bibliography{references}

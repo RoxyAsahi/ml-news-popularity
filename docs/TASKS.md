@@ -41,8 +41,9 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Report: Results RQ4 (cluster figure)
 - [x] Report: Table 2 (main results, tuned on validation)
 - [ ] Report: final float placement / layout pass (Fig. 3 and 4 currently float to the last page)
-- [ ] Report: Introduction, Related Work, Discussion, Conclusion, Abstract
-- [ ] Verify every reference against its source; fill the two Yang et al. 2014 titles
+- [x] Report: Introduction, Related Work, Discussion, Conclusion, Abstract (first full draft, 6 pages)
+- [x] Fill the two Yang et al. 2014 titles + DOIs (checked via web search)
+- [ ] Verify the remaining references, and the claim in Related Work that Fernandes et al. report AUC 0.73 with a random forest on rolling windows (needs the paper PDF; doi/crossref hosts are blocked here)
 - [ ] Check page count ≤ 8; cut or merge figures if needed
 - [ ] Clean-environment reproduction: fresh venv, `pip install`, `./run_all.sh`, diff results
 - [ ] Build the submission zip (report PDF + code, no data) and hand it to Roxy for upload
