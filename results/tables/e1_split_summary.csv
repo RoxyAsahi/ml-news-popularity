@@ -1,0 +1,13 @@
+,,roc_auc,roc_auc,pr_auc,pr_auc,f1,f1,balanced_acc,balanced_acc
+,,mean,std,mean,std,mean,std,mean,std
+model,split,,,,,,,,
+hgb,random,0.735,0.002,0.756,0.004,0.699,0.003,0.668,0.004
+hgb,temporal,0.737,,0.719,,0.674,,0.676,
+knn,random,0.697,0.005,0.713,0.005,0.674,0.004,0.644,0.004
+knn,temporal,0.693,,0.667,,0.639,,0.645,
+logreg,random,0.707,0.002,0.723,0.003,0.686,0.002,0.651,0.002
+logreg,temporal,0.717,,0.697,,0.663,,0.661,
+majority,random,0.5,0.0,0.53,0.004,0.693,0.004,0.5,0.0
+majority,temporal,0.5,,0.479,,0.648,,0.5,
+rf,random,0.734,0.003,0.752,0.004,0.707,0.003,0.668,0.003
+rf,temporal,0.736,,0.715,,0.675,,0.673,
