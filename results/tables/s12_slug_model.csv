@@ -1,0 +1,5 @@
+context,auc_base,auc_slug,diff,lo,hi
+all pairs (same week),0.7344,0.7346,0.0002,-0.0006,0.001
+same channel x day,0.6744,0.6757,0.0013,-0.0004,0.003
+same-story twins,0.714,0.7071,-0.0069,-0.0182,0.0055
+"same-story twins, same channel",0.6513,0.6359,-0.0154,-0.0513,0.0157

@@ -1,0 +1,8 @@
+quantity,value,lo,hi
+"twin correlation, observed",0.051,0.0161,0.0864
+"twin correlation, corrected for non-story twins",0.0705,0.0189,0.1428
+"R2 context (channel x day, adjusted)",0.0919,,
+R2 past-only HistGB regressor,0.1617,,
+R2 regressor + channel x day FE (adjusted),0.1775,,
++ story (upper value),0.2354,0.193,0.2949
+not predictable from these data,0.7646,,
