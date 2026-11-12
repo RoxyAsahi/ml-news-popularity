@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Reproduce every table and figure (~26 min). Run from the repo root after setup (see README).
 set -euo pipefail
+./scripts/u0_download_upworthy.sh
+for split in exploratory holdout confirmatory; do python scripts/u1_design_ladder.py $split; done
 for s in scripts/00_eda.py scripts/01_pilot.py scripts/e1_drift.py scripts/e3_leakage.py \
          scripts/e4_threshold.py scripts/e5_learning_curve.py scripts/e6_regularisation.py \
          scripts/e7_clustering.py scripts/e3b_point_in_time.py scripts/main_results.py scripts/e7b_confounding.py scripts/e2_half_life.py scripts/e1b_staleness.py scripts/e4b_precision_at_k.py scripts/e8_ale.py scripts/fig_report_data.py scripts/fig_report_results.py \

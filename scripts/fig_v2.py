@@ -164,5 +164,40 @@ def fig_e():
     fig.savefig(FIG / "v2_fig_e_benchmark.png", dpi=300)
 
 
-fig_a(); fig_b(); fig_c(); fig_d(); fig_e()
+def fig_f():
+    """Upworthy design ladder (confirmatory split): (a) features with detectable bias and coverage of the
+    randomized truth; (b) per-feature estimates against the randomized truth."""
+    R = pd.read_csv(TAB / "u1_ladder_confirmatory.csv")
+    C = pd.read_csv(TAB / "u1_coefs_confirmatory.csv", index_col=0)
+    short = {"L0 naive cross-section": "cross-section", "L1 + week FE": "+ week FE",
+             "L1e + week FE + text embedding": "+ week FE\n+ text embedding", "L2 story twins": "story twins",
+             "L3 same-article retests": "same-article\nretests"}
+    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 2.2), gridspec_kw={"width_ratios": [1.0, 1.0]})
+    yy = np.arange(len(R))
+    cols = [GREY, GREY, GREY, ACC, ACC]
+    a.barh(yy, R.n_features_biased, color=cols, height=0.6)
+    for k, (nb, cv) in enumerate(zip(R.n_features_biased, R.coverage_of_truth)):
+        a.text(nb + 0.3, k, f"{cv:.0%}", va="center", fontsize=6.5)
+    a.set_yticks(yy, [short[d] for d in R.design], fontsize=6.5)
+    a.invert_yaxis()
+    a.set_xlim(0, 14)
+    a.set_xlabel("features (of 15) with\ndetectable bias")
+    a.set_title("(a) Biased features", fontsize=7.5)
+    t = C["T truth (randomized)"]
+    for d, col, mk, lab in [("L1 + week FE", GREY, "s", "+ week FE"),
+                            ("L3 same-article retests", ACC, "o", "retests")]:
+        b.scatter(t, C[d], s=10, color=col, marker=mk, label=lab, zorder=3)
+    lim = [-0.07, 0.09]
+    b.plot(lim, lim, color="0.7", lw=0.8, ls="--")
+    b.set_xlim(lim); b.set_ylim(lim)
+    b.set_xlabel("randomized effect", fontsize=7)
+    b.set_ylabel("observational estimate", fontsize=7)
+    b.tick_params(labelsize=6)
+    b.legend(frameon=False, fontsize=6, loc="upper left", handletextpad=0.2)
+    b.set_title("(b) vs. truth", fontsize=7.5)
+    fig.tight_layout(pad=0.3)
+    fig.savefig(FIG / "v2_fig_f_upworthy.png", dpi=300)
+
+
+fig_a(); fig_b(); fig_c(); fig_d(); fig_e(); fig_f()
 print("figures written")

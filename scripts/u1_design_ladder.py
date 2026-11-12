@@ -16,8 +16,9 @@ Designs (each estimates the effect of every feature on logit CTR):
   L3 same-article retests: pairs of tests of the identical article (same lede) run at different times.
 Agreement with the truth over the 15 features: Pearson r, RMSE, sign agreement where the truth is
 significant; excess squared bias (squared deviation minus both sampling variances, averaged over features)
-and coverage of the truth by each design's own 95% intervals (a valid but noisy design covers ~95%). Point estimates average 20 random package draws; intervals bootstrap clusters (tests, or
-twin-graph components) with one fresh draw per replicate, and resample the truth independently.
+and coverage of the truth by each design's own 95% intervals (a valid but noisy design covers ~95%); per feature z = (b - t) / sqrt(var_b + var_t), the number of
+features with |z| > 1.96 and a chi-square test (15 df) of no bias. Point estimates average 20 random package draws; intervals bootstrap clusters (tests, or
+twin-graph components), averaging 20 fresh draws per replicate, and resample the truth independently.
 
 Usage: python scripts/u1_design_ladder.py [exploratory|confirmatory]   (analysis fixed on exploratory)
 Output: results/tables/u1_ladder_<split>.csv, results/tables/u1_coefs_<split>.csv
@@ -25,6 +26,7 @@ Output: results/tables/u1_ladder_<split>.csv, results/tables/u1_coefs_<split>.cs
 import sys
 
 import numpy as np
+from scipy.stats import chi2
 import pandas as pd
 from scipy.sparse.csgraph import connected_components
 from scipy.sparse import coo_matrix
@@ -35,7 +37,7 @@ from newspop.data import ROOT
 from newspop import upworthy as up
 
 split = sys.argv[1] if len(sys.argv) > 1 else "exploratory"
-B, DRAWS = 300, 20
+B, DRAWS = 200, 20
 rng = np.random.default_rng(0)
 d = up.load(split)
 F = up.headline_features(d.headline)
@@ -132,15 +134,16 @@ for name in designs:
     coefs.append(dict(design=name, **dict(zip(names, est))))
     boots, bcoef = [], []
     for bi in range(B):
-        pick = draw(rng)
+        # each replicate resamples clusters once and averages DRAWS package draws, like the point estimate
         if name.startswith("L2") or name.startswith("L3"):
             comp = pairs[name][2]
             labs, inv = np.unique(comp, return_inverse=True)
             members = [np.where(inv == c)[0] for c in range(len(labs))]
             sel = np.concatenate([members[c] for c in rng.integers(0, len(labs), len(labs))])
-            bb = fit_design(name, pick, sel_pairs=sel)
+            bb = np.mean([fit_design(name, draw(rng), sel_pairs=sel) for _ in range(DRAWS)], 0)
         else:
-            bb = fit_design(name, pick, sel_tests=rng.integers(0, len(tests), len(tests)))
+            sel = rng.integers(0, len(tests), len(tests))
+            bb = np.mean([fit_design(name, draw(rng), sel_tests=sel) for _ in range(DRAWS)], 0)
         boots.append(agree(bb, truth_b[bi], truth_b))
         bcoef.append(bb)
     bt = pd.DataFrame(boots)
@@ -153,6 +156,9 @@ for name in designs:
     lo_, hi_ = np.quantile(bcoef, .025, 0), np.quantile(bcoef, .975, 0)
     a["coverage_of_truth"] = float(np.mean((truth >= lo_) & (truth <= hi_)))
     a["mean_se"] = float(np.sqrt(var_b).mean())
+    z = (est - truth) / np.sqrt(var_b + var_t)
+    a["n_features_biased"] = int((np.abs(z) > 1.96).sum())  # ~0.75 of 15 expected without bias
+    a["chi2_bias_p"] = float(1 - chi2.cdf((z ** 2).sum(), k))
     for f in range(k):
         coefs.append(dict(design=name + " [lo]", **dict(zip(names, lo_)))) if f == 0 else None
         coefs.append(dict(design=name + " [hi]", **dict(zip(names, hi_)))) if f == 0 else None
