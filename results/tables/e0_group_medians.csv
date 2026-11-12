@@ -1,0 +1,15 @@
+feature,n,median_shares
+data_channel_is_lifestyle,2099,1700.0
+data_channel_is_entertainment,7056,1200.0
+data_channel_is_bus,6258,1400.0
+data_channel_is_socmed,2323,2100.0
+data_channel_is_tech,7346,1700.0
+data_channel_is_world,8427,1100.0
+weekday_is_monday,6661,1400.0
+weekday_is_tuesday,7389,1300.0
+weekday_is_wednesday,7435,1300.0
+weekday_is_thursday,7267,1400.0
+weekday_is_friday,5701,1500.0
+weekday_is_saturday,2453,2000.0
+weekday_is_sunday,2737,1900.0
+is_weekend,5190,1900.0
