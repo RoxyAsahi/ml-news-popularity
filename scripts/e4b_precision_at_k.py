@@ -58,11 +58,12 @@ def main():
     summary.to_csv(TAB / "e4b_precision_summary.csv", index=False)
     print(summary.round(3).to_string(index=False))
 
-    fig, ax = plt.subplots(figsize=(3.4, 2.1))
+    plt.rcParams.update({"font.size": 8.5})
+    fig, ax = plt.subplots(figsize=(3.4, 2.2))
     ax.bar(wk.week, wk.precision, width=5, color="C0", label="precision of weekly top 5%")
     ax.plot(wk.week, wk.base_rate, color="0.3", ls=":", marker=".", ms=3, label="base rate")
     ax.set_ylabel("share viral"); ax.set_ylim(0, 0.6)
-    ax.legend(fontsize=6.5, loc="upper left")
+    ax.legend(fontsize=7.5, loc="upper left", ncol=2)
     import matplotlib.dates as mdates
     ax.xaxis.set_major_locator(mdates.MonthLocator()); ax.xaxis.set_major_formatter(mdates.DateFormatter("%b"))
     ax.set_xlabel("week (2014)")

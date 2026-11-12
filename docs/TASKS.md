@@ -9,7 +9,13 @@ Roxy can reorder, add or delete lines at any time; the next run follows whatever
 match `results/tables/`; no data files committed; report stays ≤ 8 pages once it compiles.
 
 **Stop and ask Roxy instead of doing it:** anything that changes the research questions or the
-storyline, submitting on Canvas, inviting people, deleting results.
+storyline, inviting people, deleting results.
+
+**Do not raise submission matters with Roxy** (Canvas upload, solo-submission permission, author line):
+Roxy said on 2026-11-12 to leave them alone and focus on improving the project. Keep the author line as is.
+
+**When the queue is empty:** add the next most valuable improvement (check the latest review in
+docs/ or the project's review artifacts first) as a new item, then do it.
 
 Deadline: Sun 13 Dec 2026, 23:59 CET.
 
@@ -47,4 +53,7 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] Check page count ≤ 8 (7 pages after review round 2)
 - [x] Clean-environment reproduction (2026-11-12): fresh clone + venv (numpy 2.5.4, pandas 3.1.1, scikit-learn 1.9.1), `./run_all.sh` in 26 min, all 44 tables match main (max abs diff 1.2e-10)
 - [x] Build the submission zip: `./make_submission.sh` -> `dist/group3_news_popularity.zip` (report.pdf + code/, no data)
-- [ ] Roxy: decide the author line (currently "Group 3"), then rebuild the zip and upload it to Canvas
+- [x] Review round 3 (adversarial grading, items 2–8): age not identifiable, kw values from collection date (upper bound), weekly block bootstrap, sliding-window variance, validation-chosen reference model, wider kNN grid, HistGB temporal early stopping, Breslow–Day + per-channel effects, all Isolation Forest settings, method citations, VCPToolBox footnote, figure fonts, abstract rewrite; 8 pages
+- [ ] Prose tightening pass: the report is at exactly 8 pages; cut ~0.3 page (repetition between Results and Discussion, long captions) so later additions fit
+- [ ] Seed robustness of the main comparison: refit RF and HistGB with 5 seeds, report the spread of test AUC next to Table 2 (one sentence + table column or footnote)
+- [ ] Calibration under drift: reliability curve of HistGB on validation vs test blocks (Brier, ECE); one sentence in RQ1 if it fits, else docs only

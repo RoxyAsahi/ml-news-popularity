@@ -11,9 +11,9 @@ Here we fix the evaluation window (Oct-Dec 2014) and move the training cutoff fo
 If staleness drove the decay, a fresh model would recover most of the 0.03.
 
 * staleness = AUC(fresh model, Oct-Dec) - AUC(old model, Oct-Dec): paired bootstrap on the
-  same test articles;
-* difficulty = AUC(old model, Jul-Sep) - AUC(fresh model, Oct-Dec): independent bootstrap
-  (disjoint article sets).
+  same test articles, resampling whole publication weeks (block bootstrap);
+* difficulty = AUC(old model, Jul-Sep) - AUC(fresh model, Oct-Dec): independent weekly block
+  bootstrap (disjoint article sets).
 
 Run from the repo root:  python scripts/e1b_staleness.py   (~2 min)
 """
@@ -28,7 +28,7 @@ import pandas as pd
 from sklearn.metrics import roc_auc_score
 
 from newspop.data import ROOT, feature_set, load, make_label
-from newspop.evaluate import bootstrap_ci, paired_bootstrap
+from newspop.evaluate import _resample, bootstrap_ci, paired_bootstrap
 from newspop.models import fit, get_model
 
 warnings.filterwarnings("ignore")
@@ -46,12 +46,28 @@ def window(dates, lo, hi):
     return np.where((dates >= pd.Timestamp(lo)) & (dates < pd.Timestamp(hi)))[0]
 
 
+def sliding_window(X, y, n, min_train=0.4, n_folds=5):
+    """Same five test blocks as the expanding rolling-origin folds of E1, but every model is
+    trained on a FIXED number of the most recent articles (n * min_train), so fold-to-fold
+    variation is not confounded with growing training size."""
+    from newspop.splits import rolling_origin
+    size = int(n * min_train)
+    rows = []
+    for k, (tr, te) in enumerate(rolling_origin(n, n_folds=n_folds, min_train=min_train)):
+        win = tr[-size:]
+        for m in MODELS:
+            p = fit(get_model(m, 0), X[win], y[win]).predict_proba(X[te])[:, 1]
+            rows.append({"fold": k, "model": m, "n_train": len(win), "auc": roc_auc_score(y[te], p)})
+    return pd.DataFrame(rows)
+
+
 def main():
     df = load()
     y = make_label(df.shares, THRESHOLD)
     X = df[feature_set(df, "all")].to_numpy()
     dates = df.publish_date
     early, late = window(dates, *EARLY), window(dates, *LATE)
+    week = dates.dt.to_period("W").astype(str).to_numpy()
 
     rows, pairs, scores = [], [], {}
     for m in MODELS:
@@ -59,17 +75,18 @@ def main():
             tr = np.where(dates < pd.Timestamp(c))[0]
             mod = fit(get_model(m, 0), X[tr], y[tr])
             scores[m, c] = mod.predict_proba(X)[:, 1]
-            est, lo, hi = bootstrap_ci(y[late], scores[m, c][late], n_boot=N_BOOT)
+            est, lo, hi = bootstrap_ci(y[late], scores[m, c][late], n_boot=N_BOOT, groups=week[late])
             rows.append({"model": m, "cutoff": c, "n_train": len(tr), "eval": "Oct-Dec 2014",
                          "auc": est, "lo": lo, "hi": hi})
             print(m, c, len(tr), round(est, 3))
         old, fresh = scores[m, CUTOFFS[0]], scores[m, CUTOFFS[-1]]
-        st = paired_bootstrap(y[late], fresh[late], old[late], n_boot=N_BOOT)
+        st = paired_bootstrap(y[late], fresh[late], old[late], n_boot=N_BOOT, groups=week[late])
         # difficulty: old model on Jul-Sep vs fresh model on Oct-Dec (disjoint sets)
         rng = np.random.default_rng(0)
         diffs = []
         for _ in range(N_BOOT):
-            ie, il = rng.choice(early, len(early)), rng.choice(late, len(late))
+            ie = early[_resample(rng, len(early), week[early])]
+            il = late[_resample(rng, len(late), week[late])]
             diffs.append(roc_auc_score(y[ie], old[ie]) - roc_auc_score(y[il], fresh[il]))
         total = roc_auc_score(y[early], old[early]) - roc_auc_score(y[late], old[late])
         diff = roc_auc_score(y[early], old[early]) - roc_auc_score(y[late], fresh[late])
@@ -82,6 +99,11 @@ def main():
     res.to_csv(TAB / "e1b_cutoff_auc.csv", index=False)
     dec.to_csv(TAB / "e1b_decomposition.csv", index=False)
     print(dec.round(3).to_string(index=False))
+
+    sw = sliding_window(X, y, len(df))
+    sw.to_csv(TAB / "e1b_sliding_window.csv", index=False)
+    print(sw.pivot(index="fold", columns="model", values="auc").round(3))
+    print("sd across fixed-size folds:", sw.groupby("model").auc.std().round(4).to_dict())
 
     fig, ax = plt.subplots(figsize=(3.4, 2.3))
     for m, col in zip(MODELS, ["C0", "0.45"]):

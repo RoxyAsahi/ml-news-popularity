@@ -31,3 +31,17 @@ Table: `results/tables/main_results.csv`.
   within the ±0.011 interval and should not be interpreted.
 - Every model's validation AUC is 0.01–0.02 above its test AUC: the validation block (25 Jun – 28 Aug 2014)
   is slightly easier than the test block (28 Aug – 27 Dec 2014), consistent with E1.
+
+## Update after review round 3 (2026-11-12)
+
+- Reference ("best") model is now chosen by **validation** AUC, not test AUC.
+- kNN grid extended to k = 2,000 (still picks 500, now inside the grid); HistGB grid has 12
+  configurations with the number of boosting rounds chosen on the validation block (temporal
+  early stopping).
+- Intervals are now **weekly block bootstrap** (whole publication weeks resampled); about 1.4×
+  wider than article-level (HistGB [0.721, 0.752] vs [0.726, 0.748]).
+- New numbers: all features — HistGB 0.737 (ref.), RF 0.736 (gap 0.001 [−0.003, 0.005]), L1 LogReg
+  0.717 (gap 0.020 [0.014, 0.025]), kNN 0.705 (gap 0.032 [0.027, 0.037]). Without share-derived
+  features — RF 0.708 (ref.), HistGB 0.703 (gap 0.005 [0.001, 0.009], now detectable), LogReg 0.693,
+  kNN 0.688. Share-derived drop: HistGB 0.034 [0.027, 0.040], RF 0.028 [0.022, 0.034].
+- The table above is superseded by `results/tables/main_results.csv`.

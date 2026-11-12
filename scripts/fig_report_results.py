@@ -1,7 +1,7 @@
 """Report Figures 2-4, drawn from the result tables (run the experiment scripts first).
 
-Fig. 2 (RQ1+RQ2): monthly popular share and per-month AUC with 95% CIs; kw_max_max vs the
-running maximum of earlier shares; paired ablation drops.
+Fig. 2 (RQ1+RQ2): (a) monthly popular share; (b) kw_max_max vs the running maximum of earlier
+shares; (c) Oct-Dec 2014 AUC vs training cutoff (E1b); (d) paired ablation drops.
 Fig. 3 (RQ3): threshold sweep; learning curves; regularisation at 1,000 vs 28k articles.
 Fig. 4 (RQ4): popularity per KMeans cluster (k = 9) labelled by dominant channel.
 
@@ -61,14 +61,14 @@ def fig2():
     b.set_xticks(range(4), ["26 Jun", "1 Aug", "1 Sep", "1 Oct"]); b.set_xlim(-0.4, 3.4)
     b.set_xlabel("training cutoff (2014)"); b.set_ylim(0.69, 0.764)
     b.set_ylabel("ROC-AUC on Oct-Dec 2014"); b.legend(fontsize=6.5, loc="upper right")
-    b.set_title("(b) a fresher model barely helps")
+    b.set_title("(c) a fresher model barely helps")
     c.xaxis.set_major_locator(mdates.YearLocator())
     c.xaxis.set_major_formatter(mdates.DateFormatter("%Y"))
 
     c.step(prior.index, prior.values, where="post", color="0.65", lw=2, label="max shares of any earlier article")
     c.plot(kmm.index, kmm.values, ".", ms=1.5, color="C0", label="kw_max_max (daily median)")
     c.set_yscale("log"); c.set_ylabel("shares"); c.legend(fontsize=6.5, loc="lower right")
-    c.set_title("(c) keyword statistics are point-in-time")
+    c.set_title("(b) keyword statistics: earlier articles only")
 
 
     s = abl[(abl.model == "hgb") & (abl.feature_set != "all")].set_index("feature_set")
@@ -88,10 +88,11 @@ def fig2():
 
 
 def fig3():
+    plt.rcParams.update({"font.size": 9, "axes.titlesize": 9.5})
     e4 = pd.read_csv(TAB / "e4_threshold.csv")
     e5 = pd.read_csv(TAB / "e5_learning_curve.csv")
     e6 = pd.read_csv(TAB / "e6_logreg_C.csv")
-    fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.2, 2.4))
+    fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.2, 2.7))
     s = e4[(e4.features == "all") & (e4.model == "hgb")]
     q = s["quantile"] * 100
     a.plot(q, s.roc_auc, marker="o", ms=3, color="C0", label="ROC-AUC")
@@ -99,7 +100,7 @@ def fig3():
     a.plot(q, s.pr_auc, marker="s", ms=3, color="0.3", label="PR-AUC")
     a.plot(q, s.pos_rate, ls=":", color="0.55", label="positive rate")
     a.set_xticks([50, 75, 90, 95]); a.set_xlabel("threshold percentile"); a.set_ylim(0, 0.8)
-    a.legend(fontsize=6.5, loc="lower left"); a.set_title("(a) threshold (HistGB)")
+    a.legend(fontsize=7.5, loc="lower left"); a.set_title("(a) threshold (HistGB)")
     cols = {"logreg": "0.55", "knn": "C2", "rf": "C1", "hgb": "C0"}
     names = {"logreg": "LogReg", "knn": "kNN", "rf": "RF", "hgb": "HistGB"}
     for m in ["logreg", "knn", "rf", "hgb"]:
@@ -107,16 +108,17 @@ def fig3():
         b.errorbar(d.index, d["mean"], yerr=d["std"].fillna(0), marker="o", ms=2.5, capsize=1.5,
                    color=cols[m], label=names[m])
     b.set_xscale("log"); b.set_xlabel("training articles"); b.set_ylabel("test ROC-AUC")
-    b.legend(fontsize=6.5, loc="lower right"); b.set_title("(b) learning curves")
+    b.legend(fontsize=7.5, loc="lower right"); b.set_title("(b) learning curves")
     for size, ls_, lab in [("1000", "-", "1,000 articles"), ("full", "--", "27,750 articles")]:
         d = e6[(e6.train_size == size) & (e6.penalty == "l2")]
         c.plot(d.C, d.val_auc, ls=ls_, marker="o", ms=2.5, color="C0", label=lab)
     c.set_xscale("log"); c.set_xlabel("C (smaller = stronger L2 penalty)"); c.set_ylabel("validation ROC-AUC")
-    c.legend(fontsize=6.5, loc="lower left"); c.set_title("(c) regularisation (LogReg)")
+    c.legend(fontsize=7.5, loc="lower left"); c.set_title("(c) regularisation (LogReg)")
     fig.tight_layout(); fig.savefig(FIG / "fig3_threshold_size_reg.png", dpi=300)
 
 
 def fig4():
+    plt.rcParams.update({"font.size": 8.5, "axes.titlesize": 9})
     p = pd.read_csv(TAB / "e7_profile_k9.csv").sort_values("popular_rate")
     share_cols = [c for c in p.columns if c.startswith("share_")]
 
@@ -132,13 +134,13 @@ def fig4():
         return f"C{int(r['cluster'])}: {chan}, {r['dominant_topic'].replace('_', ' ')}{tone}"
 
     labels = [label(r) for _, r in p.iterrows()]
-    fig, ax = plt.subplots(figsize=(3.4, 2.6))
+    fig, ax = plt.subplots(figsize=(3.4, 2.9))
     ax.barh(range(len(p)), p.popular_rate, color=["C3" if "negative" in l else "0.6" for l in labels])
-    ax.axvline(0.533, color="0.3", ls=":", lw=0.8)
+    ax.axvline(0.533, color="0.3", ls=":", lw=0.8, zorder=0)
     for i, (v, n) in enumerate(zip(p.popular_rate, p.n)):
-        ax.text(v + 0.005, i, f"{v:.0%} (n={n:,})", va="center", fontsize=6)
-    ax.set_yticks(range(len(p)), labels, fontsize=6.5)
-    ax.set_xlim(0.3, 0.92); ax.set_xlabel("share popular (>= 1,400 shares)")
+        ax.text(v + 0.005, i, f"{v:.0%} (n={n:,})", va="center", fontsize=7)
+    ax.set_yticks(range(len(p)), labels, fontsize=7)
+    ax.set_xlim(0.3, 1.0); ax.set_xticks([0.4, 0.6, 0.8]); ax.set_xlabel("share popular (>= 1,400)")
     fig.tight_layout(); fig.savefig(FIG / "fig4_clusters.png", dpi=300)
 
 
