@@ -18,18 +18,19 @@ Context, Content and Chance in Online News Popularity}
 
 \begin{abstract}
 Popularity models for the Mashable news benchmark reach a ROC-AUC of about 0.74, but it is unknown what
-that skill consists of: knowing \emph{when} and \emph{where} an article appears, \emph{what story} it covers,
-or \emph{how} it is written. The benchmark ships no text, yet every article's URL ends in a shortened
-headline. Retrieving near-identical headlines published within a week, we recover 2{,}941 pairs of same-story
-``twin'' articles (about 71\% precision) and use them as a topic-controlled comparison. With strictly past-only
-models we find that (i) time contributes no ranking skill and the editorial channel about 0.045 AUC; fixing the
-story costs no detectable further skill (at most 0.07), and a bag-of-words model of the headline adds none;
-(ii) same-story articles barely share their fate (residual correlation 0.05); (iii) articles compete for the
-attention of the day (each doubling of the day's other articles costs about 18\% of shares), while we find no
-evidence, with tests of limited power, that a story's audience is split among its articles; (iv) of 13 content features only
-body subjectivity survives topic control (0.17 log shares per sd within twins). Model, context and story
-together explain about a quarter of the variance of log shares; for the rest, we show what a model can honestly
-promise under drift.
+that skill consists of: \emph{when} and \emph{where} an article appears, \emph{what story} it covers, or
+\emph{how} it is written. Every article's URL ends in a shortened headline; retrieving near-identical headlines
+published within a week, we recover 2{,}941 pairs of same-story ``twin'' articles (about 71\% precision) and use
+them to hold the story fixed. Because such observational designs can mislead, we first validate the design where
+the truth is known: on 22{,}743 randomized headline tests of the Upworthy Research Archive, cross-sectional
+regressions are detectably biased for 9--10 of 15 headline features, even with week fixed effects and text
+embeddings, while the same regressions on story twins are biased for 2 and on same-article pairs for none;
+the pattern replicates on two further splits. On Mashable, with strictly past-only models, (i) time contributes no
+ranking skill, the channel about 0.045 AUC, and fixing the story at most 0.07; (ii) same-story articles barely
+share their fate (residual correlation 0.05); (iii) of 13 content features only body subjectivity survives story
+control, matching a positive randomized effect of subjective headlines on Upworthy; (iv) articles compete for the
+attention of the day (doubling the day's other articles costs about 18\% of shares), with no evidence, from tests
+of limited power, of competition within a story. Model, context and story explain about a quarter of the variance.
 \end{abstract}
 
 % ------------------------------------------------------------------
@@ -57,16 +58,21 @@ recovered for this benchmark before; that, and what they reveal, is our contribu
 \begin{enumerate}\setlength\itemsep{0pt}
   \item[RQ1] Where does predictive skill live: in time, channel, story or the article itself? Do same-story
              articles share their fate?
-  \item[RQ2] Which content effects survive when the story is held fixed?
+  \item[RQ2] Which content effects survive when the story is held fixed, and does holding the story fixed
+             recover the effects that randomized experiments find?
   \item[RQ3] Do articles compete for attention, and if so for the audience of their \emph{story} (split
              attention) or for the attention of the \emph{day}?
   \item[RQ4] How much of popularity can we explain from these data, and what can a model promise?
 \end{enumerate}
 \noindent Our contributions: (i) a procedure that recovers same-story pairs from URLs, with measured
 precision; (ii) a past-only decomposition of ranking skill into time, channel, story and article, extending
-the content-versus-context comparison of \citet{hessel2017} to nested contexts; (iii) a test of split attention
-that links the twin and competition analyses; and (iv) a decomposition of how much of popularity we can explain, with honest
-uncertainty for the rest.
+the content-versus-context comparison of \citet{hessel2017} to nested contexts; (iii) a validation of
+story-matched designs against 22{,}743 randomized headline experiments, extending the finding of
+\citet{banerjee2026} that topic controls and embeddings do not remove the bias of correlational estimates by
+showing that matching on the story does; (iv) a test of split attention
+that links the twin and competition analyses; and (v) a decomposition of how much of popularity we can explain, with honest
+uncertainty for the rest. Analyses on the experiments were fixed on the archive's exploratory split before
+the confirmatory split was opened.
 
 % ------------------------------------------------------------------
 \section{Related Work}
@@ -85,19 +91,23 @@ predictable and from what; we give such a decomposition for news.
 link; Lakkaraju et al.\ \citep{lakkaraju2013} compared resubmissions of the same image on Reddit; headline A/B
 tests give randomised versions \citep{matias2021}, in which negative headline words raise clicks
 \citep{robertson2023}. Observational text studies adjust for topic by matching on text \citep{roberts2020} or
-by modelling linguistic properties \citep{pryzant2021}. Our twins match on the story through the headline, a
-weaker, observational analogue of these designs; we add a sensitivity analysis \citep{cinelli2020}.
+by modelling linguistic properties \citep{pryzant2021}. On the Upworthy archive, within-test comparisons identify causal headline effects
+\citep{gligoric2023,banerjee2025}, and correlational estimates on the same data diverge from them in direction for
+20--50\% of language features, with topic controls and embeddings not helping \citep{banerjee2026}; comparing
+observational estimates with experimental ones follows \citet{lalonde1986}. Our twins match on the story through
+the headline, a weaker, observational analogue of these designs; we test how much weaker on the archive and add a
+sensitivity analysis \citep{cinelli2020}.
 \paragraph{Attention and uncertainty.} Items compete for limited attention \citep{wu2007,weng2012}.
-Conformalised quantile regression \citep{romano2019} gives distribution-free intervals; adaptive conformal
-inference \citep{gibbs2021} keeps coverage under drift \citep{gama2014}; selective classification
-\citep{geifman2017} predicts only when confident. Work on learning from streams of networked items
-\citep{yang2014wsdm,yang2014cikm} motivated our strictly past-only evaluation.
+Conformal methods give distribution-free intervals \citep{romano2019}, also under drift
+\citep{gibbs2021,gama2014}. Work on streams of networked items \citep{yang2014wsdm,yang2014cikm} motivated our
+strictly past-only evaluation.
 
 % ------------------------------------------------------------------
 \section{Data and Twin Articles}
 \label{sec:data}
 \paragraph{Data.} 39{,}643 articles (one row with an impossible token rate removed) published between
-7 January 2013 and 27 December 2014, with 58 features (Table~\ref{tab:features}) and shares recorded once,
+7 January 2013 and 27 December 2014, with 58 features (content: words, links, images, videos; keyword and self-reference statistics; 6 channels;
+weekday; 5 LDA topics; 16 sentiment features) and shares recorded once,
 in January 2015. We parse the date and slug from the URL. Shares are heavy-tailed (median 1{,}400, mean
 3{,}395, maximum 843{,}300); we model $\log(1{+}\text{shares})$ and call an article \emph{popular} if it has at
 least 1{,}400 shares \citep{fernandes2015}. Two feature groups are built from other articles' shares: keyword
@@ -106,25 +116,6 @@ from earlier days (\texttt{kw\_max\_max} equals the running maximum of earlier s
 articles), but take those articles' shares from the collection date, so their gains are likely optimistic,
 and three of them mostly encode the date.
 
-\begin{table}[t]
-\centering\small
-\caption{Feature groups (60 columns incl.\ two cleaning flags).}
-\label{tab:features}
-\setlength{\tabcolsep}{1pt}
-\begin{tabular}{@{}lrl@{}}
-\toprule
-Group & \# & Examples \\
-\midrule
-Content & 12 & words, links, images, videos \\
-Keyword (\texttt{kw\_*}) & 10 & shares of earlier keyword articles \\
-Self-reference & 3 & shares of linked articles \\
-Channel & 6 & lifestyle, entertainment, business, \dots \\
-Weekday & 8 & day of publication, weekend \\
-LDA topics & 5 & closeness to 5 topics \\
-Sentiment & 16 & polarity, subjectivity, word rates \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \paragraph{Twins.} We represent slugs by TF-IDF vectors \citep{salton1988} of word uni- and bigrams and call two
 articles twins if their cosine similarity is at least 0.5 and they appeared at most 7 days apart (3{,}382 pairs).
@@ -199,6 +190,19 @@ earlier-article advantage) and channel-difference dummies, and compare with a cr
 channel$\times$week and weekday fixed effects. The difference between the two estimates is tested by combining
 independent bootstraps; twin coefficients are corrected for multiple testing \citep{benjamini1995}.
 
+\paragraph{Validation on randomized experiments.} The Upworthy Research Archive \citep{matias2021} records
+32{,}487 headline A/B tests (2013--2015) with impressions and clicks per headline package. We compute 15 headline
+features (Pattern-lexicon subjectivity, polarity and positive and negative word shares, the lexicon behind the
+Mashable sentiment features; length; punctuation; numbers; pronouns), standardised, and regress logit
+click-through on them. The truth uses only within-test variation among packages that share image and lede.
+Observational designs use one random package per test (averaged over 20 draws): a cross-section, with week fixed
+effects, and with 50 SVD dimensions of the headlines' TF-IDF; story twins (tests with headline cosine
+$\geq$0.5 within 7 days and different ledes, i.e.\ different articles), and same-article retests (same lede,
+different start date), each by within-pair differences. A feature is biased when the difference from the truth
+exceeds 1.96 combined bootstrap standard errors (tests or pair components resampled). The analysis was fixed and
+committed on the exploratory split before the confirmatory split was opened; bootstrap replicates average the
+same 20 draws as the point estimate, a correction made after a variance check on the confirmatory split.
+
 \paragraph{Split attention.} A story is a connected component of the twin graph (singletons are stories of
 one). If a story has a fixed audience that its $k$ articles share, an article's log shares fall one-for-one with
 $\log k$; if articles draw independent audiences, the slope is 0. Bigger stories are also more newsworthy, which
@@ -228,20 +232,20 @@ in both treatment and outcome to remove the effect \citep{cinelli2020}.
 (gap 0.001 [$-$0.003, 0.005], weekly block bootstrap) and beat L1 logistic regression by 0.020 [0.014, 0.025].
 The share-derived features are worth 0.034 [0.027, 0.040] AUC. Ranking holds up under a chronological split, and
 a later dip (Oct--Dec 2014) reflects harder articles more than an outdated model: retraining up to October
-recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples
-(Fig.~\ref{fig:bench}a): random forest is best below 10{,}000 training articles, and with 1{,}000 articles strong L1
+recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples: random forest is best below 10{,}000 training articles, and with 1{,}000 articles strong L1
 regularisation gains 0.03 AUC, while with all data the penalty hardly matters. Raising the label threshold leaves
-ROC-AUC unchanged but makes PR-AUC collapse (Fig.~\ref{fig:bench}b). Clusters of articles in topic and sentiment
+ROC-AUC unchanged but makes PR-AUC collapse. Clusters of articles in topic and sentiment
 space carry less popularity information than the channel label (Cram\'er's $V$ 0.13--0.19 vs.\ 0.25), consistent
 with treating channel as an editorial placement rather than a topic.
 
 \begin{figure}[t]
 \centering
-\includegraphics[width=\columnwidth]{v2_fig_e_benchmark.png}
-\caption{Benchmark checks on the chronological test block. (a) Test ROC-AUC against the number of training
-articles (mean over resamples). (b) ROC-AUC and PR-AUC as the popularity threshold rises from the median to the
-95th percentile (blue HistGB, grey L1 logistic).}
-\label{fig:bench}
+\includegraphics[width=\columnwidth]{v2_fig_f_upworthy.png}
+\caption{Validating story-matched designs on 22{,}743 randomized Upworthy headline tests (confirmatory split).
+(a) Number of 15 headline features whose observational estimate differs detectably from the randomized
+within-test estimate (labels: share of features whose randomized effect lies in the design's 95\% interval).
+(b) Per-feature estimates against the randomized effect.}
+\label{fig:upworthy}
 \end{figure}
 
 \begin{table}[t]
@@ -339,16 +343,30 @@ $p=0.016$), but that difference does not survive correction across the 13 featur
 in the smaller variants, so we claim only that the effect is not explained by topic: an opinionated take on a story
 does better than a neutral take on the same story. A confounder of the twin difference would need to explain 12\% of the residual variance of
 both the subjectivity difference and the share difference to remove it (8.8\% for significance); the strongest
-observed covariate, average word length, explains 0.5\% of the outcome (and 12.8\% of the treatment). Links (0.067 [0.010, 0.132]) and average word length
-($-$0.113 [$-$0.198, $-$0.030]) agree in sign with the cross-section but do not pass the multiple-testing correction.
-The video effect (0.054 [0.041, 0.068] across articles) shrinks to 0.007 [$-$0.041, 0.059] within twins (difference
+observed covariate, average word length, explains 0.5\% of the outcome (and 12.8\% of the treatment). The video effect (0.054 [0.041, 0.068] across articles) shrinks to 0.007 [$-$0.041, 0.059] within twins (difference
 $p=0.09$); video-heavy stories rather than videos may be what is popular, but the evidence is weak. Negative tone, measured as the share
 of negative words, has no detectable effect in either design once subjectivity and positive words are controlled. This differs from randomised headline tests, where negative words raise clicks \citep{robertson2023};
 our measure is the rate of negative words in the body, not in the headline, and shares are not clicks.
-Across 30 near-equally accurate models (validation AUC within 0.01) the ranking of feature groups by permutation
-importance is stable at the extremes (keywords first, sentiment last) \citep{fisher2019}.
 
 
+
+
+\paragraph{Does holding the story fixed recover randomized effects?} On Upworthy, headlines for the same
+article were randomized, so within-test comparisons give the causal effect of each headline feature. Comparing
+across tests is observational, like our Mashable regressions. Of 15 headline features, a cross-section across
+22{,}743 tests (one random package per test) is detectably biased for 10, with week fixed effects for 9 and with
+50 text-embedding dimensions for 10 (Fig.~\ref{fig:upworthy}); its 95\% intervals contain the randomized effect
+for only 20--27\% of features, although its estimates correlate with the truth at 0.83--0.91. The twin design
+applied to 2{,}989 pairs of tests on the same story is biased for 2 features (coverage 93\%; joint test of no bias
+$p=0.25$), and pairs of tests of the same article run at different times for none (coverage 100\%, $p=0.78$,
+correlation with the truth 0.96, half the error of the cross-section). The pattern replicates on the exploratory
+and holdout splits (cross-sections biased for 3--7 features, matched designs for 0--1). Holding the story fixed
+therefore trades precision for validity: twin estimates are noisy but honest, cross-sectional ones precise but
+often wrong, and fixed effects or text embeddings do not close the gap. The randomized effect of a one-sd more
+subjective headline is $+$0.012 [0.008, 0.016] in logit click-through, the same sign as our Mashable twin estimate
+for the body; negative words raise clicks ($+$0.013 [0.007, 0.018]), as found by \citet{robertson2023}, but the
+cross-section doubles this effect. Our Mashable twins differ from these in that the outcome is shares and
+features describe the body, so the archive validates the design, not each Mashable estimate.
 
 \subsection{Split attention or a crowded day? (RQ3)}
 \label{sec:rq3}
@@ -392,10 +410,9 @@ intervals). Corrected for non-story twins, the twin correlation is 0.071 [0.019,
 what the story adds, this gives about 24\% [20, 29] in total. The model term is a lower bound on what these
 features can predict and the story term an upper value, so the total is neither bound: it is the share we can
 explain, about a quarter, and the rest is unexplained by this decomposition.
-What remains can still be stated honestly. An 80\% conformal interval for a typical article runs from 776 to
-5{,}017 shares; calibrated once, it undercovers in September 2014 (76.3\%), while ACI keeps September to December
-between 79.6\% and 81.0\% (Fig.~\ref{fig:context}b; assuming shares are known before the next article is
-scored). Allowed to abstain, the past-only model reaches 0.869 accuracy on the 10\% of articles it is most sure
+What remains can be stated honestly: an 80\% conformal interval runs from 776 to 5{,}017 shares for a
+typical article, and adaptive conformal inference keeps monthly coverage near 80\% under drift
+(Fig.~\ref{fig:context}b). Allowed to abstain, the past-only model reaches 0.869 accuracy on the 10\% of articles it is most sure
 about, against 0.673 overall (L1 logistic: 0.832 and 0.656; Fig.~\ref{fig:context}c).
 
 % ------------------------------------------------------------------
@@ -422,18 +439,16 @@ publication date cannot be separated, and keyword statistics use post-publicatio
 results come from one outlet in 2013--2014. Going further would need human-annotated twins, better text
 representations to raise twin recall (at most 30\% now), and share time series, none of which this dataset offers.
 
-\paragraph{Advice for work on this dataset.} Evaluate chronologically with past-only models; report within-context
-AUC next to pooled AUC; treat cross-sectional content effects as topic-confounded until checked with twins; and
-report calibrated intervals or selective accuracy, since much of popularity is not explained by these features.
-
 \section{Conclusion}
 Hidden in the URLs of a standard benchmark are thousands of same-story twins. They show that news popularity is
 predictable mostly at the level of the individual article, not its time or section, and fixing the story costs
 at most 0.07 AUC (RQ1); that only body
-subjectivity among content features survives topic control (RQ2); that articles compete for the attention of the
+subjectivity among content features survives topic control, and on 22{,}743 randomized experiments holding
+the story fixed removes the bias that week fixed effects and text embeddings leave in correlational estimates (RQ2); that articles compete for the attention of the
 day, with no evidence (from weak tests) of competition within a story (RQ3); and that model, context and story
 together explain about a quarter of the variance, so honest predictions must be wide or selective (RQ4).
 
+\setlength{\bibsep}{1pt}\renewcommand{\bibfont}{\footnotesize}
 \bibliographystyle{plainnat}
 \bibliography{references}
 \end{document}

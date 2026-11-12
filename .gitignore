@@ -33,3 +33,5 @@ report/*.log
 report/*.bbl
 report/*.blg
 report/*.out
+
+data/external/
