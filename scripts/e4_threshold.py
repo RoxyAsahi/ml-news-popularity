@@ -1,8 +1,10 @@
 """E4 (RQ3) - How does the choice of popularity threshold change the task?
 
-Thresholds at the 50/75/90/95th percentile of training shares. For each we train
+Thresholds at the 50/75/90/95th percentile of training-block shares. For each we train
 dedicated classifiers and compare with ONE regressor on log(shares) whose predictions
-are used as a ranking score for every threshold.
+are used as a ranking score for every threshold. Models are fit on the training block;
+the F1 decision cutoff is chosen on the validation block; the test block is scored once.
+Bootstrap CIs; paired bootstrap for classifier vs regressor.
 
 Run from the repo root:  python scripts/e4_threshold.py
 """
@@ -16,9 +18,10 @@ import numpy as np
 import pandas as pd
 from scipy.stats import spearmanr
 from sklearn.ensemble import HistGradientBoostingRegressor
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 from newspop.data import ROOT, feature_set, load, make_label
-from newspop.evaluate import classification_report
+from newspop.evaluate import bootstrap_ci, classification_report, paired_bootstrap
 from newspop.models import fit, get_model
 from newspop.splits import temporal_split
 
@@ -28,37 +31,53 @@ TAB = ROOT / "results" / "tables"
 QUANTILES = [0.5, 0.75, 0.9, 0.95]
 
 
+def f1_cutoff(y_val, s_val):
+    """Decision cutoff that maximises F1 on the validation block (never looks at test)."""
+    from sklearn.metrics import f1_score
+    cands = np.quantile(s_val, np.linspace(0.01, 0.99, 99))
+    return float(max(cands, key=lambda c: f1_score(y_val, s_val >= c)))
+
+
 def main():
     df = load()
     n = len(df)
     tr, va, te = temporal_split(n, 0.7, 0.1)
-    trv = np.concatenate([tr, va])
-    rows = []
+    rows, pairs = [], []
     for fs in ["all", "no_kw_ref"]:
         X = df[feature_set(df, fs)].to_numpy()
-        reg = HistGradientBoostingRegressor(random_state=0).fit(X[trv], np.log1p(df.shares.iloc[trv]))
-        score = reg.predict(X[te])
-        rho = spearmanr(score, df.shares.iloc[te]).statistic
+        # everything is fit on the training block; the validation block only picks cutoffs
+        reg = HistGradientBoostingRegressor(random_state=0).fit(X[tr], np.log1p(df.shares.iloc[tr]))
+        s_va, s_te = reg.predict(X[va]), reg.predict(X[te])
+        rho = spearmanr(s_te, df.shares.iloc[te]).statistic
         print(f"{fs}: regressor Spearman(pred, shares) on test = {rho:.3f}")
         for q in QUANTILES:
-            thr = df.shares.iloc[trv].quantile(q)
+            thr = df.shares.iloc[tr].quantile(q)
             y = make_label(df.shares, thr)
+            test_scores = {}
             for m in ["logreg", "hgb"]:
-                mod = fit(get_model(m, 0), X[trv], y[trv])
-                p = mod.predict_proba(X[te])[:, 1]
-                # decision threshold = training positive rate quantile, so the
-                # classifier flags as many articles as are popular in training
-                cut = np.quantile(p, 1 - y[trv].mean())
-                r = classification_report(y[te], p, threshold=cut)
-                rows.append({"features": fs, "quantile": q, "threshold": thr, "model": m, **r})
-            r = classification_report(y[te], score, threshold=np.quantile(score, 1 - y[trv].mean()))
+                mod = fit(get_model(m, 0), X[tr], y[tr])
+                p_va, p_te = mod.predict_proba(X[va])[:, 1], mod.predict_proba(X[te])[:, 1]
+                test_scores[m] = p_te
+                r = classification_report(y[te], p_te, threshold=f1_cutoff(y[va], p_va))
+                auc, lo, hi = bootstrap_ci(y[te], p_te)
+                rows.append({"features": fs, "quantile": q, "threshold": thr, "model": m, **r,
+                             "auc_lo": lo, "auc_hi": hi, "n_pos_test": int(y[te].sum())})
+            test_scores["reg"] = s_te
+            r = classification_report(y[te], s_te, threshold=f1_cutoff(y[va], s_va))
+            auc, lo, hi = bootstrap_ci(y[te], s_te)
             rows.append({"features": fs, "quantile": q, "threshold": thr, "model": "log_regression_score",
-                         **r, "spearman": rho})
+                         **r, "auc_lo": lo, "auc_hi": hi, "n_pos_test": int(y[te].sum()), "spearman": rho})
+            for metric_name, metric in [("roc_auc", roc_auc_score), ("pr_auc", average_precision_score)]:
+                pb = paired_bootstrap(y[te], test_scores["hgb"], test_scores["reg"], metric=metric)
+                pairs.append({"features": fs, "quantile": q, "metric": metric_name,
+                              "hgb_minus_regressor": pb["diff"], "lo": pb["lo"], "hi": pb["hi"]})
     out = pd.DataFrame(rows)
     out["pr_auc_lift"] = out["pr_auc"] / out["pos_rate"]
     out.to_csv(TAB / "e4_threshold.csv", index=False)
-    print(out[["features", "quantile", "threshold", "model", "pos_rate", "roc_auc", "pr_auc",
-               "pr_auc_lift", "f1"]].round(3).to_string())
+    pd.DataFrame(pairs).to_csv(TAB / "e4_classifier_vs_regressor.csv", index=False)
+    print(out[["features", "quantile", "threshold", "model", "n_pos_test", "pos_rate", "roc_auc", "auc_lo",
+               "auc_hi", "pr_auc", "pr_auc_lift", "f1"]].round(3).to_string())
+    print(pd.DataFrame(pairs).round(3).to_string())
 
     # figure: ROC-AUC flat, PR-AUC falls, lift rises (HistGB, all features)
     s = out[(out.features == "all")]
