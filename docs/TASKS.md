@@ -34,7 +34,7 @@ Review notes (2026-11-12): https://claude.ai/artifact/UnYjVnCpepjSA6yGzj5XMr —
 - [x] **R7 E2 (#14):** half-life weighting under rolling-origin folds, paired differences, written as a negative result tied to "ranking is stable".
 - [x] **R8 Misc (#15):** state the threshold convention once (overall median 1,400 vs training-block median 1,500); drop jupyter from requirements.txt; compile LaTeX early.
 - [x] Get LaTeX compiling (#15): `report/build.sh`; in a fresh container first run `apt-get update && apt-get install -y --no-install-recommends texlive-latex-base texlive-latex-recommended texlive-latex-extra texlive-fonts-recommended texlive-bibtex-extra`
-- [ ] Report: Data section + Table 1 (feature groups) + Fig. 1 (shares histogram / shares vs age)
+- [x] Report: Data section + Table 1 (feature groups) + Fig. 1 (shares histogram / shares vs age) (#16)
 - [ ] Report: Methodology section
 - [ ] Report: Results RQ1 + RQ2 (combined figure: drift + ablation)
 - [ ] Report: Results RQ3 (one combined figure: threshold, learning curve, regularisation)
