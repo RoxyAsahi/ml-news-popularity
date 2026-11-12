@@ -137,7 +137,7 @@ def fig_e():
     """Benchmark sanity checks: learning curve (E5) and label threshold (E4), chronological test block."""
     L = pd.read_csv(TAB / "e5_learning_curve_summary.csv", header=[0, 1], index_col=[0, 1, 2])
     T = pd.read_csv(TAB / "e4_threshold.csv")
-    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 1.75))
+    fig, (a, b) = plt.subplots(1, 2, figsize=(3.4, 2.3))
     styles = {"hgb": (ACC, "o-", "HistGB"), "rf": ("#d9822b", "^-", "RF"), "logreg": (GREY, "s-", "L1 logistic"),
               "knn": ("0.3", "x:", "kNN")}
     for m, (col, mk, name) in styles.items():
@@ -147,7 +147,7 @@ def fig_e():
     a.set_xlabel("training articles")
     a.set_ylabel("test ROC-AUC")
     a.set_title("(a) Learning curve")
-    a.legend(frameon=False, fontsize=6)
+    a.legend(frameon=False, fontsize=7, loc="lower right")
     for m, (col, mk, name) in [(k, styles[k]) for k in ["hgb", "logreg"]]:
         r = T[(T.features == "all") & (T.model == m)]
         xq = np.arange(len(r))
@@ -155,11 +155,11 @@ def fig_e():
         b.plot(xq, r.pr_auc, mk.replace("-", "--"), color=col, ms=2.5, lw=1, label="_")
     b.set_xticks(range(4), ["50", "75", "90", "95"])
     b.set_xlabel("threshold percentile")
-    b.set_ylim(0, 0.8)
     b.set_title("(b) Viral threshold")
     b.plot([], [], "-", color="0.2", lw=1, label="ROC-AUC")
     b.plot([], [], "--", color="0.2", lw=1, label="PR-AUC")
-    b.legend(frameon=False, fontsize=6, loc="lower left")
+    b.set_ylim(0, 0.8)
+    b.legend(frameon=False, fontsize=7, loc="center right", bbox_to_anchor=(1.0, 0.66))
     fig.tight_layout(pad=0.3)
     fig.savefig(FIG / "v2_fig_e_benchmark.png", dpi=300)
 

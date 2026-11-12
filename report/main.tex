@@ -25,8 +25,7 @@ headline. Retrieving near-identical headlines published within a week, we find 2
 experiment. With strictly past-only models we find that (i) publication time contributes no ranking skill,
 the editorial channel about 0.045 AUC, and fixing the story no detectable further amount (bounded at
 about 0.07): within a channel and day the model still ranks at 0.675; (ii) same-story articles barely share their fate (residual
-correlation 0.05), and the earlier twin gets about 7\% more shares, consistent with split attention but also
-with follow-ups simply being smaller; (iii) of 13 content features, only the subjectivity of the body survives
+correlation 0.05), with at most a small, non-robust edge for the earlier twin; (iii) of 13 content features, only the subjectivity of the body survives
 topic control (0.17 log shares per sd within twins); (iv) articles fare worse on crowded days (doubling daily volume:
 $-$18\% shares; also within twins, not in a placebo). Since much remains chance, we show what a model can
 honestly promise: 80\% intervals whose ends differ by a factor of about six, kept calibrated under drift by adaptive conformal
@@ -277,7 +276,7 @@ articles with the most confident past-only scores.}
 
 \subsection{Where does the skill live? (RQ1)}
 \label{sec:rq1}
-\paragraph{Time contributes nothing, channel some, story nothing detectable.} Past-only HistGB ranks all scored
+\paragraph{Time contributes nothing, channel some, story at most 0.07.} Past-only HistGB ranks all scored
 articles at 0.734 [0.725, 0.740] (Fig.~\ref{fig:anatomy}). Comparing only articles from the same week
 (0.734) or day (0.727) barely changes this, so the model does not profit from knowing which days were good.
 Comparing within a channel costs 0.045 (0.690 [0.682, 0.696]), and within channel and day 0.675 [0.668, 0.683].
