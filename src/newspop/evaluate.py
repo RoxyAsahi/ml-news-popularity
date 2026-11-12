@@ -24,15 +24,28 @@ def classification_report(y_true, proba, threshold: float = 0.5) -> dict[str, fl
 
 
 # ------------------------------------------------------------------ uncertainty
+def _resample(rng, n: int, groups=None):
+    """Indices of one bootstrap resample: articles i.i.d., or whole blocks (e.g. weeks) when
+    `groups` gives each article's block label (block bootstrap, keeps within-week correlation)."""
+    if groups is None:
+        return rng.integers(0, n, n)
+    groups = np.asarray(groups)
+    labels, inv = np.unique(groups, return_inverse=True)
+    members = [np.where(inv == g)[0] for g in range(len(labels))]
+    pick = rng.integers(0, len(labels), len(labels))
+    return np.concatenate([members[g] for g in pick])
+
+
 def bootstrap_ci(y_true, score, metric=roc_auc_score, n_boot: int = 1000, seed: int = 0,
-                 alpha: float = 0.05) -> tuple[float, float, float]:
-    """Point estimate and percentile bootstrap (1 - alpha) interval of `metric` on a test set."""
+                 alpha: float = 0.05, groups=None) -> tuple[float, float, float]:
+    """Point estimate and percentile bootstrap (1 - alpha) interval of `metric` on a test set.
+    Pass `groups` (e.g. publication week) for a block bootstrap."""
     y_true, score = np.asarray(y_true), np.asarray(score)
     rng = np.random.default_rng(seed)
     n = len(y_true)
     stats = []
     for _ in range(n_boot):
-        i = rng.integers(0, n, n)
+        i = _resample(rng, n, groups)
         if y_true[i].min() == y_true[i].max():
             continue
         stats.append(metric(y_true[i], score[i]))
@@ -41,7 +54,7 @@ def bootstrap_ci(y_true, score, metric=roc_auc_score, n_boot: int = 1000, seed: 
 
 
 def paired_bootstrap(y_true, score_a, score_b, metric=roc_auc_score, n_boot: int = 1000,
-                     seed: int = 0, alpha: float = 0.05) -> dict[str, float]:
+                     seed: int = 0, alpha: float = 0.05, groups=None) -> dict[str, float]:
     """Difference metric(a) - metric(b) on the SAME resampled test articles.
 
     Returns the observed difference, its percentile interval and the share of resamples
@@ -52,7 +65,7 @@ def paired_bootstrap(y_true, score_a, score_b, metric=roc_auc_score, n_boot: int
     n = len(y_true)
     diffs = []
     for _ in range(n_boot):
-        i = rng.integers(0, n, n)
+        i = _resample(rng, n, groups)
         if y_true[i].min() == y_true[i].max():
             continue
         diffs.append(metric(y_true[i], a[i]) - metric(y_true[i], b[i]))

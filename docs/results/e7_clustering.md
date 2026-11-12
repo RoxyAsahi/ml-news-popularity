@@ -53,3 +53,10 @@ information is used to form clusters. Tables `results/tables/e7_*.csv`, figures 
   this is the scientifically honest reading.
 - Report the anomaly result only together with its channel-adjusted odds ratio; the crude 1.9× is mostly confounding.
 - The sentiment result is a good example of checking a finding for confounding: say crude 0.69 → adjusted 0.81, and that it holds in news-like channels but not in tech.
+
+### Review round 3 additions
+- Breslow–Day p = 0.0009: the negative-tone effect is heterogeneous across channels, so the pooled
+  MH OR 0.81 is only an average. Popular rate negative vs other: business 39% vs 54%, world 32% vs
+  39%, social media 66% vs 76%, entertainment 38% vs 41%, lifestyle 57% vs 61%; tech 66% vs 64%
+  and no-channel 64% vs 64% (no effect).
+- Isolation Forest stratified ORs are reported for all three contamination rates in the report.

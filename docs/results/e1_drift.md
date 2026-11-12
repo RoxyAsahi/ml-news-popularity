@@ -71,3 +71,13 @@ earlier article:
   outdated. This also explains why half-life weighting (E2) does not help.
 - Note: the Jul–Sep window includes the validation block (not used for training here), so
   call it "after the training cutoff", not "within the test period".
+
+### Review round 3 additions
+- E1b intervals now use a weekly block bootstrap: staleness 0.006 [0.003, 0.010], difficulty
+  0.024 [0.005, 0.045] (HistGB); total gap 0.030 (cutoff 26 Jun) is the number used in the report.
+- Fixed-size sliding windows (15,857 most recent articles, same five test blocks): HistGB AUC
+  0.704, 0.718, 0.743, 0.744, 0.732 (sd 0.017); LogReg sd 0.024. So period-to-period variation is
+  not an artefact of growing training size. Table `e1b_sliding_window.csv`.
+- Age vs shares: all articles were collected on the same day, so age and publication date are
+  one-to-one; the flat age curve cannot by itself show saturation. Report relies on Szabo &
+  Huberman (2010) for that.
