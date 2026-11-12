@@ -127,7 +127,9 @@ leaving 2{,}941 pairs in 1{,}278 stories (connected components of the twin graph
 To measure precision we annotated 180 pairs, 30 per similarity band from 0.3 to 1.0, as same story,
 series instalment, same broad topic, or unrelated, from slug, dates and channel. The labels were produced by an
 AI assistant (Claude) following written rules, not by human annotators; they are released with the code so that they
-can be checked. The filter caught 27 of 33 series pairs with no false
+can be checked. A second, independent large-language-model annotation of 60 of these pairs (10 per band, without
+access to the first labels) agreed on 90\% of them (Cohen's $\kappa=0.82$; 0.83 for same story vs.\ not); this
+checks consistency between two models, not agreement with human judgement. The filter caught 27 of 33 series pairs with no false
 positives; since its rules were written while inspecting these same pairs, this is an optimistic in-sample figure.
 After filtering, annotated pairs with similarity $\geq$0.5 are the same story in 78\% [68, 85] (Wilson) and the
 same story or topic in 96\%. The sample is stratified, however, while 60\% of the twins we use lie in the
@@ -368,7 +370,7 @@ or randomised versions \citep{matias2021}; with one snapshot the twin correlatio
 much ``the story'' alone tells, since both splitting and the roughly 29\% of twins that are not the same story pull it down.
 
 \paragraph{Limitations.} Twins are found from slugs only and are about 71\% precise; the remaining same-topic pairs bias
-correlations and effects towards cross-sectional values. Annotation was done by an AI assistant, not by independent human annotators. Twin differences remove the
+correlations and effects towards cross-sectional values. Annotation was done by two AI (language-model) annotators, not by humans. Twin differences remove the
 story and the week but not everything else (an editor may give a scoop more prominence). The daily volume counts
 articles in this dataset, which may not equal Mashable's true output. Shares were recorded once, so age and
 publication date cannot be separated, and keyword statistics use post-publication shares of earlier articles. All
