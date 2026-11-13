@@ -105,7 +105,7 @@ for h in [float(x) for x in a.horizons.split(",")]:
                 r = good.max() + 1 if len(good) else 0
                 pick = np.flatnonzero(te)[o[:r]]
                 R += r; D += (si[pick] > c).sum(); T += (si[te] > c).sum(); A0 += (cur[pick] > c).sum()
-            crows.append(dict(**base, q=q, shortlisted=R, fdp=1 - D / max(R, 1), power=D / max(T, 1),
+            crows.append(dict(**base, q=q, shortlisted=R, fdp=(1 - D / R) if R else np.nan, power=D / max(T, 1),
                               already_over=A0 / max(R, 1)))
     print(pd.DataFrame(crows[-12:]).round(3).to_string(index=False), flush=True)
 pd.DataFrame(nrows).to_csv(OUT / "w4_networks.csv", index=False)
