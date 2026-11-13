@@ -216,13 +216,13 @@ def fig_g():
         a.axhline(v, color=col, ls=ls_, lw=0.9)
     v = X[(X.method == "O-raw") & (X.archive == "random") & (X["size"] == -1)].acc.iloc[0]
     a.axhline(v, color=GREY, ls=":", lw=0.9)
-    a.text(27, v - 0.006, "idealized archive, raw CTR", fontsize=5.5, color="0.35")
+    a.text(27, v - 0.006, "idealized archive, raw CTR", fontsize=6.5, color="0.35")
     a.plot([], [], color="0.5", ls="--", lw=0.9, label="archive alone (dashed)")
     a.set_xscale("log")
     a.set_xlabel("randomized tests used for training")
     a.set_ylabel("accuracy, within-test pairs")
     a.set_ylim(0.56, 0.70)
-    a.legend(frameon=False, fontsize=5.5, loc="lower right")
+    a.legend(frameon=False, fontsize=6.5, loc="lower right")
     a.set_title("(a) archives vs. randomized tests", fontsize=7.5)
     n_all = 18194
     for arch, col, lab in [("random", ACC, "idealized"), ("published", "#d08c2b", "published")]:
@@ -242,11 +242,16 @@ def fig_g():
         b.scatter([law.loc[arch, "holdout_n"]] * len(Xo), Xo.kstar, facecolors="none", edgecolors=col, s=14, lw=0.8,
                   zorder=4)
     b.scatter([], [], facecolors="none", edgecolors="0.4", s=14, label="smaller splits")
-    b.plot([], [], color="0.4", ls=":", lw=0.8, label="fit $K n/(n+n_0)$")
-    b.set_xscale("log"); b.set_yscale("log")
+    b.set_ylim(90, 2100)
+    b.set_yscale("log")
+    b.set_yticks([100, 200, 500, 1000, 2000])
+    b.set_yticklabels(["100", "200", "500", "1,000", "2,000"])
+    b.minorticks_off()
+    b.plot([], [], color="0.4", ls=":", lw=0.8, label="fit")
+    b.set_xscale("log")
     b.set_xlabel("archive size (headlines)")
     b.set_ylabel("worth in randomized tests")
-    b.legend(frameon=False, fontsize=5.5, loc="lower right")
+    b.legend(frameon=False, fontsize=6.5, loc="lower right")
     b.set_title("(b) exchange rate", fontsize=7.5)
     M = pd.read_csv(TAB / "u5_observational_metrics.csv").query("split == 'confirmatory' and within_acc_sig == within_acc_sig")
     for kind, col, mk, lab in [("raw", GREY, "s", "CTR across tests"), ("week", ACC, "o", "CTR demeaned in week")]:
@@ -255,10 +260,11 @@ def fig_g():
         o = g[g.train == "ORACLE"]
         c.scatter(o.spearman, o.within_acc_sig, facecolors="none", edgecolors="k", s=40, lw=0.8, zorder=4)
     c.annotate("randomized\ntraining", (M[(M.metric == "week") & (M.train == "ORACLE")].spearman.iloc[0], 0.6841),
-               xytext=(-30, -18), textcoords="offset points", fontsize=5.5, color="0.3")
+               xytext=(-30, -18), textcoords="offset points", fontsize=6.5, color="0.3")
     c.set_xlabel("held-out Spearman with CTR")
     c.set_ylabel("decision accuracy")
-    c.legend(frameon=False, fontsize=5.5, loc="lower right")
+    c.set_ylim(0.615, 0.69)
+    c.legend(frameon=False, fontsize=6.5, loc="lower right")
     c.set_title("(c) validation vs. decision", fontsize=7.5)
     fig.tight_layout(pad=0.3)
     fig.savefig(FIG / "v2_fig_g_archive.png", dpi=300)

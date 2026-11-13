@@ -10,6 +10,10 @@ outcome of a test before picking it):
   margin+     largest archive-predicted spread (tests where the archive claims the biggest differences)
   committee   largest disagreement among 8 archive models fit on bootstrap resamples of the archive
               (query by committee: the archive's own estimation uncertainty)
+  leverage    largest feature spread between the headlines of a test (no archive: the classical design effect)
+  probe       largest disagreement between the archive model and a model trained on natural pairs (re-tests of
+              the same article on different days, which recover randomized effects with little bias; RQ3), i.e.
+              tests where the archive's bias is most likely to show
   design      greedy Bayesian experimental design: each step adds the test that most reduces the summed posterior
               variance of within-cell contrasts over the whole pool, under the prior of PRIOR-fixed
               (precision alpha; transductive/V-optimal design, rank-r Woodbury updates)
@@ -98,6 +102,13 @@ for fold, (tr, te) in enumerate(GroupKFold(5).split(np.zeros(len(S.tests)), grou
         bi = rng.integers(0, len(rows_a), len(rows_a))
         committee.append(Ridge(alpha=O.alpha_).fit(Xa[bi], ya[bi]).coef_)
     committee = np.array(committee)
+    tr_art = np.unique(S.article[tr])
+    inp = np.isin(S.article[S.ri], tr_art)
+    na, nb = S.ri[inp], S.rj[inp]
+    pa, pb = ur.one_per_test(S, na, rng), ur.one_per_test(S, nb, rng)
+    sgn = np.where(S.day[na] <= S.day[nb], 1.0, -1.0)
+    N = RidgeCV(alphas=ALPHAS).fit((Z[S.hid[pa]] - Z[S.hid[pb]]) * sgn[:, None], (S.y[pa] - S.y[pb]) * sgn)
+    bN = N.coef_
 
     exp_tests = np.unique(S.tix[ur.within_rows(S, tr)[0]])
     er, cf = ur.within_rows(S, exp_tests)
@@ -106,11 +117,15 @@ for fold, (tr, te) in enumerate(GroupKFold(5).split(np.zeros(len(S.tests)), grou
     rt = S.tix[er]
     spread = per_test(np.abs(Xall @ bO), rt, exp_tests)
     disagree = per_test((Xall @ committee.T).std(1), rt, exp_tests)
+    lever = per_test(np.linalg.norm(Xall, axis=1), rt, exp_tests)
+    probe = per_test(np.abs(Xall @ (bO - bN)), rt, exp_tests)
     nmax = max(KS)
     seqs = {("random", r): rng.permutation(exp_tests)[:nmax] for r in range(3)}
     seqs[("margin-", 0)] = exp_tests[np.argsort(spread + 1e-12 * rng.random(len(spread)))][:nmax]
     seqs[("margin+", 0)] = exp_tests[np.argsort(-spread + 1e-12 * rng.random(len(spread)))][:nmax]
     seqs[("committee", 0)] = exp_tests[np.argsort(-disagree + 1e-12 * rng.random(len(spread)))][:nmax]
+    seqs[("leverage", 0)] = exp_tests[np.argsort(-lever + 1e-12 * rng.random(len(spread)))][:nmax]
+    seqs[("probe", 0)] = exp_tests[np.argsort(-probe + 1e-12 * rng.random(len(spread)))][:nmax]
     seqs[("design", 0)] = greedy_design(Xall, rt, exp_tests, nmax, ALPHA_FIXED)
     for (strategy, draw), seq in seqs.items():
         for k in KS:
