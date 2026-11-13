@@ -14,10 +14,17 @@ set -euo pipefail
 report() {
   for s in scripts/a1_realign_urls.py scripts/a2_alignment_validation.py scripts/v1_past_only_called.py \
            scripts/v2_judge_summary.py scripts/v3_signal_groups.py scripts/v4_top_pick_value.py \
-           scripts/v5_learners.py scripts/v6_headline_terms.py scripts/fig_called.py scripts/fig_judge.py; do
+           scripts/v5_learners.py scripts/v6_headline_terms.py scripts/v7_word_memory.py \
+           scripts/fig_called.py scripts/fig_judge.py scripts/a3_export_realigned.py; do
     echo "== $s"; python "$s"
   done
 }
+# The day-volume and lever estimates quoted in Sec. 5.2 (double ML) come from explore/editorial_dml/ (its own
+# run_all.sh; extra packages lightgbm, econml, onnxruntime; about an hour; outputs in explore/editorial_dml/out/,
+# cite_*.csv). It reads data/external/realigned.csv, which a3_export_realigned.py writes. Run with
+#   ./run_all.sh levers
+levers() { (cd explore/editorial_dml && ./run_all.sh); }
+if [ "${1:-}" = "levers" ]; then levers; exit 0; fi
 if [ "${1:-}" = "report" ]; then report; exit 0; fi
 report
 # ---------------------------------------------------------------------------------------------------------

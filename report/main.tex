@@ -72,7 +72,8 @@ Its cause is in the file: the \texttt{url} column is shifted against all other c
 misaligned for four fifths of its rows, in the original UCI file; to our knowledge this is undocumented; (ii) a
 repair by monotone alignment, verified on signals the alignment never saw, released as a row-to-URL table
 together with 40{,}161 real headlines; (iii) a past-only, decision-level account of what can be called, in which
-headline text alone matches all 58 features and the two combine; (iv) an evaluation of a zero-shot decision judge
+headline text alone matches all 58 features and the two combine, a visible memory of headline words replaces the
+benchmark's keyword history, and the weekend premium is traced to the day's volume; (iv) an evaluation of a zero-shot decision judge
 \citep{zheng2023judge,li2026jev} on a question with ground truth, across articles and within one article; (v) a
 caution for evaluation practice: a random split hides this error, a split by time shows it at once.
 
@@ -170,6 +171,22 @@ the headline-ridge predictions (late fusion; it has no parameters to tune, but w
 fusion's scores, so it was not fixed in advance). Hyper-parameters of the compared families are
 chosen once, on March--June 2013 under the same rolling origin, and then frozen. We refit HistGB on feature
 groups (13 history, 28 body, 5 title, 14 placement features) to see where the skill sits.
+
+\paragraph{Word memory.} The nine \texttt{kw\_*} features summarize the shares of earlier articles with the same
+editor keyword, but the keywords are not in the data. We rebuild this memory from visible keys, the words and
+bigrams of the headline: for a key $k$ with $n_k$ earlier articles of mean log shares $\bar y_k$, its lift is
+$\frac{n_k}{n_k+m}(\bar y_k-\mu)$, with $\mu$ the mean over all earlier articles and the shrinkage $m$ estimated by
+the method of moments on articles before July 2013. Six aggregates per article (mean, maximum, minimum and sum of
+its keys' lifts, number of keys with a history, largest $n_k$) replace \texttt{kw\_*}. Like \texttt{kw\_*}, the
+memory uses past articles with their share counts as recorded in 2015; a variant admits only articles at least 30
+days old, whose counts were nearly final at the time.
+
+\paragraph{Day volume.} To ask what an editor could change we estimate partially linear models by double machine
+learning \citep{chernozhukov2018}: log shares and each lever (log counts of images, videos and links; the number
+of articles published that day in the same and in other sections) are predicted out of fold from confounders
+(date, weekday, section, LDA topics, keyword history, 64 principal components of the headline embedding) with
+gradient boosting, in five folds of whole calendar weeks, and residuals are regressed on residuals with standard
+errors clustered by week. As a negative-control outcome we use the shares of the older articles an article links to.
 
 \paragraph{Zero-shot judge.} JEV (TypeSafe, version 1.14.0, via its API) answers a typed \emph{choice} question
 with a probability for each option and no generated text \citep{li2026jev}. We ask: ``Which of these two articles
@@ -336,7 +353,13 @@ any of these groups and more than all of them together. What the benchmark's tit
 headline is about: the words with the largest positive weights within section and month include \emph{quotes},
 \emph{types}, \emph{resume}, \emph{LinkedIn}, \emph{LEGO} and \emph{hilarious}, the most negative \emph{recap},
 \emph{earnings}, \emph{events}, \emph{NBA} and \emph{Congress}. The headline works as a description of the kind
-of article, which the 5 LDA topics and keyword statistics capture only in part. The gain does not depend on the
+of article, which the 5 LDA topics and keyword statistics capture only in part. The word memory makes this
+concrete. With the \texttt{kw\_*} columns replaced by its six aggregates, HistGB reaches an AUC of 0.734, 0.009
+[0.005, 0.013] above the original features, and 61.6\% on pairs (+1.0 points [0.6, 1.4]); fed only by articles at
+least 30 days old it still reaches 0.729 (+0.005 [0.001, 0.009]). The mean lift of a headline's words, with no
+model at all, orders 59.9\% of pairs, the benchmark's strongest history feature \texttt{kw\_avg\_avg} 56.9\%.
+Which words do well is long-lived, and a visible, reproducible memory of them beats the dataset's opaque one.
+Averaged with the embedding ridge it adds nothing (AUC 0.743 against 0.746): the embedding already carries it. The gain does not depend on the
 topic being familiar: by how similar a headline is to any headline of the previous 30 days, the combined AUC is
 0.737--0.757 in all five quintiles (most novel: 0.74), and six features counting similar earlier headlines add
 0.001 AUC.
@@ -347,6 +370,18 @@ $k$-nearest neighbours ($k{=}500$), 58.4\% for ridge, 60.5\% for a random forest
 0.688, 0.705, 0.720, 0.724); on the headline, ridge reaches 60.0\% with TF-IDF and 61.2\% with embeddings (AUC
 0.684, 0.703). Non-linear learners gain two points on the tabular features, while a linear model suffices on
 the embedding.
+
+\paragraph{What an editor can change.} Prediction is not a to-do list. Adjusted for date, section, topic,
+keyword history and the headline's content, doubling an article's images, videos or outside links goes with 2--3\%
+more shares, but the same ``effects'' appear on a negative-control outcome (the shares of the older articles it
+links to: +3.5\%, +5.9\%, +2.2\%), so they are residual confounding, and the title's sentiment has no association
+beyond what the headline's content carries. One lever is robust. Within the same week and weekday, a day with twice as many articles in the section
+carries 8.3\% [6.2, 10.4] fewer shares per article, and 11.8\% [6.8, 16.5] fewer for twice as many in other
+sections; the composition of what is published, as far as content predicts it, explains at most a quarter of
+this. Extrapolated to weekend volumes (42\% of a weekday's), the slope accounts for the whole weekend premium
+(+34\% [23, 46] predicted, +29\% [25, 33] observed, $-$2.5\% [$-$8, 4] at fixed volume), though weekdays almost
+never reach weekend volumes, and the data cannot separate crowding or exposure from unobserved same-day
+selection.
 
 \subsection{A zero-shot judge on the headline (RQ3)}
 \label{sec:rq3}
@@ -433,7 +468,8 @@ about 2\%, within the same day, and 152 rows cannot be repaired. The 2014 reword
 judge's accuracy on it (52--54\%) is below its level on all 2014 pairs. Why rows are missing from the feature side is
 our guess. Shares were recorded once, so article age and date are confounded, and the history features use
 shares of earlier articles as recorded at collection, which makes their value somewhat optimistic. The sitemap
-lists the current headline, which may differ from the one at publication. The headline's signal is predictive,
+lists the current headline, which may differ from the one at publication. Day volume counts only the articles in
+the dataset, and its slope is an adjusted association identified within weeks, not an experiment. The headline's signal is predictive,
 not causal: across articles it mostly describes the article, and we do not claim that rewording a Mashable
 headline changes its shares. The judge may have seen Mashable articles in training; rewording and the equal
 similar accuracy across periods argue against recall but cannot exclude knowledge of which stories were big. We test one
