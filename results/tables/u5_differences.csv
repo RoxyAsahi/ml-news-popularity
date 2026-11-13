@@ -1,0 +1,25 @@
+split,a,b,diff,lo,hi
+exploratory,GloVe+H15 / OBS-FE,GloVe+H15 / OBS,0.025,0.0146,0.0361
+exploratory,GloVe+H15 / OBS,GloVe+H15 / OBS-HGB,0.0274,0.0116,0.0431
+exploratory,GloVe+H15 / ORACLE,GloVe+H15 / OBS-FE,0.012,-0.0015,0.0251
+exploratory,GloVe+H15 / NAT,GloVe+H15 / OBS-FE,-0.055,-0.0743,-0.0374
+exploratory,GloVe+H15 / MIX (OBS-FE + NAT),GloVe+H15 / OBS-FE,-0.0013,-0.0082,0.0059
+exploratory,GloVe+H15 / OBS,H15 / OBS,0.0577,0.0348,0.0802
+exploratory,"rank corr. across vs within, all models",,0.8246,,
+exploratory,"rank corr. across vs within, GloVe models",,0.1786,,
+confirmatory,GloVe+H15 / OBS-FE,GloVe+H15 / OBS,0.0152,0.0105,0.0199
+confirmatory,GloVe+H15 / OBS,GloVe+H15 / OBS-HGB,0.012,0.0049,0.0199
+confirmatory,GloVe+H15 / ORACLE,GloVe+H15 / OBS-FE,0.0178,0.0127,0.0232
+confirmatory,GloVe+H15 / NAT,GloVe+H15 / OBS-FE,-0.0117,-0.0187,-0.0048
+confirmatory,GloVe+H15 / MIX (OBS-FE + NAT),GloVe+H15 / OBS-FE,0.0034,-0.0009,0.0077
+confirmatory,GloVe+H15 / OBS,H15 / OBS,0.0665,0.0559,0.0761
+confirmatory,"rank corr. across vs within, all models",,0.6319,,
+confirmatory,"rank corr. across vs within, GloVe models",,-0.3929,,
+holdout,GloVe+H15 / OBS-FE,GloVe+H15 / OBS,0.0224,0.0124,0.0328
+holdout,GloVe+H15 / OBS,GloVe+H15 / OBS-HGB,0.0342,0.0176,0.0516
+holdout,GloVe+H15 / ORACLE,GloVe+H15 / OBS-FE,0.0089,-0.0031,0.02
+holdout,GloVe+H15 / NAT,GloVe+H15 / OBS-FE,-0.0498,-0.0675,-0.0332
+holdout,GloVe+H15 / MIX (OBS-FE + NAT),GloVe+H15 / OBS-FE,0.0036,-0.0024,0.0101
+holdout,GloVe+H15 / OBS,H15 / OBS,0.0661,0.0461,0.0856
+holdout,"rank corr. across vs within, all models",,0.8077,,
+holdout,"rank corr. across vs within, GloVe models",,0.3571,,

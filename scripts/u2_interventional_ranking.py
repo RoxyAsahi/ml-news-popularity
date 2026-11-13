@@ -122,6 +122,8 @@ def fit_ridge(X, t, intercept=True):
 
 
 rows_out = []
+SIG = np.where(ev_sig)[0]
+CORR = {}   # (rep, train) -> correctness on each significant within-test pair, filled fold by fold
 folds = GroupKFold(5).split(np.zeros(len(tests)), groups=article)
 for fold, (tr_t, te_t) in enumerate(folds):
     tr_art = set(article[tr_t])
@@ -179,6 +181,10 @@ for fold, (tr_t, te_t) in enumerate(folds):
             acc = np.mean(np.where(tie, 0.5, ok))
             sg = ev_sig[te_pairs]
             acc_sig = np.mean(np.where(tie[sg], 0.5, ok[sg]))
+            v = CORR.setdefault((rep, mname), np.full(len(SIG), np.nan))
+            m_ = np.isin(ev_art[SIG], list(set(article[te_t])))
+            dps = pred[ev_a[SIG[m_]]] - pred[ev_b[SIG[m_]]]
+            v[m_] = np.where(dps == 0, 0.5, (np.sign(dps) == np.sign(zz[SIG[m_]])).astype(float))
             # decision value: in each test-set cell with >= 2 headlines, CTR of the model's pick vs cell mean
             sub = d.iloc[te_rows][["cell", "ctr"]].assign(p=pred[te_rows], h=hid[te_rows])
             sub = sub[sub.groupby("cell").h.transform("nunique") >= 2]
@@ -193,6 +199,10 @@ for fold, (tr_t, te_t) in enumerate(folds):
                                  n_sig=int(sg.sum()), lift_pct=lift, ceiling_pct=ceil))
             print(rows_out[-1], flush=True)
 
+keys = sorted(CORR)
+np.savez_compressed(ROOT / "results" / "tables" / f"u2_pairs_{split}.npz",
+                    configs=np.array(["|".join(c) for c in keys]), correct=np.array([CORR[c] for c in keys]),
+                    article=ev_art[SIG])
 R = pd.DataFrame(rows_out)
 R.to_csv(ROOT / "results" / "tables" / f"u2_ranking_{split}.csv", index=False)
 S = R.groupby(["rep", "train"])[["across_spearman", "within_acc", "within_acc_sig", "lift_pct", "ceiling_pct"]].mean()
