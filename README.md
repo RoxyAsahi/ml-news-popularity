@@ -44,7 +44,7 @@ The file has 39,644 rows and 61 columns (the course PDF's 39,797 is the pre-clea
 ## Running
 
 ```bash
-./run_all.sh                  # every experiment, ~26 min
+./run_all.sh                  # every experiment; downloads the Upworthy archive and GloVe; several hours on 4 cores
 ./report/build.sh             # compile the report (pdflatex + bibtex), prints the page count
 ./make_submission.sh          # dist/group3_news_popularity.zip: report.pdf + code/ (tracked files, no data)
 # or one at a time:
