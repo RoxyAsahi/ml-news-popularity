@@ -29,15 +29,30 @@ def num(x):
         return np.nan
 
 
+def lines(src, stem):
+    """Parsed JSON lines of every <stem>*.jsonl file (one per fetch process); broken last lines are skipped."""
+    for fn in sorted(src.glob(stem + "*.jsonl")):
+        with open(fn, encoding="utf-8") as f:
+            for line in f:
+                try:
+                    yield json.loads(line)
+                except Exception:
+                    continue
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--src", default=str(ROOT / "data" / "external" / "wayback" / "parsed"))
     a = ap.parse_args()
     src = Path(a.src)
     obs, meta = [], {}
-    with open(src / "lists.jsonl", encoding="utf-8") as f:
-        for line in f:
-            r = json.loads(line)
+    seen_cap = set()
+    for line in lines(src, "lists"):
+        if True:
+            r = line
+            if (r["kind"], r["ts"], r["orig"]) in seen_cap:
+                continue
+            seen_cap.add((r["kind"], r["ts"], r["orig"]))
             for col, items in r["lists"].items():
                 for rank, it in enumerate(items):
                     aid = it.get("id")
@@ -57,10 +72,9 @@ def main():
                         if it.get(k) is not None and k not in m:
                             m[k] = it[k]
     n_list = len(obs)
-    if (src / "articles.jsonl").exists():
-        with open(src / "articles.jsonl", encoding="utf-8") as f:
-            for line in f:
-                r = json.loads(line)
+    if True:
+        if True:
+            for r in lines(src, "articles"):
                 net = {k: num(v) for k, v in (r.get("net") or {}).items()}
                 if not net:
                     continue

@@ -52,7 +52,7 @@ _last = [0.0]
 
 
 def log(*a):
-    line = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S ") + " ".join(str(x) for x in a)
+    line = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).strftime("%Y-%m-%d %H:%M:%S ") + " ".join(str(x) for x in a)
     print(line, flush=True)
     with open(os.path.join(ARGS.root, "log%s.txt" % ARGS.tag), "a", encoding="utf-8") as f:
         f.write(line + "\n")
@@ -208,21 +208,37 @@ def parse_article(text):
 
 
 # ------------------------------------------------------------------ storage helpers
+def _tagged(name):
+    stem, ext = os.path.splitext(name)
+    return stem + ARGS.tag + ext
+
+
 def load_done(name):
-    path = os.path.join(ARGS.root, "parsed", name)
+    """Union of the lines of parsed/<stem>*<ext> (all tags, so shards and earlier runs are honoured)."""
+    stem, ext = os.path.splitext(name)
+    d = os.path.join(ARGS.root, "parsed")
     s = set()
-    if os.path.exists(path):
-        with open(path, encoding="utf-8") as f:
-            for line in f:
-                s.add(line.strip())
+    for fn in (os.listdir(d) if os.path.isdir(d) else []):
+        if fn.startswith(stem) and fn.endswith(ext):
+            with open(os.path.join(d, fn), encoding="utf-8") as f:
+                for line in f:
+                    s.add(line.strip())
     return s
 
 
 def append(name, text):
-    path = os.path.join(ARGS.root, "parsed", name)
+    path = os.path.join(ARGS.root, "parsed", _tagged(name))
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "a", encoding="utf-8") as f:
         f.write(text + "\n")
+
+
+def mine(key):
+    """True if this process's shard owns the key (--shard i/K)."""
+    if not ARGS.shard:
+        return True
+    i, k = (int(x) for x in ARGS.shard.split("/"))
+    return int(hashlib.md5(key.encode()).hexdigest(), 16) % k == i
 
 
 def save_raw(kind, ts, key, data):
@@ -241,7 +257,7 @@ def status(**kw):
                 cur = json.load(f)
         except Exception:
             cur = {}
-    cur.update(kw, updated=dt.datetime.utcnow().isoformat())
+    cur.update(kw, updated=dt.datetime.now(dt.timezone.utc).replace(tzinfo=None).isoformat())
     tmp = "%s.%d.tmp" % (path, os.getpid())
     with open(tmp, "w", encoding="utf-8") as f:
         json.dump(cur, f, indent=1)
@@ -286,7 +302,7 @@ def stage_lists():
     n_ok = n_empty = 0
     for i, (kind, ts, orig) in enumerate(plan):
         key = "%s_%s_%s" % (kind, ts, hashlib.md5(orig.encode()).hexdigest()[:8])
-        if key in done:
+        if key in done or not mine(key):
             continue
         data = http_get("https://web.archive.org/web/%sid_/%s" % (ts, orig))
         if data is None:
@@ -390,7 +406,7 @@ def stage_articles():
             continue
         for i, (aid, (ts, orig, dig, _)) in enumerate(plan):
             key = "%s_%s" % (ts, hashlib.md5(aid.encode()).hexdigest()[:10])
-            if key in done:
+            if key in done or not mine(key):
                 continue
             data = http_get("https://web.archive.org/web/%sid_/%s" % (ts, orig))
             if data is not None:
@@ -444,6 +460,7 @@ def main():
     ap.add_argument("--max-pass", type=int, default=0)
     ap.add_argument("--only-pass", type=int, default=0, help="articles stage: run only this pass (1, 2 or 3)")
     ap.add_argument("--reverse", action="store_true", help="artcdx stage: walk the days from the end")
+    ap.add_argument("--shard", default="", help="i/K: handle only keys whose hash mod K equals i")
     ap.add_argument("--tag", default="", help="suffix for log/status files when several processes share --root")
     ap.add_argument("--keep-awake", action="store_true", help="Windows: no idle sleep while running on mains power")
     ARGS = ap.parse_args()
