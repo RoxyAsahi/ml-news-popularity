@@ -200,44 +200,55 @@ def fig_f():
 
 
 def fig_g():
-    """Upworthy, confirmatory split: (a) accuracy on significantly different within-test headline pairs against
-    the number of randomized tests used for training, with the observational archive as reference lines;
-    (b) observational validation metric against the interventional one, per model."""
-    C = pd.read_csv(TAB / "u4_curves.csv").query("split == 'confirmatory'")
-    W = pd.read_csv(TAB / "u4_archive_worth.csv").set_index("split").loc["confirmatory"]
-    fig, (a, b) = plt.subplots(1, 2, figsize=(7.0, 2.4), gridspec_kw={"width_ratios": [1.25, 1.0]})
-    for m, col, lab in [("E", "0.25", "randomized tests only"), ("POOL", "#d08c2b", "archive + tests, pooled"),
-                        ("PRIOR", ACC, "archive as prior + tests")]:
-        r = C[C.method == m].sort_values("k")
-        a.plot(r.k, r.acc, marker="o", ms=2.5, color=col, lw=1.2, label=lab)
-        if m == "E":
-            a.fill_between(r.k, r.lo, r.hi, color=col, alpha=0.15, lw=0)
-    for key, ls_, lab in [("O", "--", "archive, week-demeaned"), ("O-raw", ":", "archive, raw CTR")]:
-        a.axhline(W[key], color=GREY, ls=ls_, lw=1)
-        a.text(26, W[key] + 0.002, f"{lab} ({W[key]:.3f})", fontsize=6.5, color="0.35")
-    a.axvline(W["kstar_O"], color="0.8", lw=0.8)
+    """Upworthy, confirmatory split (u6/u7, u5): (a) decision accuracy against the number of randomized tests,
+    with archives as reference lines; (b) exchange rate against archive size, idealized vs published archive;
+    (c) two validation metrics against decision accuracy for the seven GloVe models."""
+    R = pd.read_csv(TAB / "u6_runs_confirmatory.csv")
+    X = pd.read_csv(TAB / "u7_exchange_rate.csv").query("split == 'confirmatory'")
+    F = pd.read_csv(TAB / "u7_fusion.csv").query("split == 'confirmatory'")
+    fig, (a, b, c) = plt.subplots(1, 3, figsize=(7.0, 2.3), gridspec_kw={"width_ratios": [1.2, 1.0, 1.0]})
+    for m, arch, col, lab in [("E", "-", "0.25", "tests only"), ("PRIOR", "random", ACC, "idealized archive as prior"),
+                              ("PRIOR", "published", "#d08c2b", "published archive as prior")]:
+        r = F[(F.method == m) & (F.archive == arch) & (F.k > 0)].sort_values("k")
+        a.plot(r.k, r.acc, marker="o", ms=2.3, color=col, lw=1.1, label=lab)
+    for arch, ls_, col in [("random", "--", ACC), ("published", "--", "#d08c2b")]:
+        v = X[(X.method == "O") & (X.archive == arch) & (X["size"] == -1)].acc.iloc[0]
+        a.axhline(v, color=col, ls=ls_, lw=0.9)
+    v = X[(X.method == "O-raw") & (X.archive == "random") & (X["size"] == -1)].acc.iloc[0]
+    a.axhline(v, color=GREY, ls=":", lw=0.9)
+    a.text(27, v - 0.006, "idealized archive, raw CTR", fontsize=5.5, color="0.35")
+    a.plot([], [], color="0.5", ls="--", lw=0.9, label="archive alone (dashed)")
     a.set_xscale("log")
-    a.set_xlabel("randomized headline tests used for training")
+    a.set_xlabel("randomized tests used for training")
     a.set_ylabel("accuracy, within-test pairs")
     a.set_ylim(0.56, 0.70)
-    a.legend(frameon=False, fontsize=6.5, loc="lower right")
-    a.set_title(f"(a) an archive of 18,200 headlines is worth ~{round(W['kstar_O'], -1):,.0f} tests", fontsize=8)
-    L = pd.read_csv(TAB / "u5_leaderboard.csv").query("split == 'confirmatory' and rep == 'GloVe+H15'")
-    lab = {"OBS": ("raw target", (4, -1)), "OBS-FE": ("week-demeaned", (4, -1)),
-           "OBS-FE+TOPIC": ("week+topic\ndemeaned", (5, 0)), "NAT": ("natural pairs", (5, 0)),
-           "MIX (OBS-FE + NAT)": ("demeaned + pairs", (-4, 3), "right"), "ORACLE": ("randomized (oracle)", (-4, 0), "right"),
-           "OBS-HGB": ("boosted trees", (4, -1))}
-    for _, r in L.iterrows():
-        col = "0.25" if r.train == "ORACLE" else ACC
-        b.errorbar(r.across_spearman, r.within_acc_sig, yerr=[[r.within_acc_sig - r.lo], [r.hi - r.within_acc_sig]],
-                   fmt="o", ms=3.5, color=col, lw=0.8)
-        t = lab[r.train]
-        b.annotate(t[0], (r.across_spearman, r.within_acc_sig), fontsize=6, xytext=t[1], textcoords="offset points",
-                   color="0.3", ha=t[2] if len(t) > 2 else "left", va="center")
-    b.set_xlim(0.25, 0.345)
-    b.set_xlabel("observational metric:\nSpearman with CTR across tests")
-    b.set_ylabel("interventional metric")
-    b.set_title("(b) validation vs. decision metric (GloVe + 15 features)", fontsize=8)
+    a.legend(frameon=False, fontsize=5.5, loc="lower right")
+    a.set_title("(a) archives vs. randomized tests", fontsize=7.5)
+    n_all = 18194
+    for arch, col, lab in [("random", ACC, "idealized"), ("published", "#d08c2b", "published")]:
+        r = X[(X.method == "O") & (X.archive == arch)].copy()
+        r["n"] = r["size"].where(r["size"] > 0, n_all)
+        r = r.sort_values("n")
+        hi = r.kstar_hi.replace(np.inf, 12000)
+        b.errorbar(r.n, r.kstar, yerr=[r.kstar - r.kstar_lo, hi - r.kstar], fmt="o-", ms=3, color=col, lw=1, label=lab,
+                   capsize=0)
+    b.set_xscale("log"); b.set_yscale("log")
+    b.set_xlabel("archive size (headlines)")
+    b.set_ylabel("worth in randomized tests")
+    b.legend(frameon=False, fontsize=6, loc="upper left")
+    b.set_title("(b) exchange rate", fontsize=7.5)
+    M = pd.read_csv(TAB / "u5_observational_metrics.csv").query("split == 'confirmatory' and within_acc_sig == within_acc_sig")
+    for kind, col, mk, lab in [("raw", GREY, "s", "CTR across tests"), ("week", ACC, "o", "CTR demeaned in week")]:
+        g = M[M.metric == kind]
+        c.scatter(g.spearman, g.within_acc_sig, color=col, marker=mk, s=12, label=lab, zorder=3)
+        o = g[g.train == "ORACLE"]
+        c.scatter(o.spearman, o.within_acc_sig, facecolors="none", edgecolors="k", s=40, lw=0.8, zorder=4)
+    c.annotate("randomized\ntraining", (M[(M.metric == "week") & (M.train == "ORACLE")].spearman.iloc[0], 0.6841),
+               xytext=(-30, -18), textcoords="offset points", fontsize=5.5, color="0.3")
+    c.set_xlabel("held-out Spearman with CTR")
+    c.set_ylabel("decision accuracy")
+    c.legend(frameon=False, fontsize=5.5, loc="lower right")
+    c.set_title("(c) validation vs. decision", fontsize=7.5)
     fig.tight_layout(pad=0.3)
     fig.savefig(FIG / "v2_fig_g_archive.png", dpi=300)
 

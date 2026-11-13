@@ -19,18 +19,19 @@ What News Popularity Models Learn, and What an Archive Is Worth}
 \begin{abstract}
 Popularity models for the Mashable news benchmark reach a ROC-AUC of about 0.74, yet editors use such models
 for a narrower decision: which of several comparable items (two articles on one story, two headlines for one
-article) to put forward. We ask what the benchmark skill consists of and whether it transfers to that decision.
-On Mashable, we recover 2{,}941 same-story ``twin'' articles from URL slugs (about 71\% precision) and decompose
-strictly past-only ranking skill: time contributes nothing, the channel about 0.045 AUC, fixing the story at most
-0.07; twins barely share their fate, and articles compete for the attention of the day. Because these
-comparisons are observational, we then evaluate models where the decision-relevant truth is known: 22{,}743
-randomized headline tests of the Upworthy Research Archive. Models trained on observational click-through order
-clearly different headline pairs of the same article correctly 64--67\% of the time (randomized training:
-68\%), and the usual validation metric picks the right representation but not the right training target. An archive of 18{,}200 observational headlines
-is worth about 1{,}340 [850, 2{,}010] randomized tests for learning to choose headlines, but only 460 [305, 663]
-when trained on raw click-through instead of week-demeaned targets. Using the archive as a prior that the tests
-correct stays close to the better source at every budget, whereas naively pooling the two falls behind the tests
-alone once they number in the thousands. The Upworthy results replicate on two further splits.
+article) to put forward. We ask what the benchmark skill consists of, whether it transfers to that decision, and
+what the observational data behind it are worth. On Mashable, we recover 2{,}941 same-story ``twin'' articles
+from URL slugs (about 71\% precision) and decompose strictly past-only ranking skill: time contributes nothing,
+the channel about 0.045 AUC, fixing the story at most 0.07; twins barely share their fate, and articles compete
+for the attention of the day. We then evaluate models where the decision-relevant truth is known: 22{,}743
+randomized headline tests of the Upworthy Research Archive. Observationally trained models order clearly
+different headlines of one article correctly 64--67\% of the time (randomized training: 68\%), and the usual
+validation metric cannot separate training targets; validating on week-demeaned click-through repairs most of
+this. An idealized archive of 18{,}200 observational headlines is worth about 1{,}000 [670, 1{,}810] randomized
+tests, a realistic archive of published (winning) headlines about 730, and either only half as much when
+trained on raw click-through; the exchange rate grows far more slowly than the archive. Used as a prior that the
+tests correct, the archive adds up to 9 points of accuracy at small budgets and costs nothing at large ones,
+whereas naive pooling falls behind the tests alone. The Upworthy results replicate on two further splits.
 \end{abstract}
 
 % ------------------------------------------------------------------
@@ -49,28 +50,31 @@ comparisons, which no popularity benchmark offers.
 
 We find the first inside the benchmark: Mashable URLs end in a slug, a shortened headline
 (\emph{/2013/01/13/aaron-swartz/}), and near-identical slugs within a week usually mark the same story
-(Table~\ref{tab:twins}). For the second we turn to the Upworthy Research Archive \citep{matias2021}, where
-headlines of the same article were randomized, so the ranking an editor needs can be scored directly and
-an observational ``archive'' can be compared with experiments.
+(Table~\ref{tab:twins}). The second the benchmark cannot answer at all: it records one version of each article,
+so no model trained or evaluated on it can be scored on the choice between versions. We therefore use a second
+dataset only as a testbed for that one question: the Upworthy Research Archive \citep{matias2021}, where
+headlines of the same article were randomized, so the choice an editor faces can be scored directly and an
+observational ``archive'' can be priced in experiments. Mashable remains the object of study; the archive tells
+us how far its kind of evidence can be trusted.
 
 \paragraph{Research questions.}
 \begin{enumerate}\setlength\itemsep{0pt}
-  \item[RQ1] Where does a popularity model's skill live: in time, channel, story or the article? Do same-story
+  \item[RQ1] Where does a Mashable model's skill live: in time, channel, story or the article? Do same-story
              articles share their fate, and which content effects survive holding the story fixed?
-  \item[RQ2] Does skill learnt from observational data transfer to the decision an editor faces, choosing
-             between headlines of one article, and does the usual validation metric tell?
-  \item[RQ3] How many randomized experiments is an observational archive worth, and how should the two be
+  \item[RQ2] Do Mashable articles compete for attention, within their story or within their day?
+  \item[RQ3] Does skill learnt from observational data transfer to choosing between headlines of one article,
+             and can the usual validation metric tell?
+  \item[RQ4] How many randomized experiments is an observational archive worth, and how should the two be
              combined?
-  \item[RQ4] What does context add: do articles compete for attention, and how much can we explain at all?
 \end{enumerate}
-\noindent Contributions: (i) same-story pairs recovered from URLs, with measured precision; (ii) a past-only
+\noindent Contributions: (i) same-story pairs recovered from URLs, with measured precision, and a past-only
 decomposition of ranking skill into time, channel, story and article, extending the content-versus-context
-comparison of \citet{hessel2017}; (iii) an interventional evaluation of popularity models on 22{,}743
-randomized headline tests, contrasting the observational validation metric with decision skill; (iv) an
-estimate of what an observational archive is worth in randomized experiments, and a comparison of pooling with
-prior-based fusion \citep{kallus2018,colnet2024}; (v) evidence that articles compete for the day's attention,
-and a budget of how much of popularity we can explain. Analyses on the archive were developed on its
-exploratory split and repeated unchanged on the confirmatory and holdout splits.
+comparison of \citet{hessel2017}; (ii) evidence that articles compete for the day's attention rather than within
+their story; (iii) an interventional evaluation of popularity models on 22{,}743 randomized headline tests, in
+the spirit of \citet{gentzel2019}; (iv) an exchange rate between an observational archive and randomized
+experiments, for an idealized and for a realistic (published-headline) archive, and a comparison of pooling with
+prior-based fusion \citep{kallus2018,colnet2024}. Analyses on the archive were developed on its exploratory
+split and repeated unchanged on the confirmatory and holdout splits.
 
 % ------------------------------------------------------------------
 \section{Related Work}
@@ -89,13 +93,15 @@ them for 20--50\% of language features, and topic controls or embeddings do not 
 Predicting which headline wins is hard: linguistic features reach about 55\% pairwise accuracy
 \citep{gligoric2021}, and embedding or fine-tuned language models are only marginally better than chance
 \citep{ye2024lola}. Training on observational outcomes can teach models spurious correlations
-\citep{loghmani2025}. We measure this gap for popularity models and price it in experiments.
-\paragraph{Combining data sources.} Observational and randomized data can be combined by correcting an
+\citep{loghmani2025}. \citet{gentzel2019} argue that causal models should be evaluated with interventional
+measures on empirical data rather than observational fit; we apply that argument to popularity models.
+\paragraph{Combining data sources.} At Facebook, observational methods misestimated advertising effects that
+large randomized experiments measured \citep{gordon2019}; we ask the complementary question of how much an
+observational archive is worth \emph{in} experiments. Observational and randomized data can be combined by correcting an
 observational model with experiments \citep{kallus2018}, by shrinkage \citep{rosenman2023}, or by the
 generalisation methods reviewed in \citep{colnet2024}; comparing observational with experimental estimates
-goes back to \citet{lalonde1986}. Conformal methods give distribution-free intervals \citep{romano2019}, also
-under drift \citep{gibbs2021,gama2014}; streams of networked items \citep{yang2014wsdm,yang2014cikm}
-motivated our strictly past-only evaluation. Items compete for limited attention \citep{wu2007,weng2012}.
+goes back to \citet{lalonde1986}. Items compete for limited attention \citep{wu2007,weng2012}, and streams of
+networked items \citep{yang2014wsdm,yang2014cikm} motivated our strictly past-only evaluation.
 
 % ------------------------------------------------------------------
 \section{Data and Twin Articles}
@@ -186,11 +192,12 @@ earlier-article advantage) and channel-difference dummies, and compare with a cr
 channel$\times$week and weekday fixed effects. The difference between the two estimates is tested by combining
 independent bootstraps; twin coefficients are corrected for multiple testing \citep{benjamini1995}.
 
-\paragraph{Interventional evaluation (RQ2).} On Upworthy, a model is scored by how often it orders the two
+\paragraph{Interventional evaluation (RQ3).} On Upworthy, a model is scored by how often it orders the two
 headlines of a significantly different within-cell pair as the experiment did (\emph{decision accuracy}; 50\%
 is chance), and by the click-through gain of the headline it would pick in each cell over the cell mean. The
 usual \emph{observational} metric is the Spearman correlation between prediction and logit click-through across
-held-out tests, one random headline each. Models are ridge regressions (penalty by cross-validation) or, as a
+held-out tests, one random headline each; we also compute it on click-through demeaned within week, the
+quantity the demeaned models are trained for. Models are ridge regressions (penalty by cross-validation) or, as a
 typical popularity model, gradient boosting, trained with five-fold cross-validation grouped by article, so that
 no article is in both training and test data. Training signals: \emph{observational}, one random headline per
 training test (what a publisher's archive contains), with the raw outcome or the outcome demeaned within the
@@ -198,33 +205,33 @@ publication week, optionally also within 50 $k$-means topic clusters of the head
 the outcome difference between two tests of the same article run on different days; and, as an upper reference,
 \emph{randomized}, the within-cell contrasts themselves. Intervals resample articles (1{,}000 bootstrap draws).
 
-\paragraph{Archive versus experiments (RQ3).} Within each training fold, the archive is one headline from each of
-the 18{,}200 training tests (week-demeaned outcome), and the experiments are the within-cell contrasts of $k$
-randomly chosen training tests ($k$ from 25 to all $\approx$9{,}600, three draws). We compare experiments only,
-the archive only, both pooled in one ridge regression, and the archive as a prior: the archive coefficients
-$\hat\beta_O$ are corrected by a ridge regression of the experimental residuals on the features, $\hat\beta =
-\hat\beta_O + \hat\delta$, with $\hat\delta$ shrunk towards zero (penalty by cross-validation over tests), a
-linear form of experimental grounding \citep{kallus2018}. The archive's worth is the $k$ at which the
-experiments-only learner reaches the archive's decision accuracy (log-linear interpolation, article bootstrap).
+\paragraph{Archive versus experiments (RQ4).} Within each training fold the \emph{archive} holds one headline per
+training test with its click-through (week-demeaned). We build two: an \emph{idealized} archive with a random
+headline of each test, measured on randomized, simultaneous traffic without selection, and a \emph{published}
+archive with the headline that won the test (the archive's \texttt{first\_place}), which is what a newsroom
+actually keeps, selected on the outcome. Archive sizes range from 1{,}000 tests to all 18{,}200 (random subsets,
+three draws). The \emph{experiments} are the within-cell contrasts of $k$ randomly chosen training tests ($k$ from
+25 to all $\approx$9{,}600, three draws). We compare experiments only, the archive only, both pooled in one
+ridge regression, and the archive as a prior: its coefficients $\hat\beta_O$ are corrected by a ridge
+regression of the experimental residuals on the features, $\hat\beta = \hat\beta_O + \hat\delta$, with
+$\hat\delta$ shrunk towards zero, a linear form of experimental grounding \citep{kallus2018}; the penalty is
+cross-validated over tests or, as a check at small $k$, fixed. The archive's \emph{exchange rate} $k^*$ is the
+number of tests at which experiments alone reach the archive's decision accuracy (log-linear interpolation). Its
+intervals resample held-out articles and pick one of the three training draws at random in each replicate, so
+they include training variability. All statements are conditional on this learner, these 18{,}200 training
+tests and held-out articles; one Upworthy test averages 16{,}600 impressions.
 
 \paragraph{Effect estimates.} To see why observational training transfers imperfectly, we also compare
 per-feature effect estimates of the 15 interpretable features from observational designs (cross-section, with
 week fixed effects, with 50 text-embedding dimensions; pairs of tests of the same article on different days)
 with the randomized within-cell effects, estimated on the other two splits so that the two share no data.
 
-\paragraph{Context, competition and uncertainty (RQ4).} A story is a connected component of the twin graph. If
-a story had a fixed audience split among its $k$ articles, log shares would fall one-for-one with $\log k$; we
-also split the day's volume into same-story articles within two days and all others. Competition for the day
-regresses log shares on the log number of articles that day, with week, weekday and channel fixed effects and
-day-clustered errors, with a placebo (next week's volume on the same weekday). A \emph{semantic memory} feature
-averages the log shares of the 20 most similar earlier slugs with weights $0.5^{\text{age}/h}$.\footnote{The time
-decay was inspired by the TimeDecay mechanism of the open-source VCPToolBox project
-(\url{https://github.com/lioensky/VCPToolBox}); our implementation is independent.} Uncertainty uses 10\% and
-90\% quantile HistGB conformalised on the validation block (CQR) \citep{romano2019} and adaptive conformal
-inference (ACI) \citep{gibbs2021}; the predictability budget combines the out-of-sample $R^2$ of a past-only
-HistGB regressor, channel$\times$day fixed effects and the twin correlation corrected for non-story twins.
-Robustness values \citep{cinelli2020} give the share of residual variance a confounder would need to explain to
-remove an effect.
+\paragraph{Competition (RQ2).} A story is a connected component of the twin graph. If a story had a fixed
+audience split among its $k$ articles, log shares would fall one-for-one with $\log k$; we also split the day's
+volume into same-story articles within two days and all others. Competition for the day regresses log shares
+on the log number of articles that day, with week, weekday and channel fixed effects and day-clustered errors,
+with a placebo (next week's volume on the same weekday). Robustness values \citep{cinelli2020} give the share of
+residual variance a confounder would need to explain to remove an effect.
 
 \paragraph{Reproducibility.} Seeds are fixed; every number and figure comes from a script in the code, and
 \texttt{run\_all.sh} reproduces all of them from the raw CSV.
@@ -261,24 +268,18 @@ and between matched random neighbours from the same channel and day, by subset (
 fixed effects, week-cluster intervals) and within same-story twins (story-cluster intervals).}
 \label{fig:twins}
 \end{figure*}
-\begin{figure*}[t]
-\centering
-\includegraphics[width=\textwidth]{v2_fig_c_context_uncertainty.png}
-\caption{(a) RQ4: change in log shares per unit of log daily volume (95\% day- or story-clustered intervals); the
-placebo uses the volume of the same weekday one week later. (b) RQ4: monthly coverage of 80\% intervals on the test
-block, conformalised once (CQR) or adaptively (ACI). (c) RQ4: accuracy when predicting only the given share of
-articles with the most confident past-only scores.}
-\label{fig:context}
-\end{figure*}
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\textwidth]{v2_fig_g_archive.png}
-\caption{Upworthy, confirmatory split (held-out articles). (a) RQ3: accuracy on significantly different
-within-test headline pairs against the number of randomized tests used for training (band: 95\% article-bootstrap
-interval for experiments only); horizontal lines: an archive of one observational headline per training test
-(18{,}200), with week-demeaned or raw click-through; vertical line: where experiments alone reach the archive.
-(b) RQ2: observational validation metric against decision accuracy for seven models with the same representation (95\% article-bootstrap intervals).}
+\caption{Upworthy, confirmatory split, held-out articles. (a) RQ4: accuracy on significantly different
+within-test headline pairs against the number of randomized tests used for training, for experiments only and for each archive used as a
+prior; dashed lines: the archives of 18{,}200 headlines alone, dotted: the idealized archive trained on raw
+click-through. (b) RQ4:
+exchange rate, the number of tests that match an archive, against archive size, for an idealized (random
+headline) and a published (winning headline) archive; 95\% intervals include training variability. (c) RQ3:
+two validation metrics against decision accuracy for seven models with the same representation (circled:
+trained on randomized contrasts).}
 \label{fig:archive}
 \end{figure*}
 
@@ -309,7 +310,7 @@ $\geq$0.7) the gap is 0.135. It is not robust, though: controlling for content d
 [$-$0.006, 0.092], and for twins 3--7 days apart it is 0.035 [$-$0.067, 0.121]. It is consistent with a follow-up
 competing with its predecessor, so that the low correlation partly reflects split attention, but also with
 follow-ups simply being smaller pieces (a petition, a trailer; Table~\ref{tab:twins}). One snapshot of shares
-cannot separate these readings; Section~\ref{sec:rq4} tests the split-attention reading directly.
+cannot separate these readings; Section~\ref{sec:rq2} tests the split-attention reading directly.
 
 
 
@@ -323,15 +324,34 @@ not explained by topic; a confounder would need to explain 12\% of the residual 
 subjectivity and the share difference to remove it. The video effect (0.054 across articles) shrinks to 0.007
 [$-$0.041, 0.059] within twins, and negative tone has no detectable effect in either design.
 
-\subsection{Does observational skill transfer to choosing headlines? (RQ2)}
+\subsection{A crowded day, not a split story (RQ2)}
 \label{sec:rq2}
+Articles fare worse on crowded days: a log
+unit more articles that day goes with $-$0.286 [$-$0.372, $-$0.200] log shares (week, weekday and channel fixed
+effects), so doubling the volume (12 to 105 articles a day) means 18\% fewer shares. The estimate survives all
+content controls ($-$0.282), holds within twins ($-$0.200 [$-$0.324, $-$0.076]) and for same- and other-channel
+volume, while the placebo is small ($-$0.059 [$-$0.131, 0.014]); it is four times larger in 2013 than in 2014,
+which we cannot explain. A confounder explaining 4.1\% of the residual variance of volume and shares would remove
+it, so it remains a fragile association. Competition within a story is not detectable: log shares change by
+$-$0.011 [$-$0.035, 0.014] per log unit of story size, far from the $-$1 of a fixed audience, and same-story
+articles within two days do not hurt ($-$0.013 [$-$0.044, 0.017]) while the day's other articles do ($-$0.281).
+Story size is measured with error (twin recall at most about 30\%), so only strong splitting is ruled out.
+Popularity of similar earlier stories does not help either: a time-decayed \emph{semantic memory} of the 20 most
+similar earlier slugs changes AUC by $-$0.0008.\footnote{The time decay was inspired by the TimeDecay mechanism of
+the open-source VCPToolBox project (\url{https://github.com/lioensky/VCPToolBox}); our implementation is
+independent.} A past-only HistGB regressor explains 16.2\% [15.3, 17.1] of the variance of log shares, and
+channel$\times$day effects and the story together raise this to about a quarter at most.
+
+\subsection{Does observational skill transfer to choosing headlines? (RQ3)}
+\label{sec:rq3}
 Twins show what a model separates, but not what would happen if an editor chose differently. On Upworthy that
 can be measured. A ridge model trained on an observational archive (one headline per test, GloVe and 15
 features) orders significantly different headline pairs of held-out articles correctly 65.1\% [64.3, 65.9] of
 the time with raw click-through as the target and 66.6\% [65.8, 67.4] with week-demeaned targets (+1.5 [1.1,
-2.0] points); boosted trees, the typical popularity model, reach 63.9\% [63.1, 64.7] (Fig.~\ref{fig:archive}b).
+2.0] points); boosted trees, the typical popularity model, reach 63.9\% [63.1, 64.7] (Fig.~\ref{fig:archive}c).
 Training on the randomized contrasts themselves gives 68.4\% [67.6, 69.2], 1.8 [1.3, 2.3] points more than the
-best observational model. The archive thus gets most of the way, but the ceiling is low: even randomized
+best observational model. Measured from chance, the demeaned archive thus captures about 90\% of the gain that
+randomized training attains, but that gain is small: even randomized
 training misorders a third of clearly different pairs, in line with the modest accuracies reported for
 linguistic features and language models \citep{gligoric2021,ye2024lola}. Natural pairs (two tests of one article
 on different days) do worse than the demeaned archive ($-$1.2 [$-$1.9, $-$0.5] points), adding them to it does
@@ -339,18 +359,21 @@ not help detectably (+0.3 [$-$0.1, 0.8]), and nor does demeaning within topic cl
 interpretable features alone reach 58.5\%; the word vectors add 6.7 [5.6, 7.6] points. Except for the small gain from adding natural pairs, all these differences have the same sign on the
 exploratory and holdout splits.
 
-\paragraph{The validation metric picks the representation, not the training target.} The usual metric, the
-correlation of predictions with click-through across held-out tests, separates representations correctly (word
-vectors beat the 15 features on both metrics), but among models with the same representation it ranks the
-raw-target and boosted models highest (Spearman 0.331 and 0.327 against 0.324 for the demeaned target), although
-they are the worst at the decision. Across these seven models its rank correlation with decision accuracy is
-$-$0.39, 0.18 and 0.36 on the three splits. A team that validates on held-out click-through would therefore not
-find the better training target. The same happens on Mashable, where no randomized truth exists: HistGB
-regressors trained on log shares demeaned within channel$\times$day rank articles of the same channel and day
-slightly \emph{worse} (0.665 vs.\ 0.671 for raw log shares; 0.675 for the classifier), and a model trained on twin
-differences ranks twins worse (0.641 vs.\ 0.719 for the classifier). On observational comparisons demeaning looks
-harmful; on randomized ones it helps. Observational evaluation, even within a context, does not reveal which
-training choice serves the decision.
+\paragraph{The usual validation metric cannot separate training targets.} The correlation of predictions with
+click-through across held-out tests separates representations (word vectors beat the 15 features on both
+metrics), but among the seven models with the same representation its differences are small and point the wrong
+way: the raw-target model scores 0.331 and the demeaned one 0.325 ($-$0.007 [$-$0.013, $-$0.000]), and boosted
+trees 0.327, although their decision accuracies differ by 1.5--2.7 points; the randomized model, best at the
+decision, scores among the lowest (0.299; similarly on the other splits). This is close to built in: raw
+correlation across tests rewards predicting test-level factors, which is exactly what demeaning removes.
+Validating on the quantity the model is trained for repairs most of it: with click-through demeaned within
+week, the demeaned model scores highest (+0.031 [0.026, 0.036] over the raw one) and the rank correlation with
+decision accuracy is 0.57 (0.71 and 0.79 on the other splits, against $-$0.39, 0.18 and 0.14 for the raw metric). It still does not reveal the advantage of randomized training
+(0.418 vs.\ 0.446), which only randomized comparisons show. On Mashable no randomized truth exists, so we can only
+note a consistent pattern, not test it: HistGB regressors trained on log shares demeaned within
+channel$\times$day rank articles of the same channel and day no better (0.665 vs.\ 0.671 for raw log shares), and a
+model trained on twin differences ranks twins worse (0.641 vs.\ 0.719). Whether either would help an editor's
+choice is a hypothesis that Mashable cannot test.
 
 \paragraph{Why: biased effect estimates.} The per-feature effects learnt from observational data are biased. With
 the randomized effect estimated on the other two splits, a cross-section over 22{,}743 tests differs detectably
@@ -363,78 +386,70 @@ same-story pairs of the Mashable design cannot be checked here: only 402 Upworth
 story but different articles (most headline-similar pairs are re-tests of one article), and at that size even
 the naive cross-section shows no detectable bias.
 
-\subsection{What is an observational archive worth? (RQ3)}
-\label{sec:rq3}
-An archive of 18{,}200 observational headlines reaches a decision accuracy of 66.9\% [66.1, 67.7]; a learner
-trained on randomized contrasts needs 1{,}340 [850, 2{,}010] tests to match it (Fig.~\ref{fig:archive}a), about
-7\% of the archive's size, and with all $\approx$9{,}600 usable tests it reaches 68.4\% (+1.5 [1.0, 2.0] points
-over the archive). Trained the standard way, on raw click-through, the same archive is worth only 460 [305, 663]
-tests: demeaning the target within week triples its value. Value grows less than proportionally with size: on
-the exploratory and holdout splits, archives of about 3{,}900 headlines are worth about 600 tests [350, $>$1{,}600]
-(raw targets: 285 and 263). Combining the sources matters. Pooling archive and experiments in one regression helps at small budgets but
-falls behind the experiments alone from 3{,}200 tests on ($-$0.8 [$-$1.2, $-$0.4] points at 6{,}400): the
-archive's bias does not wash out. Using the archive as a prior and correcting it with the experiments stays within
-one point of the better source at every budget, beats the experiments alone by 8 points at 25 tests and by 0.6
-[0.3, 0.9] at 1{,}600, beats the archive by 1.6 [1.1, 2.1] with all tests, and there matches the experiments alone
-(+0.1 [$-$0.1, 0.3]). The archive's worth and the advantage of the prior at small budgets replicate on the
-exploratory and holdout splits; they have too few tests to check the pooling penalty. For a newsroom, the practical reading is that an
-archive is a strong starting point that is cheap to improve: a few hundred randomized tests on top of a
-week-demeaned archive model buy what thousands of tests would buy alone.
-
-\subsection{Competition for the day, and how much we can explain (RQ4)}
+\subsection{What is an observational archive worth? (RQ4)}
 \label{sec:rq4}
-\paragraph{A crowded day, not a split story.} Articles fare worse on crowded days (Fig.~\ref{fig:context}a): a log
-unit more articles that day goes with $-$0.286 [$-$0.372, $-$0.200] log shares (week, weekday and channel fixed
-effects), so doubling the volume (12 to 105 articles a day) means 18\% fewer shares. The estimate survives all
-content controls ($-$0.282), holds within twins ($-$0.200 [$-$0.324, $-$0.076]) and for same- and other-channel
-volume, while the placebo is small ($-$0.059 [$-$0.131, 0.014]); it is four times larger in 2013 than in 2014,
-which we cannot explain. A confounder explaining 4.1\% of the residual variance of volume and shares would remove
-it, so it remains a fragile association. Competition within a story is not detectable: log shares change by
-$-$0.011 [$-$0.035, 0.014] per log unit of story size, far from the $-$1 of a fixed audience, and same-story
-articles within two days do not hurt ($-$0.013 [$-$0.044, 0.017]) while the day's other articles do ($-$0.281).
-Story size is measured with error (twin recall at most about 30\%), so only strong splitting is ruled out.
-Popularity of similar earlier stories does not help (semantic memory changes AUC by $-$0.0008).
+\paragraph{The exchange rate.} An idealized archive of 18{,}200 headlines (week-demeaned) reaches a decision
+accuracy of 66.7\%; a learner trained on randomized contrasts needs 1{,}000 [670, 1{,}810] tests to match it
+(Fig.~\ref{fig:archive}a), and with all $\approx$9{,}600 usable tests it reaches 68.4\%. The exchange rate grows
+much more slowly than the archive (Fig.~\ref{fig:archive}b): 1{,}000, 2{,}000, 4{,}500 and 9{,}000 headlines are
+worth 320, 520, 690 and 960 tests, so the archive's marginal value falls from about one test per 3 headlines to
+about one per 20. A realistic archive is worth less. Keeping only the published (winning) headline of each test,
+as a newsroom would, gives 66.2\% and an exchange rate of 730 [490, 1{,}130], a quarter to a third less at every size:
+selection on the outcome costs value but does not remove it. Trained on raw click-through, the idealized archive
+is worth 520 [340, 760] tests and the published one 290 [190, 450]: demeaning the target within week doubles to
+two-and-a-half-folds the value. In clicks, picking headlines with the archive model raises click-through by
+8.8\% over a random pick (published: 8.4\%; raw target: 7.3--8.1\%), with all experiments by 9.9\%; the best
+headline in hindsight would give 35\%. One test averages 16{,}600 impressions, so the idealized archive saves
+about 17 million impressions of experimentation and the published one about 12 million. On the two smaller
+splits, archives of about 3{,}900 headlines are worth 810 and 750 tests (published: 350 and 480; raw target:
+140--230), with intervals that are wide but exclude the raw-target point estimates.
 
-\paragraph{How much can we explain?} A past-only HistGB regressor explains 16.2\% [15.3, 17.1] of the variance
-of log shares out of sample; channel$\times$day effects raise this to 17.8\% [16.7, 18.9], and the story,
-from the corrected twin correlation 0.071 [0.019, 0.143] as an upper value, to about 24\% [20, 29]. We can
-explain about a quarter. An 80\% conformal interval runs from 776 to 5{,}017 shares for a typical article, ACI
-keeps monthly coverage near 80\% under drift (Fig.~\ref{fig:context}b), and the past-only model reaches 0.869
-accuracy on the 10\% of articles it is most sure about, against 0.673 overall (Fig.~\ref{fig:context}c).
+\paragraph{Combining the two.} Pooling archive and experiments in one regression helps at small budgets but falls
+behind the experiments alone from 3{,}200 tests on ($-$0.8 [$-$1.2, $-$0.4] points at 6{,}400): the archive's bias
+does not wash out. Using the archive as a prior that the experiments correct never falls more than 0.4 points
+below the better source (1.5 on the smaller splits) and beats the experiments alone by 9.1 [8.4, 9.8] points at 25 tests, 1.7 at 400 and 0.7
+at 800; from 1{,}600 tests on the two agree (within 0.3 points). A fixed, untuned penalty gives the same gains
+(9.4 and 2.0 points), so they are not an artefact of cross-validating on few tests, and the published archive
+works as well as a prior as the idealized one (within 0.6 points at every budget). The pattern holds on both
+smaller splits. For a newsroom, the archive replaces the first several hundred tests; beyond about a thousand,
+experiments should carry the model.
 
 % ------------------------------------------------------------------
 \section{Discussion}
 \label{sec:discussion}
 \paragraph{Two kinds of skill.} The benchmark's 0.74 is mostly article-level skill: time contributes nothing, the
 channel about 0.045, the story nothing we can detect, and within a channel and day about three quarters of the
-skill above chance remains. That is the skill of telling articles apart. The skill an editor needs, choosing
-how to present one article, is different, and on randomized headline tests observational training transfers to
-it only partly, the usual validation metric does not reveal how well, and the training choice that helps the
-decision looks harmful on observational comparisons (RQ2). Holding the story fixed, as our twins do, removes
-topic but not this problem: Upworthy's same-article retests are the closest observational design to an
-experiment, and even they only show no detectable bias, not equivalence.
+skill above chance remains. That is the skill of telling articles apart. The skill an editor needs, choosing how
+to present one article, cannot be measured on the benchmark at all. Where it can be measured, observational
+training transfers to it largely but not fully, and the usual validation metric cannot tell training choices
+apart; validating on the quantity one trains for helps, but only randomized comparisons show the remaining gap.
+This is the argument of \citet{gentzel2019} for interventional evaluation, made concrete for popularity models.
 
-\paragraph{Experiments are worth buying, and an archive is worth keeping.} An archive is not worthless: it is
-worth hundreds to a few thousand randomized tests, more when its target is demeaned within week. Its value is
-best used as a prior that experiments correct, as in experimental grounding \citep{kallus2018} and shrinkage
-estimators \citep{rosenman2023}; naive pooling lets the archive's bias persist. This turns the vague advice to
-``run experiments'' into a budget.
+\paragraph{Experiments are worth buying, and an archive is worth keeping.} An archive is worth a few hundred to
+about a thousand randomized tests, less if it holds only published headlines and much less if trained on raw
+click-through, and its value grows slowly with its size. It is best used as a prior that experiments correct, as
+in experimental grounding \citep{kallus2018} and shrinkage estimators \citep{rosenman2023}; naive pooling lets
+its bias persist. Like the advertising comparison of \citet{gordon2019}, this turns the advice to ``run
+experiments'' into a budget, here for headlines.
 
 \paragraph{Limitations.} Twins are found from slugs and are about 71\% precise; annotation was by two language
 models, not humans. Upworthy and Mashable differ in outcome (clicks vs.\ shares), in what varies (headline vs.\
-article) and in era, so the archive results speak to how observational popularity models behave, not to each
-Mashable estimate. Our headline representation is simple (GloVe and 15 features; pretrained transformer
-weights were not reachable from our environment), and stronger text models may change the levels, though prior
-work finds them also close to chance \citep{ye2024lola}. Shares were recorded once, so age and publication date
+article) and in era. Our headline representation is simple (GloVe and 15 features; pretrained transformer
+weights were not reachable from our environment); this is acceptable for our question because richer models,
+from linguistic features to fine-tuned language models, gain little over chance on the same task
+\citep{gligoric2021,ye2024lola}, but the exchange rate is conditional on the learner. The archive results speak
+to how observational popularity models behave, not to each Mashable estimate. Shares were recorded once, so age and publication date
 cannot be separated, and keyword statistics use post-publication shares of earlier articles.
 
 \section{Conclusion}
 A standard popularity benchmark rewards telling articles apart; editors need to choose between comparable
 options. On Mashable, same-story twins hidden in URLs show that the skill is article-level, not time or section,
-that same-story articles barely share their fate, and that articles compete for the day (RQ1, RQ4). On 22{,}743
-randomized headline tests, observational models transfer only partly to choosing headlines, and the usual
-validation metric does not show it (RQ2). An archive of 18{,}200 headlines is worth about 1{,}340 randomized tests
-(460 if trained naively), and is better used as a prior that experiments correct than pooled with them (RQ3).
+that same-story articles barely share their fate (RQ1), and that articles compete for the day rather than within
+their story (RQ2). The benchmark cannot score the editor's choice; on 22{,}743 randomized headline tests,
+observational models transfer to it largely but not fully, and the usual validation metric cannot tell training
+choices apart (RQ3). An idealized archive of 18{,}200 headlines is worth about 1{,}000 randomized tests, a
+published one about 730, with value growing slowly in archive size and halved without week-demeaned training; it is better used as a prior that experiments
+correct than pooled with them (RQ4).
 
 \setlength{\bibsep}{1pt}\renewcommand{\bibfont}{\footnotesize}
 \bibliographystyle{plainnat}
