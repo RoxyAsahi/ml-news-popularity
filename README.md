@@ -74,6 +74,11 @@ python scripts/00_eda.py      # E0: figures + summary tables
 python scripts/01_pilot.py    # pilot numbers used in the plan (~1 min)
 ```
 
+Checked on a clean clone with a fresh virtual environment (`./run_all.sh report`, 33 minutes on 4 cores): all
+tables come out identical except rows of the early-fusion model (HistGB on features plus principal components of
+the headline embedding), which move in the third decimal because the embeddings are recomputed; no number quoted
+in the report depends on that.
+
 Outputs go to `results/figures/` and `results/tables/`. Every figure in the report must be produced by a script in `scripts/`.
 
 ## Repository layout
