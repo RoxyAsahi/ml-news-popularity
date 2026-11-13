@@ -158,6 +158,11 @@ unobservables on quiet days remains the open caveat.
    placebo, holds within week and weekday, is homogeneous across articles, and quantitatively accounts for the
    whole weekend premium. The remaining caveat is selection on unobservables (what gets published on quiet
    days); observable composition explains a quarter of the same-section part and none of the other-section part.
+   Wording accepted in review: "Within the same week and weekday, a day with twice as many articles carries
+   8-12% fewer shares per article; observable composition explains at most a quarter of this. Extrapolated to
+   weekend volumes, this slope is large enough to account for the whole weekend premium (+34% [23, 46] predicted,
+   +29% observed), though weekdays almost never reach weekend volumes, and the data cannot separate crowding or
+   exposure from unobserved same-day selection."
 5. Side observation for the main line: with correctly aligned headlines, the 64-component headline vector
    lifts the out-of-fold R2 of log shares from 0.146 to 0.194 (whole-week folds), so headlines do carry
    cross-article signal in this data.
