@@ -7,7 +7,6 @@
 \graphicspath{{../results/figures/}}
 \captionsetup{font=small}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
-\newcommand{\XX}[1]{\textcolor{red}{#1}}
 
 \title{What Can Be Called Before Publication?\\
 Platform Signals, Headlines and the Limits of Prediction in Online News Popularity}
@@ -309,7 +308,8 @@ for 1{,}000 articles from the first half of 2013 and at 0.00 for 1{,}000 from 20
 date: 0.23 and 0.03). This is what knowledge of older stories would produce, although a change in what Mashable
 readers shared cannot be excluded. Over the scored months the judge is at chance. The open-weights JEV-9B behaves like the API model: on the 400
 earliest section pairs (January--March 2013, where the API judge does best) it is right 56.0\% [51.3, 61.0] of the
-time against 57.8\% for the API, agreeing with it on 72\%; \XX{on 400 pairs from the scored months ...}
+time against 57.8\% for the API, agreeing with it on 72\%; on 400 random pairs from the scored months it is right 50.0\% [45.2, 54.5] of the time
+(API: 48.3\%).
 
 \begin{figure}[t]
 \centering
@@ -325,7 +325,8 @@ judge is right 66.0\% [64.1, 68.2] of the time, and 85.0\% [81.8, 88.0] on its m
 only recalling famous headlines: on pairs in which neither headline won its test it is right 63.4\% (with a winner:
 66.8\%). Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe);
 adding the judge's verdict to RoBERTa adds about 2 points. A second wording (``Which headline would make more readers
-click?'') gives 66.1\% on 1{,}000 of the pairs (first wording on the same pairs: 64.1\%; agreement 84\%). \XX{Open 9B Upworthy.}
+click?'') gives 66.1\% on 1{,}000 of the pairs (first wording on the same pairs: 64.1\%; agreement 84\%). The open-weights JEV-9B is right on 60.3\% [55.5, 65.3] of 400 of the pairs (API on the same
+pairs: 63.3\%; agreement 68\%).
 
 \paragraph{Why the two differ.} On 4{,}000 random headline pairs of Upworthy cells, the true log-odds contrast
 (observed contrast with its sampling variance removed) has a standard deviation of $\sigma_h=0.42$, and the judge's
