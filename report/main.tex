@@ -29,9 +29,8 @@ different headlines of one article correctly 64--67\% of the time (randomized tr
 validation metric cannot separate training targets; validating on week-demeaned click-through repairs most of
 this. An idealized archive of 18{,}200 observational headlines is worth about 1{,}000 [670, 1{,}810] randomized
 tests, an archive of the published (winning) headlines of past tests about 730, and either half as much or less when
-trained on raw click-through. The exchange rate grows far more slowly than the archive; a saturating curve
-fits best and puts a ceiling near 1{,}200 tests (interval 750--2{,}400), though slow logarithmic growth cannot be
-ruled out. Used as a prior that the tests correct, the archive adds up to 9 points of accuracy at
+trained on raw click-through. The exchange rate grows far more slowly than the archive; it may level off near
+1{,}200 tests (750--2{,}400), though slow logarithmic growth cannot be ruled out. Used as a prior that the tests correct, the archive adds up to 9 points of accuracy at
 small budgets and costs nothing at large ones, whereas naive pooling falls behind the tests alone; once it is the
 prior, choosing which tests to run by the archive's predictions, its uncertainty or a bias probe does no better
 than random tests, and sometimes worse. The Upworthy results replicate on two further splits.
@@ -412,10 +411,10 @@ pairs or on click-through lift $k^*$ is 1{,}300 or 880 (published: 740, 640; raw
 \paragraph{An exchange rate that levels off.} The archive's worth grows far more slowly than the archive
 (Fig.~\ref{fig:archive}b): 1{,}000, 2{,}000, 4{,}500, 9{,}000 and 18{,}200 headlines are worth 320, 520, 690, 960
 and 1{,}000 tests. Of three curves, a saturating $k^*(n)=Kn/(n+n_0)$ fits best (root-mean-square error 34 tests,
-against 45 for logarithmic and 84 for power-law growth) and best predicts the largest archive from the four
+against 45 for logarithmic and 83 for power-law growth) and best predicts the largest archive from the four
 smaller ones (1{,}050, against 1{,}140 and 1{,}380; measured 1{,}000). It wins this extrapolation in only 58\% of
 bootstrap replicates (logarithmic 34\%), so slow logarithmic growth cannot be ruled out; if a ceiling exists, it
-lies at $K=1{,}170$ [750, 2{,}440] tests (published archive: 900 [530, 1{,}630]). A bias--variance heuristic
+lies at $K=1{,}170$ [750, 2{,}430] tests (published archive: 900 [530, 1{,}630]). A bias--variance heuristic
 suggests why it would: if archive error behaves like $b^2+\sigma^2/n$ and experiment error like
 $\sigma_e^2/k$, $k^*$ levels off near $\sigma_e^2/b^2$, set by the archive's bias $b$ rather than its size. This
 reasons about parameter error, not decision accuracy, so it is an interpretation, not a derivation. The fitted
