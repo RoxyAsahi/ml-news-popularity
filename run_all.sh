@@ -12,6 +12,11 @@ for split in exploratory holdout confirmatory; do
   python scripts/u6_exchange_rate.py $split          # idealized/published archives, sizes, priors
 done
 python scripts/u7_exchange_curve.py                  # exchange rate with training-draw intervals
+for split in confirmatory exploratory holdout; do
+  python scripts/u8_active_experiments.py $split     # archive-guided test selection
+done
+python scripts/u10_capacity.py                       # learner capacity vs archive bias
+python scripts/u9_exchange_law.py                    # exchange-rate law, k* robustness, selection summary
 python scripts/u4_archive_worth.py
 python scripts/u5_leaderboard.py
 for s in scripts/00_eda.py scripts/01_pilot.py scripts/e1_drift.py scripts/e3_leakage.py \

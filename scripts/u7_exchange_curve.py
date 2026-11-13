@@ -6,7 +6,7 @@ held-out articles (cluster bootstrap) and picks, for every budget and every arch
 training draws at random; the point estimate averages the draws.
 Also: accuracy and click-through lift per configuration, and differences PRIOR - E and PRIOR-fixed - E.
 Usage: python scripts/u7_exchange_curve.py [split ...]
-Output: results/tables/u7_exchange_rate.csv, results/tables/u7_fusion.csv
+Output: results/tables/u7_exchange_rate.csv, results/tables/u7_fusion.csv, u7_kstar_boot_<split>.npz (replicates)
 """
 import sys
 
@@ -73,6 +73,9 @@ for split in splits:
                     continue
                 t = archive_acc(acc, method, a, s, lambda ds: ds[rng.integers(0, len(ds))])
                 boots.setdefault((method, a, s), []).append((t, kstar(ks, e, t)))
+    np.savez_compressed(TAB / f"u7_kstar_boot_{split}.npz", keys=np.array(["|".join(map(str, k)) for k in boots]),
+                        kstar=np.array([[x[1] for x in v] for v in boots.values()]),
+                        acc=np.array([[x[0] for x in v] for v in boots.values()]))
     for (method, a, s), v in boots.items():
         v = np.array(v)
         draws = sorted(meta.draw[(meta.method == method) & (meta.archive == a) & (meta["size"] == s)])

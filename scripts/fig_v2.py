@@ -232,10 +232,21 @@ def fig_g():
         hi = r.kstar_hi.replace(np.inf, 12000)
         b.errorbar(r.n, r.kstar, yerr=[r.kstar - r.kstar_lo, hi - r.kstar], fmt="o-", ms=3, color=col, lw=1, label=lab,
                    capsize=0)
+    law = pd.read_csv(TAB / "u9_exchange_law.csv").set_index("archive")
+    nn = np.logspace(np.log10(800), np.log10(40000), 60)
+    for arch, col in [("random", ACC), ("published", "#d08c2b")]:
+        K, n0 = law.loc[arch, "K"], law.loc[arch, "n0"]
+        b.plot(nn, K * nn / (nn + n0), color=col, ls=":", lw=0.8)
+        b.axhline(K, color=col, ls=(0, (1, 3)), lw=0.6)
+        Xo = pd.read_csv(TAB / "u7_exchange_rate.csv").query("split != 'confirmatory' and method == 'O' and archive == @arch and size == -1")
+        b.scatter([law.loc[arch, "holdout_n"]] * len(Xo), Xo.kstar, facecolors="none", edgecolors=col, s=14, lw=0.8,
+                  zorder=4)
+    b.scatter([], [], facecolors="none", edgecolors="0.4", s=14, label="smaller splits")
+    b.plot([], [], color="0.4", ls=":", lw=0.8, label="fit $K n/(n+n_0)$")
     b.set_xscale("log"); b.set_yscale("log")
     b.set_xlabel("archive size (headlines)")
     b.set_ylabel("worth in randomized tests")
-    b.legend(frameon=False, fontsize=6, loc="upper left")
+    b.legend(frameon=False, fontsize=5.5, loc="lower right")
     b.set_title("(b) exchange rate", fontsize=7.5)
     M = pd.read_csv(TAB / "u5_observational_metrics.csv").query("split == 'confirmatory' and within_acc_sig == within_acc_sig")
     for kind, col, mk, lab in [("raw", GREY, "s", "CTR across tests"), ("week", ACC, "o", "CTR demeaned in week")]:
