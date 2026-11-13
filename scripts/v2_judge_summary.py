@@ -20,6 +20,7 @@ Output: results/tables/v2_judge_summary.csv
 from __future__ import annotations
 
 import sys
+import zlib
 from pathlib import Path
 
 import numpy as np
@@ -41,14 +42,15 @@ date = pd.to_datetime(df.publish_date).dt.normalize()
 day = date.to_numpy()
 V1 = pd.read_csv(ROOT / "data" / "interim" / "v1_scores.csv")
 SC = {}
-for c in ["hgb", "hgb_bge", "bge", "tfidf"]:
+for c in ["hgb", "hgb_bge", "ens", "bge", "tfidf"]:
     SC[c] = np.full(len(df), np.nan); SC[c][V1.row] = np.where(V1.has_title, V1[c], np.nan)
 row_of_url = pd.Series(np.arange(len(df)), index=df.url)[lambda s: s.index.notna()]
 rows = []
 
 
-def boot_mean(x, clusters=None):
-    x = np.asarray(x, float)
+def boot_mean(x, clusters=None, key=""):
+    """Mean with a 95% bootstrap interval; the draws are seeded by the row's name, so adding rows changes nothing."""
+    x = np.asarray(x, float); rng = np.random.default_rng(zlib.crc32(key.encode()))
     if clusters is None:
         bs = [x[rng.integers(0, len(x), len(x))].mean() for _ in range(B)]
     else:
@@ -62,7 +64,7 @@ def boot_mean(x, clusters=None):
 
 
 def add(setting, scorer, metric, x, n, clusters=None):
-    est, lo, hi = boot_mean(x, clusters)
+    est, lo, hi = boot_mean(x, clusters, f"{setting}|{scorer}|{metric}")
     rows.append(dict(setting=setting, scorer=scorer, metric=metric, est=est, lo=lo, hi=hi, n=n))
 
 
@@ -108,7 +110,7 @@ for mode in ["section", "day"]:
     D = {c: SC[c][a] - SC[c][b] for c in SC}
     for c in SC:
         add(setting, f"{c}_past_only", "acc", ((D[c] > 0) == t)[sc], int(sc.sum()), day[a][sc])
-    for c in ["hgb", "bge", "hgb_bge"]:
+    for c in ["hgb", "bge", "hgb_bge", "ens"]:
         hit = {}
         for nm, Xc in [(f"{c}_cv", np.c_[D[c]][sc]), (f"{c}_plus_judge", np.c_[D[c], logit(p)][sc])]:
             pc = cross_val_predict(LogisticRegression(), Xc, t[sc], cv=10, method="predict_proba")[:, 1]
