@@ -122,7 +122,7 @@ for sp in ["confirmatory", "exploratory", "holdout"]:
     acc0, accb = sums.sum(1) / cnt.sum(), (sums @ W.T) / (cnt @ W.T)
     for (learner, k), g in meta[meta.k > 0].groupby(["learner", "k"]):
         r = g.index[g.strategy == "random"]
-        for st in ["margin-", "margin+", "committee", "design"]:
+        for st in ["margin-", "margin+", "committee", "leverage", "probe", "design"]:
             i = g.index[g.strategy == st]
             d = accb[i].mean(0) - accb[r].mean(0)
             act.append(dict(split=sp, learner=learner, k=k, strategy=st, acc=acc0[i].mean(),
@@ -133,3 +133,46 @@ if act:
     A_.to_csv(TAB / "u9_active.csv", index=False)
     print(A_.query("learner != 'PRIOR'").pivot_table(index=["split", "learner", "k"], columns="strategy",
                                                       values="minus_random").round(3).to_string())
+
+# (4) is the growth saturating? Compare three curves for k*(n) on log scale: saturating K n/(n+n0), logarithmic
+# a + b log n, power a n^b. In-sample RMSE on all five sizes, and an extrapolation test: fit on n <= 9,000, predict
+# 18,194; per bootstrap replicate, which curve predicts the held-back point best.
+def f_sat(n, k):
+    K, n0 = fit(n, k)
+    return lambda m: K * m / (m + n0)
+
+
+def f_log(n, k):
+    b, a = np.polyfit(np.log(n), k, 1)
+    return lambda m: a + b * np.log(m)
+
+
+def f_pow(n, k):
+    b, a = np.polyfit(np.log(n), np.log(k), 1)
+    return lambda m: np.exp(a) * m ** b
+
+
+CURVES = {"saturating": f_sat, "logarithmic": f_log, "power": f_pow}
+cmp_rows = []
+for arch in ["random", "published"]:
+    sel = [(i, int(k[2])) for i, k in enumerate(keys) if k[0] == "O" and k[1] == arch]
+    n = np.array([N_ALL["confirmatory"] if s == -1 else s for _, s in sel], float)
+    o = np.argsort(n)
+    n = n[o]
+    Kb = fb["kstar"][[sel[j][0] for j in o]]
+    x = X.query("split == 'confirmatory' and method == 'O' and archive == @arch")
+    k0 = np.array([x.loc[x["size"] == (-1 if m == N_ALL["confirmatory"] else int(m)), "kstar"].iloc[0] for m in n])
+    wins = {c: 0 for c in CURVES}
+    ok = np.where(np.isfinite(Kb).all(0))[0]
+    for b in ok:
+        err = {c: abs(f(n[:-1], Kb[:-1, b])(n[-1]) - Kb[-1, b]) for c, f in CURVES.items()}
+        wins[min(err, key=err.get)] += 1
+    for c, f in CURVES.items():
+        g = f(n, k0)
+        h = f(n[:-1], k0[:-1])
+        cmp_rows.append(dict(archive=arch, curve=c, rmse_all=np.sqrt(np.mean((g(n) - k0) ** 2)),
+                             pred_18194_from_le9000=h(n[-1]), obs_18194=k0[-1], best_in_boot=wins[c] / len(ok),
+                             pred_3900=g(3900.0), pred_1e5=g(1e5), pred_1e6=g(1e6)))
+C_ = pd.DataFrame(cmp_rows).round(3)
+C_.to_csv(TAB / "u9_curve_comparison.csv", index=False)
+print(C_.to_string(index=False))

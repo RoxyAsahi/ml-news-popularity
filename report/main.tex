@@ -28,12 +28,13 @@ randomized headline tests of the Upworthy Research Archive. Observationally trai
 different headlines of one article correctly 64--67\% of the time (randomized training: 68\%), and the usual
 validation metric cannot separate training targets; validating on week-demeaned click-through repairs most of
 this. An idealized archive of 18{,}200 observational headlines is worth about 1{,}000 [670, 1{,}810] randomized
-tests, an archive of the published (winning) headlines of past tests about 730, and either only half as much when
-trained on raw click-through. The exchange rate follows a saturating law, $k^*(n)=Kn/(n+n_0)$ with
-$K\approx1{,}200$, that predicts the other splits out of sample: the archive's bias, not its size or the
-learner, sets its worth. Used as a prior that the tests correct, the archive adds up to 9 points of accuracy at
+tests, an archive of the published (winning) headlines of past tests about 730, and either half as much or less when
+trained on raw click-through. The exchange rate grows far more slowly than the archive; a saturating curve
+fits best and puts a ceiling near 1{,}200 tests (interval 750--2{,}400), though slow logarithmic growth cannot be
+ruled out. Used as a prior that the tests correct, the archive adds up to 9 points of accuracy at
 small budgets and costs nothing at large ones, whereas naive pooling falls behind the tests alone; once it is the
-prior, choosing tests by the archive's predictions or uncertainty does no better than random tests. The Upworthy results replicate on two further splits.
+prior, choosing which tests to run by the archive's predictions, its uncertainty or a bias probe does no better
+than random tests, and sometimes worse. The Upworthy results replicate on two further splits.
 \end{abstract}
 
 % ------------------------------------------------------------------
@@ -74,9 +75,8 @@ decomposition of ranking skill into time, channel, story and article, extending 
 comparison of \citet{hessel2017}; (ii) evidence that articles compete for the day's attention rather than within
 their story; (iii) an interventional evaluation of popularity models on 22{,}743 randomized headline tests, in
 the spirit of \citet{gentzel2019}; (iv) an exchange rate between an observational archive and randomized
-experiments, for an idealized and for a published-headline archive, a saturating law for it that predicts out of
-sample, a comparison of pooling with prior-based fusion \citep{kallus2018,colnet2024}, and a test of
-archive-guided experiment selection. The first Upworthy analyses were developed on the exploratory split; the
+experiments, for an idealized and for a published-headline archive, how it levels off with archive size, a comparison of pooling with prior-based fusion \citep{kallus2018,colnet2024}, and a test of
+archive-guided experiment selection, with a negative result. The first Upworthy analyses were developed on the exploratory split; the
 published archive, the archive-size curve and the week-demeaned validation metric were added after reviewing
 confirmatory results. Every analysis is reported on all three splits, but none of them is a truly unseen test set.
 
@@ -223,11 +223,12 @@ $\hat\delta$ shrunk towards zero, a linear form of experimental grounding \citep
 cross-validated over tests or, as a check at small $k$, fixed. The archive's \emph{exchange rate} $k^*$ is the
 number of tests at which experiments alone reach the archive's decision accuracy (log-linear interpolation). Its
 intervals resample held-out articles and pick one of the three training draws at random in each replicate, so
-they include training variability. We summarise $k^*$ against archive size $n$ by $k^*(n)=Kn/(n+n_0)$, fit on
-log $k^*$ (and refit in each replicate). Finally, we ask which tests to run: instead of $k$ random tests, the
-learner gets the tests with the largest or smallest archive-predicted spread between their headlines, the largest
-disagreement among eight bootstrap archive models, or a greedy label-free design that minimises the summed
-posterior variance of all candidate contrasts under the prior \citep{yu2006ted}. All statements are conditional on this learner, these 18{,}200 training
+they include training variability. We describe $k^*$ against archive size $n$ by a saturating $k^*(n)=Kn/(n+n_0)$, a logarithmic and a power-law
+curve, fit on log $k^*$ (logarithmic: on $k^*$) and refit in each replicate, and test them by predicting the largest
+archive from the smaller ones. Finally, instead of $k$ random tests the learner gets those with the largest
+or smallest archive-predicted headline spread, the largest disagreement among eight bootstrap archive models or
+between the archive model and one trained on same-article re-tests (nearly unbiased in RQ3: a bias probe), the
+largest feature spread (no archive), or a greedy label-free design minimising posterior variance \citep{yu2006ted}. All statements are conditional on this learner, these 18{,}200 training
 tests and held-out articles; an Upworthy test averages 16{,}500 impressions (also among the tests usable for training).
 
 \paragraph{Effect estimates.} To see why observational training transfers imperfectly, we also compare
@@ -253,11 +254,8 @@ residual variance a confounder would need to explain to remove an effect.
 logistic regression (0.717) by 0.020 [0.014, 0.025] and $k$-NN (0.705).
 The share-derived features are worth 0.034 [0.027, 0.040] AUC. Ranking holds up under a chronological split, and
 a later dip (Oct--Dec 2014) reflects harder articles more than an outdated model: retraining up to October
-recovers only 0.006 [0.003, 0.010]. Training-set size and regularisation matter only for small samples: random forest is best below 10{,}000 training articles, and with 1{,}000 articles strong L1
-regularisation gains 0.03 AUC, while with all data the penalty hardly matters. Raising the label threshold leaves
-ROC-AUC unchanged but makes PR-AUC collapse. Clusters of articles in topic and sentiment
-space carry less popularity information than the channel label (Cram\'er's $V$ 0.13--0.19 vs.\ 0.25), consistent
-with treating channel as an editorial placement rather than a topic.
+recovers only 0.006 [0.003, 0.010]. Raising the label threshold leaves ROC-AUC unchanged but makes PR-AUC
+collapse.
 
 
 \begin{figure}[t]
@@ -406,24 +404,26 @@ selection on the outcome costs a quarter to a third of the value but does not re
 only where tests were run, and its winner's curse depends on arms and impressions, which week-demeaning does not
 remove; a newsroom without tests holds editors' first choices, which the data do not record. Trained on raw
 click-through, the two archives are worth only 520 [340, 760] and 290 [190, 450] tests. In clicks, the archive
-model raises click-through of the picked headline by 8.8\% over a random pick (published: 8.4\%), all experiments
-by 9.9\%, and the best headline in hindsight would give 35\%. A test averages 16{,}500 impressions, so the
+model raises the picked headline's click-through by 8.8\% over a random pick, all experiments by 9.9\%. A test averages 16{,}500 impressions, so the
 idealized archive saves about 17 million impressions of experimentation. The number is a magnitude, not a
 precise rate: near $k^*$ the experiments gain 0.9 points per doubling of $k$, and measured on all within-cell
 pairs or on click-through lift $k^*$ is 1{,}300 or 880 (published: 740, 640; raw target: 500--540, 260--290).
 
-\paragraph{An exchange-rate law.} The archive's worth saturates (Fig.~\ref{fig:archive}b): 1{,}000, 2{,}000,
-4{,}500, 9{,}000 and 18{,}200 headlines are worth 320, 520, 690, 960 and 1{,}000 tests, and $k^*(n)=Kn/(n+n_0)$
-fits all five within 7\% with $K=1{,}170$ [750, 2{,}440] and $n_0=2{,}650$ (published: $K=900$ [530, 1{,}630]).
-This is what a bias--variance reading predicts: archive error behaves like $b^2+\sigma^2/n$ and experiment error
-like $\sigma_e^2/k$, so $k^*$ rises with $n$ until the archive's bias $b$ dominates and then levels off at
-$K\approx\sigma_e^2/b^2$: for this learner, no archive, however large, is worth much more than about 1{,}200 tests.
-The law predicts out of sample: fit on the confirmatory split, it predicts 700 [510, 980] tests for the
-3{,}900-headline archives of the two smaller splits, which measure 810 and 750 (published: 490 predicted, 350
-and 480 measured; at 1{,}000 and 2{,}000 headlines 320 and 500 predicted, 270--320 and 370--490 measured). The
-ceiling is not the linear learner's capacity: the same ridge trained on experiments goes on to 68.4\%, and on
-the archive, boosted trees and a neural network end at or below ridge (66.4\% and 62.5\% at full size), although
-trees gain more from size (+2.9 points from 4{,}500 headlines, ridge +0.7).
+\paragraph{An exchange rate that levels off.} The archive's worth grows far more slowly than the archive
+(Fig.~\ref{fig:archive}b): 1{,}000, 2{,}000, 4{,}500, 9{,}000 and 18{,}200 headlines are worth 320, 520, 690, 960
+and 1{,}000 tests. Of three curves, a saturating $k^*(n)=Kn/(n+n_0)$ fits best (root-mean-square error 34 tests,
+against 45 for logarithmic and 84 for power-law growth) and best predicts the largest archive from the four
+smaller ones (1{,}050, against 1{,}140 and 1{,}380; measured 1{,}000). It wins this extrapolation in only 58\% of
+bootstrap replicates (logarithmic 34\%), so slow logarithmic growth cannot be ruled out; if a ceiling exists, it
+lies at $K=1{,}170$ [750, 2{,}440] tests (published archive: 900 [530, 1{,}630]). A bias--variance heuristic
+suggests why it would: if archive error behaves like $b^2+\sigma^2/n$ and experiment error like
+$\sigma_e^2/k$, $k^*$ levels off near $\sigma_e^2/b^2$, set by the archive's bias $b$ rather than its size. This
+reasons about parameter error, not decision accuracy, so it is an interpretation, not a derivation. The fitted
+curve also describes the smaller splits: 700 [510, 980] tests for their 3{,}900-headline archives, measured 810
+and 750 (within the fitted range). The levelling off is not due to the model class on these features: the same
+ridge trained on experiments reaches 68.4\%, and on the archive boosted trees end at 66.4\% (ridge 66.7\%),
+although they gain more from size (+2.9 points from 4{,}500 headlines; ridge +0.7); a neural network, probably
+under-tuned, reaches 62.5\%.
 
 \paragraph{Combining the two, and which tests to run.} Pooling archive and experiments in one regression falls
 behind the experiments alone from 3{,}200 tests on ($-$0.8 [$-$1.2, $-$0.4] points at 6{,}400): the bias does not
@@ -431,14 +431,16 @@ wash out. Using the archive as a prior that the experiments correct never falls 
 better source. On the smaller splits the largest shortfall is 1.5 points. The prior beats the experiments alone by
 9.1 [8.4, 9.8] points at 25 tests, 1.7 at 400 and 0.7 at 800, and agrees with them from 1{,}600 on; a fixed penalty
 gives the same gains (9.4 and 2.0), and the published archive serves as a prior as well as the idealized one (within
-0.6 points). Can the archive also say \emph{which} tests to run? For experiments alone it can: running the
-tests where the archive predicts the largest headline differences adds 6.8 [5.9, 7.7] points at 25 tests (5.3
-and 7.3 on the smaller splits), and the label-free design adds 2.2 [1.5, 3.0] at 100. With the archive as a prior,
-no strategy beats random tests: of 72 comparisons (four strategies, six budgets, three splits) one is better,
-eight are worse, all by at most 1.2 points. This fits the law: what the experiments must fix is the archive's
-bias, and neither the archive's predictions nor its own uncertainty point to where that bias lies. For a
-newsroom, the archive replaces the first several hundred tests, and beyond about a thousand experiments should
-carry the model; which tests to run matters little once the archive is the prior.
+0.6 points). Can the archive also say \emph{which} tests to run? For experiments alone it can: at 25 tests, running those
+where the archive predicts the largest headline differences adds 5.4 [4.5, 6.3] points (3.5 and 5.6 on the smaller
+splits), whereas picking the largest feature spread without the archive loses 3.0, so the gain is not only the
+classical design effect; at 100 tests the label-free design adds 3.2 [2.5, 3.9] and the archive's pick 2.2. With
+the archive as a prior, no strategy beats random tests, and some hurt: of 108 comparisons (six strategies, six
+budgets, three splits) 3 are better and 15 worse, at most by 1.2 points, against about 3 each way by chance; the
+worse ones are almost all on the largest split. Even the bias probe does not help (one comparison better, three
+worse). One explanation is that the archive's remaining error is a bias that neither its predictions, its
+uncertainty nor its disagreement with re-tests locates. For a newsroom, the archive replaces the first several
+hundred tests, and random tests are then as good a choice as any.
 
 % ------------------------------------------------------------------
 \section{Discussion}
@@ -448,14 +450,15 @@ telling articles apart; the skill an editor needs, choosing how to present one a
 the benchmark at all. Where it can, observational training transfers largely but not fully, and only randomized
 comparisons show the gap \citep{gentzel2019}. Like the advertising comparison of \citet{gordon2019}, the
 exchange rate turns ``run experiments'' into a budget: an archive replaces up to about a thousand headline tests,
-its bias caps that worth, and it is best used as a prior that experiments correct \citep{kallus2018,rosenman2023}.
+its worth grows ever more slowly, plausibly capped by its bias, and it is best used as a prior that experiments correct \citep{kallus2018,rosenman2023}.
 
 \paragraph{Limitations.} Twins are found from slugs and are about 71\% precise; annotation was by two language
 models, not humans. Upworthy and Mashable differ in outcome (clicks vs.\ shares), in what varies (headline vs.\
 article) and in era. Our headline representation is simple (GloVe and 15 features; pretrained transformer
 weights were not reachable from our environment); this is acceptable for our question because richer models,
 from linguistic features to fine-tuned language models, gain little over chance on the same task
-\citep{gligoric2021,ye2024lola}, but the exchange rate is conditional on the learner. The archive results speak
+\citep{gligoric2021,ye2024lola}, but the exchange rate is conditional on it: the archive's bias is relative to
+this representation, and a richer one could raise or lower it. The archive results speak
 to how observational popularity models behave, not to each Mashable estimate. Shares were recorded once, so age and publication date
 cannot be separated, and keyword statistics use post-publication shares of earlier articles.
 
@@ -465,7 +468,7 @@ same-story twins show that the skill is article-level and that articles compete 
 story (RQ1--2). On 22{,}743 randomized headline tests, observational models transfer to the editor's choice
 largely but not fully, and the usual validation metric cannot tell training targets apart (RQ3). An archive of
 18{,}200 headlines is worth about 1{,}000 tests (published: 730), halved without week-demeaned training; its worth
-saturates at about 1{,}200 tests, set by its bias, and it is best used as a prior (RQ4).
+grows ever more slowly, plausibly towards about 1{,}200 tests, and it is best used as a prior (RQ4).
 
 \setlength{\bibsep}{0pt}\renewcommand{\bibfont}{\scriptsize}
 \bibliographystyle{plainnat}
