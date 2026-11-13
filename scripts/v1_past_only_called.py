@@ -100,6 +100,7 @@ for m in sorted(set(month)):
     sc = StandardScaler().fit(E[tr])
     scores["bge"][te] = Ridge(alpha=1000).fit(sc.transform(E[tr]), y[tr]).predict(sc.transform(E[te]))
     print(m, "done", flush=True)
+scores["ens"] = (scores["hgb"] + scores["bge"]) / 2   # late fusion: mean of the two past-only predictions of log shares
 scores["kw_avg_avg"] = df.kw_avg_avg.to_numpy().astype(float)
 
 ev = month >= FIRST
@@ -109,8 +110,8 @@ S["has_title"] = (title[ev] != "").to_numpy()
 S.insert(0, "row", np.flatnonzero(ev))
 (ROOT / "data" / "interim").mkdir(parents=True, exist_ok=True)
 S.to_csv(ROOT / "data" / "interim" / "v1_scores.csv", index=False)
-MODELS = ["hgb", "hgb_crowd", "hgb_bge", "tfidf", "bge", "kw_avg_avg"]
-S = S[S.has_title].reset_index(drop=True)  # 24 unmatched headlines dropped everywhere for comparability
+MODELS = ["hgb", "hgb_crowd", "hgb_bge", "ens", "tfidf", "bge", "kw_avg_avg"]
+S = S[S.has_title].reset_index(drop=True)  # articles without a headline (no URL in the file, or slug not in the sitemap) dropped everywhere
 days = np.sort(S.day.unique()); di = np.searchsorted(days, S.day.to_numpy()); D = len(days)
 
 
@@ -187,7 +188,7 @@ q = pd.qcut(S.novelty.rank(method="first"), 5, labels=[1, 2, 3, 4, 5])
 nov = []
 for k in [1, 2, 3, 4, 5]:
     sel = (q == k).to_numpy()
-    nov.append(dict(quintile=k, n=int(sel.sum()), **{m: roc_auc_score(popv[sel], S[m].to_numpy()[sel]) for m in ["hgb", "hgb_bge", "tfidf"]}))
+    nov.append(dict(quintile=k, n=int(sel.sum()), **{m: roc_auc_score(popv[sel], S[m].to_numpy()[sel]) for m in ["hgb", "hgb_bge", "ens", "bge", "tfidf"]}))
 pd.DataFrame(nov).to_csv(OUT / "v1_novelty_auc.csv", index=False)
 
 pd.set_option("display.width", 200)

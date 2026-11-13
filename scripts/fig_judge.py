@@ -85,7 +85,7 @@ for col_, lab_, ls_ in [("bge", "headline ridge, Mashable", (0, (2.5, 1.5))), ("
     x, yy = curve(dh, tm[ok]); b.plot(x, yy, color=BLUE, lw=1.3, ls=ls_, label=lab_)
 b.axhline(0.5, color=MUTED, lw=0.8, ls="--")
 b.set_xlabel("share of pairs kept (most confident first)"); b.set_ylabel("accuracy on kept pairs")
-b.set_xlim(0, 1); b.set_ylim(0.32, 0.95); b.set_yticks([0.5, 0.6, 0.7, 0.8, 0.9]); b.legend(frameon=False, fontsize=6.5, loc="lower right", ncol=1)
+b.set_xlim(0, 1); b.set_ylim(0.26, 0.95); b.set_yticks([0.5, 0.6, 0.7, 0.8, 0.9]); b.legend(frameon=False, fontsize=6.5, loc="lower right", ncol=1)
 b.spines[["top", "right"]].set_visible(False); b.set_title("(b) Does confidence help?", loc="left", fontsize=8)
 fig.tight_layout(); fig.savefig(ROOT / "results" / "figures" / "fig_judge.png", dpi=300)
 print("saved")

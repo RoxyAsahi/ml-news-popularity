@@ -10,8 +10,9 @@ scripts/v1_past_only_called.py, and reports with 95% bootstrap intervals (1,000 
   Mashable, whole-day lineup: Spearman of the judge's 'shared most' probability with log shares within the day,
      and how often its top pick lands in the day's top 10%
   Mashable, single-article question (expected share band vs true shares), early and late period
-  Mashable, paraphrase test: 250 pairs from January-May 2013 with every headline reworded by an LLM
-  Upworthy, significantly different headline pairs of one randomized test (2,000), API judge
+  Mashable, paraphrase tests: 250 pairs from January-May 2013 and 250 pairs from 2014, every headline reworded by an LLM
+  Upworthy, significantly different headline pairs of one randomized test (2,000), API judge; the same for pairs
+     without and with the test's winning (published) headline
   Open-weights JEV-9B (int8, CPU): 400 Upworthy pairs and 400 Mashable section pairs, if available
   second question wording (1,000 pairs each)
 Output: results/tables/v2_judge_summary.csv
@@ -148,14 +149,20 @@ for fname, tag in [("rep_recall_probe.csv", "with_url_date_section"), ("rep_reca
             rows.append(dict(setting=f"mashable_single_article_{tag}_{per}", scorer="judge_api", metric="spearman_band_vs_shares",
                              est=r, lo=np.quantile(bs, .025), hi=np.quantile(bs, .975), n=len(g)))
 
-# --- paraphrase test (pairs from January-May 2013, where the file was never shifted) ------------------
-PP = J / "api_paraphrase.csv"
-if PP.exists():
-    Q = pd.read_csv(PP); a, b = row_of_url[Q.url_a].to_numpy(), row_of_url[Q.url_b].to_numpy()
+# --- paraphrase tests: 250 pairs from January-May 2013 and 250 pairs from 2014, every headline reworded by an LLM ----
+pooled = []
+for fname, tag in [("api_paraphrase.csv", "2013_Jan-May"), ("api_paraphrase2014.csv", "2014")]:
+    if not (J / fname).exists():
+        continue
+    Q = pd.read_csv(J / fname); a, b = row_of_url[Q.url_a].to_numpy(), row_of_url[Q.url_b].to_numpy()
     t = y[a] > y[b]; po, pp = debias(Q.p0_orig, Q.p1_orig), debias(Q.p0_para, Q.p1_para)
-    add("mashable_paraphrase_2013_Jan-May", "judge_api_original", "acc", (po > .5) == t, len(Q))
-    add("mashable_paraphrase_2013_Jan-May", "judge_api_reworded", "acc", (pp > .5) == t, len(Q))
-    add("mashable_paraphrase_2013_Jan-May", "original_vs_reworded", "same_decision", (po > .5) == (pp > .5), len(Q))
+    H = pd.DataFrame(dict(orig=((po > .5) == t).astype(float), para=((pp > .5) == t).astype(float), same=((po > .5) == (pp > .5)).astype(float)))
+    pooled.append(H)
+    for H_, tg in [(H, tag)] + ([(pd.concat(pooled), "pooled")] if len(pooled) == 2 else []):
+        add(f"mashable_paraphrase_{tg}", "judge_api_original", "acc", H_.orig, len(H_))
+        add(f"mashable_paraphrase_{tg}", "judge_api_reworded", "acc", H_.para, len(H_))
+        add(f"mashable_paraphrase_{tg}", "reworded_minus_original", "acc_diff", H_.para - H_.orig, len(H_))
+        add(f"mashable_paraphrase_{tg}", "original_vs_reworded", "same_decision", H_.same, len(H_))
 
 # --- Upworthy, randomized headline pairs -------------------------------------------------------------
 U = pd.read_csv(J / "api_upw_pairs.csv")
@@ -163,6 +170,9 @@ pu = debias(U.p0, U.p1); tu = U.zz.to_numpy() > 0
 add("upworthy_sig_pairs", "judge_api", "acc", (pu > .5) == tu, len(U))
 add("upworthy_sig_pairs", "judge_api", "order_consistency", (U.p0 > .5) == (U.p1 < .5), len(U))
 selective("upworthy_sig_pairs", "judge_api", pu, (pu > .5) == tu)
+if (J / "api_upw_winner_split.csv").exists():  # pairs with / without the headline that won its test (and was published)
+    for nm, g in pd.read_csv(J / "api_upw_winner_split.csv").groupby("set"):
+        add(f"upworthy_sig_pairs_{nm}", "judge_api", "acc", (debias(g.p0, g.p1) > .5) == (g.zz.to_numpy() > 0), len(g))
 
 # --- open-weights JEV-9B --------------------------------------------------------------------------
 M = pd.read_csv(J / "rep_mash_titles_section.csv"); pm = debias(M.p0_title, M.p1_title); tm = y[M.a] > y[M.b]

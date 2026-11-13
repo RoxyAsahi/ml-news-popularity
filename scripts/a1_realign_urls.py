@@ -16,7 +16,8 @@ cost JUMP per unit increase.
 Hold-out check: the alignment is repeated with the date and the token count only; the sentiment fingerprint, which
 that alignment never saw, must then return to its January-May level in every later period.
 
-Output: data/external/url_realignment.csv   (file_row, offset; offset -1 = the row's URL is not in the file)
+Output: data/external/url_realignment.csv   (file_row, offset; offset -1 = the row's URL is not in the file;
+                                             whether the two title fingerprints agree after the repair)
         results/tables/a1_alignment_quality.csv, a1_offset_by_month.csv
 """
 from __future__ import annotations
@@ -112,11 +113,11 @@ def main():
     inside, jj, date_ok, tok_ok, sen_ok = flags(k)
     inside_h, _, _, _, sen_ok_h = flags(k_hold)
     REALIGN_CSV.parent.mkdir(parents=True, exist_ok=True)
-    pd.DataFrame({"file_row": idx, "offset": np.where(inside, k, -1)}).to_csv(REALIGN_CSV, index=False)
+    pd.DataFrame({"file_row": idx, "offset": np.where(inside, k, -1), "title_length_agrees": tok_ok.astype(int),
+                  "title_sentiment_agrees": sen_ok.astype(int)}).to_csv(REALIGN_CSV, index=False)
 
-    per = pd.cut(c_date, pd.to_datetime(["2013-01-01", "2013-06-06", "2013-07-01", "2014-01-01", "2014-07-01",
-                                         "2014-10-01", "2015-01-01"]), right=False,
-                 labels=["2013-01-01..06-05", "2013-06-06..06-30", "2013-H2", "2014-H1", "2014-Q3", "2014-Q4"]).astype(str)
+    per = pd.cut(c_date, pd.to_datetime(["2013-01-01", "2013-06-06", "2014-01-01", "2014-07-01", "2015-01-01"]), right=False,
+                 labels=["2013-01-01..06-05", "2013-06-06..12-31", "2014 H1", "2014 H2"]).astype(str)
     has0 = u_has; has1 = inside & u_has[jj]
     Q = pd.DataFrame({"period": per, "rows": 1, "as_given_date": u_day == c_day,
                       "as_given_token": np.where(has0, tok_eq(idx, idx), np.nan), "as_given_sentiment": np.where(has0, sen_eq(idx, idx), np.nan),
@@ -134,7 +135,9 @@ def main():
     print("first shifted row:", first, c_date[first].date(), "| rows with a recovered URL:", int(inside.sum()),
           "| rows whose URL as given is right:", int((k == 0).sum()), "| shifted rows:", int((k > 0).sum()), f"({(k > 0).mean():.3f})",
           "| URLs in the file that belong to no row:", int(N - len(set(jj[inside]))),
-          "| hold-out alignment gives the same offset on", f"{(k_hold == k).mean():.4f}", "of rows")
+          "| hold-out alignment gives the same offset on", f"{(k_hold == k).mean():.4f}", "of rows",
+          "| both fingerprints disagree after the repair on", f"{(inside & u_has[jj] & ~tok_ok & ~sen_ok).mean():.4f}",
+          "| offset steps:", int((np.diff(k) > 0).sum()))
 
 
 if __name__ == "__main__":

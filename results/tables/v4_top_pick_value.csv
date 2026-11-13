@@ -7,6 +7,10 @@ hgb_bge,geo_mean_ratio_top_vs_day_median,3.29262364545803,3.0305161758720938,3.6
 hgb_bge,geo_mean_ratio_top_vs_random_article,2.6335600995952158,2.4329194313400158,2.8801679920299907
 hgb_bge,share_days_top_pick_above_day_median,0.8605504587155963,0.8311926605504587,0.8899082568807339
 hgb_bge,median_shares_top_pick,4400.0,,
+ens,geo_mean_ratio_top_vs_day_median,3.3942811626498175,3.095747691094764,3.732463195592991
+ens,geo_mean_ratio_top_vs_random_article,2.7148694777470466,2.4831975261282992,2.9766607829157894
+ens,share_days_top_pick_above_day_median,0.8477064220183487,0.8165137614678899,0.8770642201834863
+ens,median_shares_top_pick,4400.0,,
 bge,geo_mean_ratio_top_vs_day_median,2.8561446161456256,2.612408028984954,3.143682373760342
 bge,geo_mean_ratio_top_vs_random_article,2.2844483031429084,2.0895776388814737,2.514095252313551
 bge,share_days_top_pick_above_day_median,0.8073394495412844,0.7743119266055046,0.8422018348623853
@@ -20,5 +24,6 @@ kw_avg_avg,geo_mean_ratio_top_vs_random_article,1.6172489082523023,1.46695854152
 kw_avg_avg,share_days_top_pick_above_day_median,0.6605504587155964,0.6201834862385321,0.7009174311926606
 kw_avg_avg,median_shares_top_pick,2500.0,,
 hgb_bge_vs_hgb,ratio_of_geo_mean_ratios,1.2739173242950954,1.1530092191047514,1.4124222026012372
+ens_vs_hgb,ratio_of_geo_mean_ratios,1.3132486558531633,1.1923284218348227,1.4633529445065385
 all,median_shares_all_scored,1400.0,,
 all,days,545.0,,

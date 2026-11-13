@@ -9,7 +9,7 @@ it, dates parsed from that URL, which is what every analysis before the repair u
      January-March 2013; accuracy by period
   3. rolling origin from March 2013 (train on all earlier months): headline models month by month, with the
      feature models on the repaired data for scale
-and the zero-shot judge on the pairs judged before the repair (as distributed), by period.
+and the zero-shot judge on the pairs judged before the repair (as distributed), by period; and the correlation of\nlog shares between same-story articles (URL-slug twins), an analysis that joins URLs to shares.
 95% intervals: bootstrap over days (1,000 draws).
 Output: results/tables/a2_validation_periods.csv, a2_validation_monthly.csv, results/figures/fig_alignment.png
 """
@@ -22,13 +22,15 @@ import matplotlib.pyplot as plt
 from sklearn.decomposition import PCA
 from sklearn.ensemble import HistGradientBoostingRegressor
 from sklearn.linear_model import LogisticRegression, Ridge
+from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import KFold
 from sklearn.preprocessing import StandardScaler
 
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 from newspop.anatomy import HGB_PARAMS  # noqa: E402
-from newspop.data import load  # noqa: E402
-from newspop.stories import channel  # noqa: E402
+from newspop.data import REALIGN_CSV, load, load_raw  # noqa: E402
+from newspop.stories import channel, twin_pairs  # noqa: E402
 from newspop.titles import aligned_titles, bge_embeddings  # noqa: E402
 
 T = ROOT / "results" / "tables"; J = ROOT / "explore" / "jev" / "results"
@@ -116,9 +118,41 @@ for vname, D in V.items():
             if m >= "2013-03":
                 est, l, h, npairs = acc_ci(D.day_counts(S[k], np.flatnonzero((D.month == m) & D.ok)))
                 mrow.append(dict(data=vname, scorer=k, month=m, acc=est, lo=l, hi=h, pairs=npairs))
-        for pname, lo, hi in [("2013-03-01..06-05", "2013-03-01", "2013-06-06")] + PERIODS[1:]:
+        for pname, lo, hi in [("2013-03-01..06-05", "2013-03-01", "2013-06-06")] + PERIODS[1:] + [("2013-07..2014-12", "2013-07-01", "2015-01-01")]:
             est, l, h, npairs = acc_ci(D.day_counts(S[k], np.flatnonzero(D.between(lo, hi) & D.ok)))
             prow.append(dict(data=vname, check=f"rolling_{k}_pair_acc", period=pname, est=est, lo=l, hi=h, n=npairs))
+    # what a random split shows: 5-fold cross-validated headline ridge over all articles, AUC for popular
+    idx = np.flatnonzero(D.ok); oof = np.zeros(len(idx))
+    for tr_, te_ in KFold(5, shuffle=True, random_state=0).split(idx):
+        oof[te_] = D.bge_ridge(idx[tr_])(idx[te_])
+    prow.append(dict(data=vname, check="random_5fold_headline_auc", period="all", est=roc_auc_score(D.df.shares.to_numpy()[idx] >= 1400, oof), lo=np.nan, hi=np.nan, n=len(idx)))
+    # spread of the log-share difference over all same-day same-section pairs
+    ss = nn = 0.0
+    for _, v in pd.DataFrame({"y": D.y, "d": D.dn, "c": D.chan}).groupby(["d", "c"]).y:
+        v = v.to_numpy()
+        if len(v) > 1:
+            a, b = np.triu_indices(len(v), 1); ss += np.sum((v[a] - v[b]) ** 2); nn += len(a)
+    prow.append(dict(data=vname, check="sd_log_share_difference_same_day_section", period="all", est=np.sqrt(ss / nn), lo=np.nan, hi=np.nan, n=int(nn)))
+
+# offset profile: give each row the headline found d rows away from its estimated URL (d = 0 is the repair) and
+# score it with the January-March headline model; only the estimated offset should carry signal. Also: the
+# repaired rows without those on which both title fingerprints disagree.
+raw = load_raw().reset_index(drop=True); A = pd.read_csv(REALIGN_CSV); N = len(raw)
+Ef = bge_embeddings(aligned_titles(raw).fillna("")); has_f = aligned_titles(raw).notna().to_numpy()
+D = V["repaired"]; pos = pd.Series(np.arange(N), index=raw.url); frow = pos[D.df.url_in_file].to_numpy(); kk = A.offset.to_numpy()[frow]
+tr = np.flatnonzero((D.month <= "2013-03") & D.ok); sc0 = StandardScaler().fit(D.E[tr]); m0 = Ridge(alpha=1000).fit(sc0.transform(D.E[tr]), D.y[tr])
+late = (D.month >= "2013-07") & (kk > 0)
+for d in (-3, -2, -1, 0, 1, 2, 3):
+    j = frow + kk + d; okd = late & (j >= 0) & (j < N); okd[okd] &= has_f[j[okd]]
+    s = np.full(D.n, np.nan); s[okd] = m0.predict(sc0.transform(Ef[j[okd]]))
+    est, l, h, npairs = acc_ci(D.day_counts(s, np.flatnonzero(okd)))
+    prow.append(dict(data="repaired", check=f"offset_profile_d={d:+d}_pair_acc", period="2013-07..2014-12", est=est, lo=l, hi=h, n=npairs))
+both_bad = (A.title_length_agrees.to_numpy()[frow] == 0) & (A.title_sentiment_agrees.to_numpy()[frow] == 0)
+s = np.full(D.n, np.nan); s[D.ok] = m0.predict(sc0.transform(D.E[D.ok]))
+for nm, keep in [("all_rows", D.ok), ("without_double_disagreement", D.ok & ~both_bad)]:
+    est, l, h, npairs = acc_ci(D.day_counts(s, np.flatnonzero(keep & (D.month >= "2013-07"))))
+    prow.append(dict(data="repaired", check=f"headline_model_JanMar_pair_acc_{nm}", period="2013-07..2014-12", est=est, lo=l, hi=h, n=npairs))
+print("rows on which both fingerprints disagree:", int((both_bad & D.ok).sum()), f"({(both_bad & D.ok).sum() / D.ok.sum():.4f})")
 
 # zero-shot judge on the pairs judged before the repair (rows of the file as distributed)
 D = V["as_distributed"]; P = pd.read_csv(J / "as_distributed" / "api_mash_titles_section.csv"); a, b = P.a.to_numpy(), P.b.to_numpy()
@@ -127,6 +161,13 @@ for pname, lo, hi in [("2013-01-01..06-05", "2013-01-01", "2013-06-06")] + PERIO
     sel = D.between(lo, hi)[a]; g = pd.DataFrame({"d": D.dn[a][sel], "c": cj[sel]}).groupby("d").c.agg(["sum", "count"])
     est, l, h, nn = ci(g["sum"], g["count"])
     prow.append(dict(data="as_distributed", check="judge_api_pair_acc", period=pname, est=est, lo=l, hi=h, n=nn))
+# what the shift did to an analysis that joins URLs to shares: same-story pairs (URL-slug cosine >= 0.5, at most
+# 7 days apart) and the correlation of their log shares
+for vname, D in V.items():
+    d2 = D.df[D.df.url.notna()].reset_index(drop=True); y2 = np.log1p(d2.shares.to_numpy()); P2 = twin_pairs(d2, min_sim=0.5)
+    i, j = P2.i.to_numpy(), P2.j.to_numpy(); r = np.corrcoef(y2[i], y2[j])[0, 1]
+    bs = [np.corrcoef(y2[i[k]], y2[j[k]])[0, 1] for k in (rng.integers(0, len(i), len(i)) for _ in range(B))]
+    prow.append(dict(data=vname, check="same_story_pairs_corr_log_shares", period="all", est=r, lo=np.quantile(bs, .025), hi=np.quantile(bs, .975), n=len(i)))
 PR = pd.DataFrame(prow); PR.to_csv(T / "a2_validation_periods.csv", index=False)
 M = pd.DataFrame(mrow); M.to_csv(T / "a2_validation_monthly.csv", index=False)
 pd.set_option("display.width", 220)
@@ -149,9 +190,9 @@ for data, k, lab, col, ls in [("as_distributed", "bge", "headline, file as distr
     g = M[(M.data == data) & (M.scorer == k)]
     ax1.plot([xi[m] for m in g.month], g.acc, ls, color=col, lw=1.2, marker="o", ms=2, label=lab)
 ax1.axhline(.5, color=MUTED, lw=.6)
-ax1.axvline(xi["2013-06"] - .3, color=INK, lw=.6, ls=":"); ax1.text(xi["2013-06"] - .1, .478, "first shifted row\n6 June 2013", fontsize=6, va="bottom")
+ax1.axvline(xi["2013-06"] - .3, color=INK, lw=.6, ls=":"); ax1.text(xi["2013-06"] - .55, .505, "first shifted row\n6 June 2013", fontsize=6, va="bottom", ha="right")
 ax1.set_xticks(range(0, len(months), 3)); ax1.set_xticklabels([m[2:] for m in months[::3]], rotation=45, ha="right")
-ax1.set_ylabel("accuracy, same-day same-section pairs"); ax1.set_ylim(.47, .66); ax1.legend(frameon=False, fontsize=6, ncol=2, loc="upper right")
+ax1.set_ylabel("accuracy, same-day same-section pairs"); ax1.set_ylim(.47, .66); ax1.legend(frameon=False, fontsize=6, ncol=2, loc="center", bbox_to_anchor=(0.62, 0.40))
 ax1.set_title("(b) rolling origin: train on all earlier months", fontsize=7.5, loc="left")
 for a_ in (ax0, ax1):
     a_.spines[["top", "right"]].set_visible(False)

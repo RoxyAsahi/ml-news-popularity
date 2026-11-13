@@ -3,7 +3,7 @@
 Per day in the scored months (at least 10 articles), the article a scorer ranks first is compared with the day's
 median article and with a random article of that day: geometric-mean ratio of shares over days, share of days on
 which the pick beats the day's median, and the median shares of the picks. Scorers: past-only HistGB on the 58
-features, the same plus the headline embedding, the headline model alone, and kw_avg_avg without fitting.
+features, the same plus the headline embedding, the mean of the feature and the headline model, the headline models alone, and kw_avg_avg without fitting.
 95% intervals: bootstrap over days (1,000 draws), paired across scorers.
 Input: data/interim/v1_scores.csv (scripts/v1_past_only_called.py). Output: results/tables/v4_top_pick_value.csv
 """
@@ -18,7 +18,7 @@ rng = np.random.default_rng(0); B = 1000
 df = load().reset_index(drop=True)
 S = pd.read_csv(ROOT / "data" / "interim" / "v1_scores.csv"); S = S[S.has_title].copy()
 S["shares"] = df.shares.to_numpy()[S.row]
-SCORERS = ["hgb", "hgb_bge", "bge", "tfidf", "kw_avg_avg"]
+SCORERS = ["hgb", "hgb_bge", "ens", "bge", "tfidf", "kw_avg_avg"]
 G = [g for _, g in S.groupby("day") if len(g) >= 10]
 draws = [rng.integers(0, len(G), len(G)) for _ in range(B)]
 rows = []
@@ -32,8 +32,9 @@ for s in SCORERS:
         bs = [f(x[i].mean()) for i in draws]
         rows.append(dict(scorer=s, metric=metric, est=f(x.mean()), lo=np.quantile(bs, .025), hi=np.quantile(bs, .975)))
     rows.append(dict(scorer=s, metric="median_shares_top_pick", est=np.median(top), lo=np.nan, hi=np.nan))
-d = L["hgb_bge"] - L["hgb"]; bs = [np.exp(d[i].mean()) for i in draws]
-rows.append(dict(scorer="hgb_bge_vs_hgb", metric="ratio_of_geo_mean_ratios", est=np.exp(d.mean()), lo=np.quantile(bs, .025), hi=np.quantile(bs, .975)))
+for s2 in ["hgb_bge", "ens"]:
+    d = L[s2] - L["hgb"]; bs = [np.exp(d[i].mean()) for i in draws]
+    rows.append(dict(scorer=f"{s2}_vs_hgb", metric="ratio_of_geo_mean_ratios", est=np.exp(d.mean()), lo=np.quantile(bs, .025), hi=np.quantile(bs, .975)))
 rows.append(dict(scorer="all", metric="median_shares_all_scored", est=np.median(S.shares), lo=np.nan, hi=np.nan))
 rows.append(dict(scorer="all", metric="days", est=len(G), lo=np.nan, hi=np.nan))
 V = pd.DataFrame(rows); V.to_csv(ROOT / "results" / "tables" / "v4_top_pick_value.csv", index=False)
