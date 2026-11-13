@@ -12,7 +12,7 @@ set -euo pipefail
 # explore/jev/results/, so no API key is needed; explore/jev/ holds the scripts that produced them.
 # About 40 minutes on 4 cores.
 report() {
-  for s in scripts/a1_realign_urls.py scripts/a2_alignment_validation.py scripts/v1_past_only_called.py \
+  for s in scripts/a1_realign_urls.py scripts/a2_alignment_validation.py scripts/a4_archive_check.py scripts/v1_past_only_called.py \
            scripts/v2_judge_summary.py scripts/v3_signal_groups.py scripts/v4_top_pick_value.py \
            scripts/v5_learners.py scripts/v6_headline_terms.py scripts/v7_word_memory.py \
            scripts/fig_called.py scripts/fig_judge.py scripts/a3_export_realigned.py; do
