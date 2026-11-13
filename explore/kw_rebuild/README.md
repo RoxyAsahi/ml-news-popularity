@@ -97,18 +97,21 @@ words, so it is not the same feature rebuilt but a substitute anyone can recompu
 
 Monthly rolling origin, HistGB with the v19 parameters, evaluation 2013-07..2014-12, 1,000 bootstrap draws of
 days (`k2_evaluate.py`; `results/tables/k2_metrics_true.csv`, `k2_diffs_true.csv`; the same with the url as
-distributed in `k2_*_given.csv`, whose `orig_all` row reproduces v19's `hgb` row exactly). The model sets below
-receive all memory families at once, so no variant is selected on the evaluation window.
+distributed in `k2_*_given.csv`, whose `orig_all` row reproduces v19's `hgb` row exactly). "Chosen" is the variant
+picked on 2013-03..06 (all history with shrinkage, slug and headline words); "all families" hands every variant to
+the model at once. Neither involves a choice made on the evaluation window.
 
 | Features (re-aligned) | AUC | same-day same-section pairs | top pick in day's top 10% |
 | --- | --- | --- | --- |
 | dataset without `kw_*` | 0.711 [0.704, 0.718] | 59.0% | 31.9% |
 | dataset (with `kw_*`), = v19 model | 0.724 [0.718, 0.730] | 60.6% | 34.3% |
-| without `kw_*` + word memory, 30-day embargo | 0.730 | 61.4% | 37.6% |
-| without `kw_*` + word memory, 1-day lag | 0.738 [0.732, 0.743] | 62.1% | 39.3% |
+| without `kw_*` + chosen word memory (12 columns), 30-day embargo | 0.731 [0.725, 0.737] | 61.6% | 35.8% |
+| without `kw_*` + chosen word memory (12 columns), 1-day lag | 0.736 [0.730, 0.742] | 62.1% | 38.9% |
+| without `kw_*` + all word-memory families (114 columns), 30-day embargo | 0.731 [0.725, 0.736] | 61.4% | 37.8% |
+| without `kw_*` + all word-memory families (114 columns), 1-day lag | 0.738 [0.732, 0.743] | 62.1% | 39.3% |
 | without `kw_*` + raw-share mimic only (weakest sensible variant) | 0.729 | 61.2% | 36.7% |
-| dataset + word memory, 30-day embargo | 0.736 | 62.0% | 36.7% |
-| dataset + word memory, 1-day lag | 0.742 [0.736, 0.748] | 62.5% | 36.7% |
+| dataset + all word-memory families, 30-day embargo | 0.736 | 62.0% | 36.7% |
+| dataset + all word-memory families, 1-day lag | 0.742 [0.736, 0.748] | 62.5% | 36.7% |
 | word memory alone | 0.710 | 60.7% | 30.5% |
 | `kw_*` alone | 0.664 | 58.3% | 30.5% |
 | ridge on headline TF-IDF (v19 text baseline) | 0.684 | 60.0% | 33.6% |
@@ -118,11 +121,12 @@ Paired differences against the v19 model (AUC; section pairs in points):
 
 | | day bootstrap | week-block bootstrap | doubtful rows dropped |
 | --- | --- | --- | --- |
-| word memory (30-day embargo) instead of `kw_*` | +0.0058 [+0.0021, +0.0096]; +0.9 [+0.5, +1.3] | +0.0058 [+0.0020, +0.0098] | +0.0054 [+0.0018, +0.0094] |
-| word memory (1-day lag) instead of `kw_*` | +0.0135 [+0.0095, +0.0176]; +1.6 [+1.2, +2.0] | +0.0135 [+0.0093, +0.0176] | +0.0132 [+0.0093, +0.0174] |
+| chosen word memory (30-day embargo) instead of `kw_*` | +0.0066 [+0.0030, +0.0105]; +1.0 [+0.7, +1.4] | +0.0066 [+0.0027, +0.0106] | +0.0065 [+0.0029, +0.0104] |
+| chosen word memory (1-day lag) instead of `kw_*` | +0.0119 [+0.0079, +0.0161]; +1.5 [+1.1, +1.9] | +0.0119 [+0.0078, +0.0161] | +0.0117 [+0.0077, +0.0158] |
+| all families (1-day lag) instead of `kw_*` | +0.0135 [+0.0095, +0.0176]; +1.6 [+1.2, +2.0] | +0.0135 [+0.0093, +0.0176] | +0.0132 [+0.0093, +0.0174] |
 | raw-share mimic instead of `kw_*` | +0.0050 [+0.0014, +0.0086] | +0.0050 [+0.0014, +0.0087] | +0.0044 [+0.0009, +0.0080] |
-| word memory (30-day embargo) added | +0.0113 [+0.0080, +0.0145] | +0.0113 [+0.0081, +0.0146] | +0.0111 [+0.0078, +0.0144] |
-| word memory (1-day lag) added | +0.0176 [+0.0140, +0.0213] | +0.0176 [+0.0139, +0.0217] | +0.0174 [+0.0139, +0.0211] |
+| all families + section memory (30-day embargo) added | +0.0113 [+0.0080, +0.0145] | +0.0113 [+0.0081, +0.0146] | +0.0111 [+0.0078, +0.0144] |
+| all families + section memory (1-day lag) added | +0.0176 [+0.0140, +0.0213] | +0.0176 [+0.0139, +0.0217] | +0.0174 [+0.0139, +0.0211] |
 
 "Doubtful rows dropped" leaves the 1,338 rows where neither fingerprint agrees out of the evaluation
 (`k2_robust_*_true.csv`). The top-pick differences are positive but their intervals mostly include zero (545
@@ -130,25 +134,27 @@ days). Section memory alone adds nothing (the model already has the section flag
 the same word features lower the AUC (0.704 vs 0.711 without `kw_*`), and the TF-IDF ridge sits at 0.510, which is
 what v19 reported.
 
-## 4. The cached JEV answers: indicative only, not a measurement
+## 4. The cached JEV answers, scored against the right shares
 
 `k5_rescore_judge.py` scores the cached answers of v19 against the shares of the rows the headlines really belong
-to (no new API calls). On rows from 2013-06-06 on, the accuracy on the 4,000 judged pairs moves from 48.9%
-[47.2, 50.5] to 59.4% [57.8, 61.0], and the early-2013 versus later gap that v19b read as memorisation disappears
-(59.5% before the shift, 59.4% after). This shows the judge has signal on Mashable headlines. It should not be
-quoted as a result, because the test was drawn on shifted rows:
+to (no new API calls). Rows from 2013-06-06 on:
 
-* the "same-section" pairs are same-day pairs whose true sections mostly differ (546 of 3,070 share a true
-  section; accuracy there 56.8% [52.5, 60.9]);
-* the prompts showed section labels taken from the shifted rows (the day lineups themselves are true days, since a
-  URL carries its own date);
-* the memorisation probe of v19b compared 2013 H1 with later rows that were misaligned, so it has to be redone, and
-  the paraphrase test has to be extended beyond early 2013.
+**Whole-day lineups: a valid measurement, apart from the section labels in the prompt.** A lineup is grouped by
+the date in the URL and the headlines come from the same URLs, so every lineup is one true day. The judge's top
+pick lands in the day's top 10% on 23.3% of days [20.0, 27.0] (11.6% as scored in v19; random 11.2%), and its
+within-day Spearman with log shares is 0.160 [0.148, 0.173] (-0.003 as scored in v19). The main thread's redraw
+on aligned data gives the same 23.3%.
 
-For the same reason the feature sets with the judge's lineup score (`orig_all+judge`, `orig_all+full+judge`: AUC
-0.743 and 0.758 in `k2_metrics_true.csv`) are **contamination untested** and stay out of the table above. Pairs
-and lineups need to be redrawn on aligned data first. For orientation only: on the same re-scored pairs the
-past-only word memory gets 62.8%, the judge 59.4% and `kw_avg_avg` 59.8%.
+**Pairs: indicative only.** Accuracy on the 4,000 judged pairs moves from 48.9% [47.2, 50.5] to 59.4%
+[57.8, 61.0], and the early-2013 versus later gap that v19b read as memorisation disappears (59.5% before the
+shift, 59.4% after). The pairs are true same-day pairs, but "same section" was drawn on shifted rows: only 546 of
+3,070 share a true section (accuracy there 56.8% [52.5, 60.9]), and the prompt showed the wrong section labels.
+For orientation, on the same re-scored pairs the word memory gets 62.8% and `kw_avg_avg` 59.8%.
+
+**Judge score as a feature: contamination untested.** The sets `orig_all+judge` and `orig_all+full+judge` (AUC
+0.743 and 0.758 in `k2_metrics_true.csv`) stay out of the table above until the memorisation probe of v19b (which
+compared 2013 H1 with misaligned later rows) is redone on aligned data and the paraphrase test is extended beyond
+early 2013.
 
 ## Limits
 

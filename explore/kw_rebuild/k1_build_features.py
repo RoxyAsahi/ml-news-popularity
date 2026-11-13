@@ -216,7 +216,7 @@ def main():
         s = pd.DataFrame(rows)
         p = TAB / "k1_eb_strength.csv"
         if p.exists():
-            s = pd.concat([pd.read_csv(p), s]).drop_duplicates(["align", "lag", "source", "window"], keep="last")
+            s = pd.concat([pd.read_csv(p, dtype={"align": str}), s]).drop_duplicates(["align", "lag", "source", "window"], keep="last")
         s.sort_values(["align", "lag", "source", "window"]).to_csv(p, index=False)
         print(s[s.lag == s.lag.min()].round(3).to_string(index=False))
 

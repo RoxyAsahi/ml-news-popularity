@@ -14,11 +14,26 @@ true,week-block bootstrap,v19,no_kw+mim,rho_day,0.4098879788899589,0.39516017252
 true,week-block bootstrap,v19,no_kw+mim,top10,0.3669724770642202,0.32967032967032966,0.407366586013375
 true,week-block bootstrap,v19,no_kw+mim,pair_sec,0.612059282640877,0.6074269434369916,0.6172117394877581
 true,week-block bootstrap,v19,no_kw+mim,pair_day,0.6494082980048369,0.6453083610123591,0.6535809087713997
+true,week-block bootstrap,v19,no_kw+all,auc,0.7362862236137993,0.729979001925237,0.7419587591611003
+true,week-block bootstrap,v19,no_kw+all,rho_day,0.42658807627570944,0.41215292646114665,0.44000565319633084
+true,week-block bootstrap,v19,no_kw+all,top10,0.3889908256880734,0.3498168498168498,0.4267528282031044
+true,week-block bootstrap,v19,no_kw+all,pair_sec,0.6204977852530686,0.6150524362019913,0.6258021278634319
+true,week-block bootstrap,v19,no_kw+all,pair_day,0.6558530138524111,0.6519402383424994,0.6597233518882071
+true,week-block bootstrap,v19,no_kw+all_L30,auc,0.7309518940657276,0.7244345044207461,0.7370382311430542
+true,week-block bootstrap,v19,no_kw+all_L30,rho_day,0.41585602013984285,0.4006698127728348,0.4299163379936613
+true,week-block bootstrap,v19,no_kw+all_L30,top10,0.3577981651376147,0.3174311926605505,0.3992673992673993
+true,week-block bootstrap,v19,no_kw+all_L30,pair_sec,0.6160279709001262,0.6106361122087741,0.6216211389979971
+true,week-block bootstrap,v19,no_kw+all_L30,pair_day,0.6516125441453059,0.6475759907905667,0.6557413318888311
 true,week-block bootstrap,v19,no_kw+words,auc,0.7378385256633804,0.7320939642001639,0.7436417294418879
 true,week-block bootstrap,v19,no_kw+words,rho_day,0.4277330683059993,0.41296601185203025,0.44094741276571403
 true,week-block bootstrap,v19,no_kw+words,top10,0.3926605504587156,0.3504426689518433,0.4340659340659341
 true,week-block bootstrap,v19,no_kw+words,pair_sec,0.621177473518078,0.6155337608656964,0.6270912534246648
 true,week-block bootstrap,v19,no_kw+words,pair_day,0.6569472608644972,0.6525990820988964,0.6611505136259553
+true,week-block bootstrap,v19,no_kw+words_L30,auc,0.7305252639677299,0.7245129133938085,0.7365301423713742
+true,week-block bootstrap,v19,no_kw+words_L30,rho_day,0.4155470785092229,0.40038005992140074,0.4294812122846992
+true,week-block bootstrap,v19,no_kw+words_L30,top10,0.3779816513761468,0.3406446953781513,0.4157509157509158
+true,week-block bootstrap,v19,no_kw+words_L30,pair_sec,0.6137354630232303,0.6082754063173862,0.6194576556035464
+true,week-block bootstrap,v19,no_kw+words_L30,pair_day,0.6516114940042195,0.6474626345198571,0.6555967889250017
 true,week-block bootstrap,v19,no_kw+full_L30,auc,0.7301601192712763,0.7239638461117398,0.7363144796821127
 true,week-block bootstrap,v19,no_kw+full_L30,rho_day,0.41571792154575354,0.40083474704803085,0.42988838565844706
 true,week-block bootstrap,v19,no_kw+full_L30,top10,0.3761467889908257,0.3406446953781513,0.4147247706422018
@@ -65,11 +80,26 @@ true,week-block bootstrap,pre,no_kw+mim,rho_day,0.2674734246241122,0.23638780818
 true,week-block bootstrap,pre,no_kw+mim,top10,0.27835051546391754,0.2079207920792079,0.3596794448116324
 true,week-block bootstrap,pre,no_kw+mim,pair_sec,0.5881980269707666,0.579656657329362,0.5956369317569858
 true,week-block bootstrap,pre,no_kw+mim,pair_day,0.6082494820952945,0.5981954569946695,0.6180054249244133
+true,week-block bootstrap,pre,no_kw+all,auc,0.6799391665662194,0.6663110669046839,0.6955747823415345
+true,week-block bootstrap,pre,no_kw+all,rho_day,0.2889768414580326,0.25216692095944543,0.32408650655555704
+true,week-block bootstrap,pre,no_kw+all,top10,0.2268041237113402,0.13861386138613863,0.33766233766233766
+true,week-block bootstrap,pre,no_kw+all,pair_sec,0.5993755090958458,0.586467323800667,0.6133699997230838
+true,week-block bootstrap,pre,no_kw+all,pair_day,0.6139538324948209,0.6030471878400788,0.6259167797423915
+true,week-block bootstrap,pre,no_kw+all_L30,auc,0.6696064604763307,0.6582070225231731,0.6842145604222939
+true,week-block bootstrap,pre,no_kw+all_L30,rho_day,0.2676034525643844,0.22458583432411344,0.3057629778979843
+true,week-block bootstrap,pre,no_kw+all_L30,top10,0.2268041237113402,0.1397556691152986,0.3176955730745906
+true,week-block bootstrap,pre,no_kw+all_L30,pair_sec,0.5937188885872025,0.5800807842355773,0.607786600065671
+true,week-block bootstrap,pre,no_kw+all_L30,pair_day,0.6089301568511394,0.5966805366502939,0.6204323194674745
 true,week-block bootstrap,pre,no_kw+words,auc,0.6869569369536285,0.6727581151209692,0.704267669566102
 true,week-block bootstrap,pre,no_kw+words,rho_day,0.28921817521033416,0.25121066411778153,0.3240117098721443
 true,week-block bootstrap,pre,no_kw+words,top10,0.25773195876288657,0.1958762886597938,0.3258649460451663
 true,week-block bootstrap,pre,no_kw+words,pair_sec,0.6028147343651009,0.592087912538112,0.6129829326830867
 true,week-block bootstrap,pre,no_kw+words,pair_day,0.6158774785439479,0.6050515196855446,0.6270341296092836
+true,week-block bootstrap,pre,no_kw+words_L30,auc,0.6693627046842245,0.6576590896704818,0.6842238825726363
+true,week-block bootstrap,pre,no_kw+words_L30,rho_day,0.25766947931205475,0.23268818360415622,0.28316038691696704
+true,week-block bootstrap,pre,no_kw+words_L30,top10,0.18556701030927836,0.11428571428571428,0.25882352941176473
+true,week-block bootstrap,pre,no_kw+words_L30,pair_sec,0.586478414336139,0.5738267607001134,0.6003719371511795
+true,week-block bootstrap,pre,no_kw+words_L30,pair_day,0.6067623557265464,0.5960141517956904,0.6181416688065619
 true,week-block bootstrap,pre,no_kw+full_L30,auc,0.6760160038285576,0.6652194847341885,0.6909891482785485
 true,week-block bootstrap,pre,no_kw+full_L30,rho_day,0.25988089924552876,0.22683696558393585,0.2912811462153029
 true,week-block bootstrap,pre,no_kw+full_L30,top10,0.24742268041237114,0.17204301075268819,0.3294238932686476
@@ -116,11 +146,26 @@ true,doubtful rows dropped from the evaluation,v19,no_kw+mim,rho_day,0.409334111
 true,doubtful rows dropped from the evaluation,v19,no_kw+mim,top10,0.3651376146788991,0.326605504587156,0.4091743119266055
 true,doubtful rows dropped from the evaluation,v19,no_kw+mim,pair_sec,0.6115300234140226,0.6070288900475687,0.6164448010986899
 true,doubtful rows dropped from the evaluation,v19,no_kw+mim,pair_day,0.6499827074322109,0.6458909623904602,0.6538953164576887
+true,doubtful rows dropped from the evaluation,v19,no_kw+all,auc,0.737713866216343,0.7318416111454914,0.74350773660713
+true,doubtful rows dropped from the evaluation,v19,no_kw+all,rho_day,0.42721254615134635,0.4137557875064894,0.44082181493196965
+true,doubtful rows dropped from the evaluation,v19,no_kw+all,top10,0.3871559633027523,0.3504587155963303,0.42935779816513764
+true,doubtful rows dropped from the evaluation,v19,no_kw+all,pair_sec,0.6202380732901925,0.6155612601728633,0.6253484705568142
+true,doubtful rows dropped from the evaluation,v19,no_kw+all,pair_day,0.6566605581232399,0.6529968284828246,0.6605784662029819
+true,doubtful rows dropped from the evaluation,v19,no_kw+all_L30,auc,0.7325144713387748,0.7267496643444281,0.7380286800601958
+true,doubtful rows dropped from the evaluation,v19,no_kw+all_L30,rho_day,0.416645293278474,0.40383123519776637,0.4299929817508989
+true,doubtful rows dropped from the evaluation,v19,no_kw+all_L30,top10,0.3614678899082569,0.3229357798165138,0.4055045871559633
+true,doubtful rows dropped from the evaluation,v19,no_kw+all_L30,pair_sec,0.6159301389477825,0.6112929614713171,0.6208957083841166
+true,doubtful rows dropped from the evaluation,v19,no_kw+all_L30,pair_day,0.6523643656322567,0.6487698133238654,0.6562750905894421
 true,doubtful rows dropped from the evaluation,v19,no_kw+words,auc,0.7392569847077587,0.7334139402076453,0.7450035682605914
 true,doubtful rows dropped from the evaluation,v19,no_kw+words,rho_day,0.4277801244399365,0.4146973635849841,0.44127874303618747
 true,doubtful rows dropped from the evaluation,v19,no_kw+words,top10,0.3889908256880734,0.3504587155963303,0.42935779816513764
 true,doubtful rows dropped from the evaluation,v19,no_kw+words,pair_sec,0.6208218875020741,0.6163283599302218,0.6256277243601946
 true,doubtful rows dropped from the evaluation,v19,no_kw+words,pair_day,0.6578227534259496,0.6540014696559482,0.661672781360671
+true,doubtful rows dropped from the evaluation,v19,no_kw+words_L30,auc,0.7317200300215779,0.725823235061874,0.7371502295414707
+true,doubtful rows dropped from the evaluation,v19,no_kw+words_L30,rho_day,0.4161588939666515,0.40366925759488637,0.42898340570632026
+true,doubtful rows dropped from the evaluation,v19,no_kw+words_L30,top10,0.3798165137614679,0.3394495412844037,0.42385321100917434
+true,doubtful rows dropped from the evaluation,v19,no_kw+words_L30,pair_sec,0.6135027009089066,0.608948844481719,0.6184239146855837
+true,doubtful rows dropped from the evaluation,v19,no_kw+words_L30,pair_day,0.6523463993280603,0.6484763096533251,0.6560671262970925
 true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,auc,0.7314224036025894,0.7255825876975999,0.7370302818492396
 true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,rho_day,0.41556804326715474,0.40284597223212415,0.4284394407152942
 true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,top10,0.3779816513761468,0.3394495412844037,0.4202293577981651
@@ -167,11 +212,26 @@ true,doubtful rows dropped from the evaluation,pre,no_kw+mim,rho_day,0.272157659
 true,doubtful rows dropped from the evaluation,pre,no_kw+mim,top10,0.27835051546391754,0.1958762886597938,0.3711340206185567
 true,doubtful rows dropped from the evaluation,pre,no_kw+mim,pair_sec,0.589792420491335,0.5787910958699714,0.5998743686886651
 true,doubtful rows dropped from the evaluation,pre,no_kw+mim,pair_day,0.6085694050991501,0.5971648946932658,0.6189321450508304
+true,doubtful rows dropped from the evaluation,pre,no_kw+all,auc,0.6811627683016028,0.663510089594407,0.7008901458209599
+true,doubtful rows dropped from the evaluation,pre,no_kw+all,rho_day,0.29375133991200325,0.25944124055873563,0.32579721355220154
+true,doubtful rows dropped from the evaluation,pre,no_kw+all,top10,0.25773195876288657,0.17525773195876287,0.35051546391752575
+true,doubtful rows dropped from the evaluation,pre,no_kw+all,pair_sec,0.6016949152542372,0.5893827868668721,0.613283304022868
+true,doubtful rows dropped from the evaluation,pre,no_kw+all,pair_day,0.6147859615989928,0.6036953821940847,0.6244943337040527
+true,doubtful rows dropped from the evaluation,pre,no_kw+all_L30,auc,0.6714168556424067,0.6522661583167649,0.6912095940861622
+true,doubtful rows dropped from the evaluation,pre,no_kw+all_L30,rho_day,0.2700842278059557,0.23181330772569783,0.3071764292995392
+true,doubtful rows dropped from the evaluation,pre,no_kw+all_L30,top10,0.2268041237113402,0.14432989690721648,0.30927835051546393
+true,doubtful rows dropped from the evaluation,pre,no_kw+all_L30,pair_sec,0.5960293277470958,0.5835400842993281,0.6076323916289608
+true,doubtful rows dropped from the evaluation,pre,no_kw+all_L30,pair_day,0.6100173119294933,0.5979725197607227,0.6210068692328522
 true,doubtful rows dropped from the evaluation,pre,no_kw+words,auc,0.6872501182770304,0.6717294886354221,0.7039626885938591
 true,doubtful rows dropped from the evaluation,pre,no_kw+words,rho_day,0.29148708012918934,0.2559539496404753,0.3249669809294673
 true,doubtful rows dropped from the evaluation,pre,no_kw+words,top10,0.24742268041237114,0.16494845360824742,0.32989690721649484
 true,doubtful rows dropped from the evaluation,pre,no_kw+words,pair_sec,0.6040754142068178,0.5922923404605618,0.6160186080616775
 true,doubtful rows dropped from the evaluation,pre,no_kw+words,pair_day,0.615140069247718,0.6043770068310864,0.6247560378169124
+true,doubtful rows dropped from the evaluation,pre,no_kw+words_L30,auc,0.6709559764867556,0.6523894137539128,0.690869617725612
+true,doubtful rows dropped from the evaluation,pre,no_kw+words_L30,rho_day,0.26063195998198174,0.22762797880191768,0.29292759737205537
+true,doubtful rows dropped from the evaluation,pre,no_kw+words_L30,top10,0.16494845360824742,0.09278350515463918,0.24742268041237114
+true,doubtful rows dropped from the evaluation,pre,no_kw+words_L30,pair_sec,0.5880308512664254,0.5745620417755709,0.600872135961106
+true,doubtful rows dropped from the evaluation,pre,no_kw+words_L30,pair_day,0.6069247717972931,0.5949379462735936,0.6176897779881365
 true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,auc,0.6786957654912337,0.660207151083551,0.6984932253703634
 true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,rho_day,0.26181872731106354,0.22551142031959656,0.29679505025874897
 true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,top10,0.23711340206185566,0.16494845360824742,0.31958762886597936

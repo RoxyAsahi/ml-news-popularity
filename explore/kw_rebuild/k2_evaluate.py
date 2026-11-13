@@ -17,7 +17,9 @@ Feature sets (see k1_build_features.py for the rebuilt families; lag 1 unless st
   orig_all          the 58 dataset features (+ 2 cleaning flags), = v19 "hgb"
   no_kw             without kw_* (9 columns + the -1 flag)
   no_kw+mim         + mimic of the original recipe on slug / headline words
+  no_kw+all         + the variant chosen on 2013-03..06: all-history EB lifts of slug and headline words (12 columns)
   no_kw+words       + all word-based families (mim, all, win, dec, mom; slug and headline)
+  ..._L30           the same with a 30-day embargo
   no_kw+sec         + section memory
   no_kw+full        + words + section memory
   no_kw+full_L{k}   the same with an embargo of k days (only articles at least k days old feed the memory)
@@ -83,6 +85,9 @@ SETS = {
     "no_kw": (NO_KW, [], 1),
     "no_kw+mim": (NO_KW, fam("mim"), 1),
     "no_kw+words": (NO_KW, WORDS, 1),
+    "no_kw+all": (NO_KW, fam("all"), 1),          # the variant chosen before the evaluation window: all history, EB lift
+    "no_kw+all_L30": (NO_KW, fam("all"), 30),
+    "no_kw+words_L30": (NO_KW, WORDS, 30),
     "no_kw+sec": (NO_KW, SEC, 1),
     "no_kw+full": (NO_KW, FULL, 1),
     "orig_all+full": (cols, FULL, 1),
@@ -164,7 +169,7 @@ def pair_counts(s, yy, groups):
     return c, t
 
 
-KEY = ["orig_all", "no_kw", "no_kw+mim", "no_kw+words", "no_kw+full_L30", "orig_all+full", "orig_all+full_L30", "kw_only", "full_only", "tfidf_ridge"]
+KEY = ["orig_all", "no_kw", "no_kw+mim", "no_kw+all", "no_kw+all_L30", "no_kw+words", "no_kw+words_L30", "no_kw+full_L30", "orig_all+full", "orig_all+full_L30", "kw_only", "full_only", "tfidf_ridge"]
 doubt = np.zeros(n, bool)  # rows where neither title fingerprint agrees after re-alignment (k4_realign.py)
 if ALIGN == "true":
     ra = pd.read_csv(INT / "realigned.csv").set_index("file_row")
