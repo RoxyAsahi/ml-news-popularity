@@ -93,60 +93,98 @@ def bisect(url, size, pred):
     return lo * (16 << 20)
 
 
+SEG, OVER = 96 << 20, 8 << 20
+
+
+def segment(url, size, start, min_total):
+    """Decode bytes [start, start+SEG+OVER) from the first block boundary; return (rows, saw_end_of_en)."""
+    rows, past = [], False
+    dec, k, carry, tail = None, 0, b"", b""
+    off, end = start, min(size, start + SEG + OVER)
+    while off < end and not past:
+        chunk = http_range(url, off, min(32 << 20, end - off))
+        off += len(chunk)
+        if dec is None:
+            pos = find_magic(chunk)
+            if pos is None:
+                continue
+            i, k = pos
+            data, carry = shift(chunk[i:], k)
+            dec = bz2.BZ2Decompressor()
+            text = dec.decompress(b"BZh9" + data)
+            text = text[text.find(b"\n") + 1:]  # drop the partial first row
+        else:
+            data, carry = shift(chunk, k, carry)
+            text = dec.decompress(data)
+        lines = (tail + text).split(b"\n")
+        tail = lines.pop()  # partial last row: covered by the next segment's overlap
+        for ln in lines:
+            if not ln.startswith(b"en.wikipedia "):
+                if ln[:13] > b"en.wikipedia ":
+                    past = True
+                    break
+                continue
+            p = ln.split(b" ")
+            if len(p) != 6:
+                continue
+            try:
+                tot = int(p[4])
+            except ValueError:
+                continue
+            if tot >= min_total:
+                rows.append("%s\t%s\t%d\t%s" % (p[1].decode("utf-8", "replace"), p[3].decode(), tot, p[5].decode()))
+    return rows, past
+
+
 def month(ym, out, min_total):
+    """Resumable at segment level: each 96 MB segment is written atomically, then all parts are merged."""
+    import json
     y, m = ym[:4], ym[4:]
     dst = os.path.join(out, "pv_%s.tsv.gz" % ym)
     if os.path.exists(dst):
         return
     url = URL.format(y=y, m=m)
-    size = size_of(url)
-    a = max(0, bisect(url, size, lambda w: w >= "en.wikipedia") - (32 << 20))
-    b = min(size, bisect(url, size, lambda w: w > "en.wikipedia" and not w.startswith("en.wikipedia")) + (32 << 20))
+    rj = os.path.join(out, "pv_%s.range.json" % ym)
+    if os.path.exists(rj):
+        size, a, b = json.load(open(rj))
+    else:
+        size = size_of(url)
+        a = max(0, bisect(url, size, lambda w: w >= "en.wikipedia") - (32 << 20))
+        b = min(size, bisect(url, size, lambda w: w > "en.wikipedia" and not w.startswith("en.wikipedia")) + (32 << 20))
+        json.dump([size, a, b], open(rj, "w"))
     print(ym, "size %.2f GB, en.wikipedia in [%.2f, %.2f] GB" % (size / 2**30, a / 2**30, b / 2**30), flush=True)
-    dec, k, carry, tail = None, 0, b"", b""
-    n_rows = 0
     t0 = time.time()
-    with gzip.open(dst + ".tmp", "wt", encoding="utf-8") as g:
-        off = a
-        done = False
-        while off < b and not done:
-            chunk = http_range(url, off, min(32 << 20, size - off))
-            off += len(chunk)
-            if dec is None:
-                pos = find_magic(chunk)
-                if pos is None:
-                    continue
-                i, k = pos
-                data, carry = shift(chunk[i:], k)
-                dec = bz2.BZ2Decompressor()
-                text = dec.decompress(b"BZh9" + data)
-                text = text[text.find(b"\n") + 1:]  # drop the partial first row
-            else:
-                data, carry = shift(chunk, k, carry)
-                text = dec.decompress(data)
-            lines = (tail + text).split(b"\n")
-            tail = lines.pop()
-            for ln in lines:
-                if not ln.startswith(b"en.wikipedia "):
-                    if ln[:13] > b"en.wikipedia " and n_rows:
-                        done = True
-                        break
-                    continue
-                p = ln.split(b" ")
-                if len(p) != 6:
-                    continue
-                try:
-                    tot = int(p[4])
-                except ValueError:
-                    continue
-                if tot >= min_total:
-                    g.write("%s\t%s\t%d\t%s\n" % (p[1].decode("utf-8", "replace"), p[3].decode(), tot, p[5].decode()))
-                    n_rows += 1
-            print("  %s %.2f GB read, %d rows kept, %.0f s" % (ym, (off - a) / 2**30, n_rows, time.time() - t0), flush=True)
-    if not done and off < size:
+    i, parts, ended = 0, [], False
+    while a + i * SEG < b and not ended:
+        part = os.path.join(out, "pv_%s.part%03d.tsv.gz" % (ym, i))
+        flag = part + ".end"
+        if not os.path.exists(part):
+            rows, past = segment(url, size, a + i * SEG, min_total)
+            with gzip.open(part + ".tmp", "wt", encoding="utf-8") as g:
+                g.write("\n".join(rows) + ("\n" if rows else ""))
+            if past:
+                open(flag, "w").close()
+            os.replace(part + ".tmp", part)
+            print("  %s segment %d: %d rows, %.0f s" % (ym, i, len(rows), time.time() - t0), flush=True)
+        ended = os.path.exists(flag)
+        parts.append(part)
+        i += 1
+    if not ended and b < size:
         print(ym, "WARNING: did not see the end of en.wikipedia; widen the range", flush=True)
+    seen = set()
+    with gzip.open(dst + ".tmp", "wt", encoding="utf-8") as g:
+        for part in parts:
+            with gzip.open(part, "rt", encoding="utf-8") as f:
+                for line in f:
+                    if line not in seen:
+                        seen.add(line)
+                        g.write(line)
     os.replace(dst + ".tmp", dst)
-    print(ym, "done", n_rows, flush=True)
+    for part in parts:
+        os.remove(part)
+        if os.path.exists(part + ".end"):
+            os.remove(part + ".end")
+    print(ym, "done", len(seen), flush=True)
 
 
 if __name__ == "__main__":
