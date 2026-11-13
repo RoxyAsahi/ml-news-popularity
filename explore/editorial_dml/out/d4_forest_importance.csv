@@ -1,0 +1,10 @@
+lever,top1,top2,top3,top4,top5
+imgs,links_self (0.18),length (0.15),day (0.12),links_out (0.08),kw_max_avg (0.06)
+videos,links_self (0.14),length (0.12),links_out (0.10),imgs (0.08),day (0.07)
+length,links_self (0.19),links_out (0.11),day (0.08),LDA_04 (0.07),kw_avg_avg (0.06)
+title_len,links_self (0.20),length (0.14),links_out (0.10),day (0.08),videos (0.07)
+links_out,links_self (0.46),length (0.09),day (0.07),LDA_03 (0.04),LDA_00 (0.04)
+links_self,links_out (0.22),imgs (0.15),length (0.10),day (0.10),LDA_03 (0.06)
+weekend,links_self (0.14),length (0.14),links_out (0.11),day (0.08),kw_min_avg (0.08)
+vol_same,length (0.14),links_out (0.11),LDA_03 (0.09),links_self (0.08),day (0.07)
+vol_other,length (0.15),links_out (0.12),links_self (0.09),day (0.08),imgs (0.07)

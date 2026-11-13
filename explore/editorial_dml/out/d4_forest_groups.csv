@@ -1,0 +1,37 @@
+lever,third,mean_tau_hat,theta,se,pct,pct_lo,pct_hi
+imgs,lowest predicted,-0.0017,0.0067,0.0114,0.4662,-1.0732,2.0296
+imgs,middle,0.0283,0.0298,0.0102,2.0837,0.6856,3.5012
+imgs,highest predicted,0.0547,0.0834,0.0115,5.9541,4.312,7.6221
+imgs,highest minus lowest,,0.0767,0.0163,,,
+videos,lowest predicted,0.0129,0.0062,0.0131,0.4274,-1.3415,2.2281
+videos,middle,0.0464,0.0624,0.0142,4.4166,2.4221,6.4498
+videos,highest predicted,0.0874,0.151,0.0195,11.0365,8.1333,14.0176
+videos,highest minus lowest,,0.1449,0.0224,,,
+length,lowest predicted,0.0088,-0.0176,0.0135,-1.2152,-3.0089,0.6116
+length,middle,0.0556,0.0452,0.0143,3.1862,1.1973,5.2141
+length,highest predicted,0.0992,0.1464,0.0143,10.68,8.5483,12.8535
+length,highest minus lowest,,0.164,0.0201,,,
+title_len,lowest predicted,-0.1146,-0.1266,0.0412,-8.4034,-13.3922,-3.1273
+title_len,middle,0.0287,0.0675,0.0445,4.7879,-1.3562,11.3148
+title_len,highest predicted,0.1949,0.2343,0.0492,17.6352,10.0279,25.7685
+title_len,highest minus lowest,,0.361,0.0567,,,
+links_out,lowest predicted,-0.0007,-0.0493,0.0119,-3.357,-4.9021,-1.7868
+links_out,middle,0.0499,0.0639,0.0094,4.5276,3.2018,5.8705
+links_out,highest predicted,0.0739,0.0992,0.0081,7.1159,5.9381,8.3068
+links_out,highest minus lowest,,0.1484,0.0133,,,
+links_self,lowest predicted,0.0013,-0.045,0.0165,-3.0713,-5.2168,-0.8772
+links_self,middle,0.0449,0.0397,0.0125,2.7885,1.0604,4.5462
+links_self,highest predicted,0.0961,0.153,0.0216,11.1875,7.968,14.503
+links_self,highest minus lowest,,0.198,0.026,,,
+weekend,lowest predicted,0.1891,0.1617,0.02,17.5547,13.0359,22.2541
+weekend,middle,0.2616,0.2735,0.0223,31.4524,25.8197,37.3373
+weekend,highest predicted,0.3294,0.3503,0.034,41.9434,32.7962,51.7207
+weekend,highest minus lowest,,0.1885,0.036,,,
+vol_same,lowest predicted,-0.1951,-0.1502,0.0222,-9.885,-12.5593,-7.129
+vol_same,middle,-0.1389,-0.1607,0.0223,-10.5433,-13.2096,-7.7952
+vol_same,highest predicted,-0.101,-0.1209,0.0214,-8.0371,-10.6769,-5.3193
+vol_same,highest minus lowest,,0.0293,0.0288,,,
+vol_other,lowest predicted,-0.2955,-0.2151,0.0351,-13.85,-17.8576,-9.6469
+vol_other,middle,-0.2052,-0.1723,0.05,-11.2552,-17.0837,-5.017
+vol_other,highest predicted,-0.1256,-0.2509,0.0485,-15.9649,-21.3268,-10.2376
+vol_other,highest minus lowest,,-0.0359,0.0609,,,

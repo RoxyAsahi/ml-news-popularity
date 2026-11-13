@@ -1,0 +1,24 @@
+check,spec,term,theta,se,z,pct_per_doubling,pct_lo,pct_hi
+identification,"weekdays only, local trend (as in the prediction test)",vol_same,-0.1343,0.0152,-8.8221,-8.886,-10.7504,-6.9826
+identification,"weekdays only, local trend (as in the prediction test)",vol_other,-0.1889,0.0373,-5.0647,-12.2701,-16.6038,-7.7112
+identification,"weekdays only, within week",vol_same,-0.1252,0.0169,-7.3919,-8.3138,-10.3998,-6.1792
+identification,"weekdays only, within week",vol_other,-0.1808,0.0406,-4.4522,-11.7811,-16.5173,-6.7761
+identification,"all days, within week",vol_same,-0.127,0.014,-9.0604,-8.4296,-10.1575,-6.6684
+identification,"all days, within week",vol_other,-0.1924,0.033,-5.8293,-12.4868,-16.3247,-8.4728
+log-linearity,quieter half of weekdays,vol_same,-0.1052,0.0277,-3.7939,-7.0347,-10.4728,-3.4646
+log-linearity,quieter half of weekdays,vol_other,-0.1962,0.0469,-4.1831,-12.7148,-18.1029,-6.9721
+log-linearity,busier half of weekdays,vol_same,-0.1244,0.0401,-3.1004,-8.2629,-13.1305,-3.1225
+log-linearity,busier half of weekdays,vol_other,-0.1484,0.0535,-2.7759,-9.7775,-16.0995,-2.979
+neighbouring days,"day t, t-1 and t+1 together",vol_same,-0.1262,0.0141,-8.9257,-8.3753,-10.1183,-6.5984
+neighbouring days,"day t, t-1 and t+1 together",vol_other,-0.1934,0.0309,-6.2576,-12.547,-16.1434,-8.7964
+neighbouring days,"day t, t-1 and t+1 together",vol_same_lag1,-0.0224,0.0119,-1.8756,-1.5403,-3.1245,0.0699
+neighbouring days,"day t, t-1 and t+1 together",vol_same_lead1,-0.0092,0.011,-0.84,-0.6385,-2.1124,0.8576
+neighbouring days,"day t, t-1 and t+1 together",vol_other_lag1,0.0203,0.0231,0.8808,1.4184,-1.7109,4.6473
+neighbouring days,"day t, t-1 and t+1 together",vol_other_lead1,-0.0141,0.0272,-0.5169,-0.9714,-4.5699,2.7628
+neighbouring days,"day t alone, same articles",vol_same,-0.1334,0.0139,-9.5935,-8.8331,-10.5394,-7.0942
+neighbouring days,"day t alone, same articles",vol_other,-0.1951,0.0311,-6.2749,-12.6505,-16.2639,-8.8812
+composition,"predicted log shares from content (composition), week + weekday + section FE",vol_same,-0.0319,0.0046,-6.8609,-2.1854,-2.8008,-1.566
+composition,"predicted log shares from content (composition), week + weekday + section FE",vol_other,0.0119,0.0101,1.1743,0.8271,-0.5496,2.2228
+composition,"actual log shares, week + weekday + section FE",vol_same,-0.1439,0.0134,-10.724,-9.4944,-11.1296,-7.8291
+composition,"actual log shares, week + weekday + section FE",vol_other,-0.2071,0.0335,-6.1786,-13.3742,-17.2311,-9.3377
+composition,out-of-fold R2 of the content-only predictor,,0.1766,,,,,

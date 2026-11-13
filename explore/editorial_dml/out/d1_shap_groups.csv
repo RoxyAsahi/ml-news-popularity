@@ -1,0 +1,7 @@
+group,n_features,share
+keyword history (kw_*),9,0.3148
+editorial levers,16,0.2372
+section + LDA topics,11,0.1643
+linked articles' shares (self_reference_*),3,0.1427
+dictionary sentiment,16,0.0962
+other text statistics,5,0.0449
