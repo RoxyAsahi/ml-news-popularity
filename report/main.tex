@@ -8,6 +8,7 @@
 \graphicspath{{../results/figures/}}
 \captionsetup{font=small}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\raggedbottom
 
 \title{What Can Be Called Before Publication?\\
 A Misaligned Benchmark, Its Repair, and the Signal in the Headline}
@@ -27,7 +28,7 @@ end, so that for 79.8\% of the rows the URL belongs to another article. Analyses
 unaffected; anything that joins the URL, its date, its slug or scraped text to the shares is not. We repair the
 column with a monotone alignment on three fingerprints and validate the repair on signals it never used: a
 held-out fingerprint, the section predicted from the headline, and the shares themselves all return to their
-level in the unshifted months, and only at the estimated offset, not one row beside it. On the repaired data the headline is the strongest single signal. A ridge
+level in the unshifted months, and only at the estimated offset, not one row beside it. On the repaired data the headline is the strongest single signal. Scored past-only, a ridge
 regression on headline embeddings orders two articles from the same day and section correctly 61.2\% of the time,
 as well as a gradient-boosted model on all 58 features (60.6\%); their average reaches 63.1\% and an AUC of 0.746,
 and its top pick of the day gets 2.7 times the shares of a random article. On the file as distributed the same
@@ -165,7 +166,8 @@ rate 0.03, 15 leaves, 500 iterations), ridge regression, $k$-nearest neighbours 
 \citep{breiman2001}, all regressing log shares. On the headline: ridge regression on TF-IDF uni- and bigrams and
 on 768-dimensional bge-base sentence embeddings \citep{xiao2024bge}. To combine the two views we use HistGB on
 the features plus 32 principal components of the embedding (early fusion), and the plain mean of the HistGB and
-the headline-ridge predictions (late fusion, no extra parameters). Hyper-parameters of the compared families are
+the headline-ridge predictions (late fusion; it has no parameters to tune, but we added it after seeing early
+fusion's scores, so it was not fixed in advance). Hyper-parameters of the compared families are
 chosen once, on March--June 2013 under the same rolling origin, and then frozen. We refit HistGB on feature
 groups (13 history, 28 body, 5 title, 14 placement features) to see where the skill sits.
 
@@ -207,7 +209,7 @@ the feature model and their early fusion for scale.}
 \centering\footnotesize
 \caption{RQ1: the file as distributed (D) and repaired (R), by publication period. Agreement in \%; the last
 four rows use signals the alignment never saw. Models are trained on January--March 2013 only (their first
-column is April to 5 June); pairs are from the same day and section. Judge: 4{,}000 pairs drawn before the repair (D) and 4{,}000 drawn after it (R).}
+column is April to 5 June); pairs are from the same day and section. Judge: two independent samples of 4{,}000 pairs, drawn before the repair (D) and after it (R); their first columns (857 and 829 pairs, both aligned) pool to 56.8\%.}
 \label{tab:align}
 \setlength{\tabcolsep}{2.6pt}
 \begin{tabular}{@{}llcccc@{}}
@@ -250,8 +252,8 @@ first half of 2014 and up to 152 by the end of December 2014 (Fig.~\ref{fig:alig
 URLs in the file belong to no row. Many of those orphan URLs are long-form features and series pages, so the
 likeliest history is that articles the feature extractor could not parse were removed from the feature table but
 not from the URL list. The original UCI file is identical to ours, so this is the benchmark, not a copy. To our
-knowledge the shift is undocumented: we found no report of it on the dataset's pages, its mirrors or in
-discussions and papers that use it.
+knowledge the shift is undocumented: we found no report of it in the sources we searched (the UCI page, the
+Kaggle and OpenML copies, public GitHub notebooks, and the papers on the dataset that we read).
 
 \paragraph{The repair holds on signals it never used.} After the repair the URL date equals the content date on
 every row, and the title length agrees for 81--91\% of rows. Three held-out checks (Table~\ref{tab:align}):
@@ -379,10 +381,10 @@ gap (10-fold over pairs) improves on the model alone: +1.7 points [0.2, 3.2] ove
 63.7\%), +1.6 [0.3, 3.0] over the headline ridge, and +1.4 [$-$0.1, 2.7] over their early fusion (63.9\% to
 65.3\%), the best single number in this report.
 
-\paragraph{Not recall, not the wording of the question.} With every headline reworded the judge is right on
+\paragraph{Not verbatim recall, not the wording of the question.} With every headline reworded the judge is right on
 62.0\% of 250 pairs from early 2013 (original wording: 60.8\%) and on 53.6\% of 250 pairs from 2014 (original:
 52.4\%); over the 500 pairs the change is +1.2 points [$-$1.6, 4.2] and the decision is the same on 89\%. Asked how often a single article was shared, its expected share band correlates with true shares at 0.20
-for articles from the first half of 2013 and 0.21 for 2014, so articles from either period are equally known to it. A
+for articles from the first half of 2013 and 0.21 for 2014, so the two periods are equally known to it, which does not show that it knows nothing about them. A
 second question wording gives 57.3\% on 1{,}000 of the pairs (first wording on these: 54.7\%; same decision on
 87\%).
 
@@ -392,18 +394,13 @@ Choosing between two headlines of one article is a different problem: everything
 Upworthy pairs whose click-through differed significantly in a randomized test, the same judge is right 66.0\%
 [64.1, 68.1] of the time, and 85.0\% [82.0, 88.0] on its most confident quarter (Fig.~\ref{fig:judge}); accuracy
 rises steadily as coverage falls, which is what selective prediction needs \citep{geifman2017,li2026jev}. It is
-not only recalling famous headlines: on pairs in which neither headline won its test it is right 63.4\%.
+not only recalling published headlines: on pairs in which neither headline won its test it is right 63.4\%.
 Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe); a second
 wording gives 66.1\% on 1{,}000 pairs, and the open-weights JEV-9B 60.3\% [55.7, 65.0] on 400 (API on these:
-63.3\%). In both settings the zero-shot judge gets a good part of the way to a supervised model on the same question:
-7.3 of the headline ridge's 11.5 points above chance on Mashable, 16.0 of 20.4 on Upworthy. The two signals are not the same thing, though. On
-random within-cell pairs the true log-odds contrast between two Upworthy headlines has a standard deviation of
-0.42 and the judge's verdict correlates 0.30 with it; if wording moved Mashable shares as much, it would explain
-about 12\% of the variance of the difference in log shares between two same-day same-section articles (standard
-deviation 1.23),
-and a judge with that sense of wording would be right 53\% of the time under a Gaussian model. It is right 56.5\%
-of the time, so across articles the headline tells the judge, like the ridge, what the article is, not only how
-well it is worded.
+63.3\%). The two settings measure different things. If wording moved Mashable shares as much as it moves
+Upworthy clicks, a judge with this sense of wording would be right on about 53\% of same-day same-section pairs
+under a Gaussian model; it is right on 56.5\%, so across articles the headline tells the judge, like the ridge,
+what the article is, not only how well it is worded.
 
 % ------------------------------------------------------------------
 \section{Discussion}
