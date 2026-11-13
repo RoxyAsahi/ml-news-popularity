@@ -13,8 +13,11 @@ import pandas as pd
 ROOT = Path(__file__).resolve().parents[2]
 RAW_CSV = ROOT / "data" / "raw" / "OnlineNewsPopularity.csv"
 
+REALIGN_CSV = ROOT / "data" / "external" / "url_realignment.csv"
+ACQUIRED = pd.Timestamp("2015-01-08")  # timedelta counts days back from this date (agrees with weekday_is_* on every row)
+
 TARGET = "shares"
-NON_PREDICTIVE = ["url", "timedelta"]
+NON_PREDICTIVE = ["url", "url_in_file", "timedelta"]
 
 
 def load_raw(path: str | Path = RAW_CSV) -> pd.DataFrame:
@@ -30,12 +33,39 @@ def load_raw(path: str | Path = RAW_CSV) -> pd.DataFrame:
     return df
 
 
-def add_publish_date(df: pd.DataFrame) -> pd.DataFrame:
-    """Parse the publication date from the URL (http://mashable.com/YYYY/MM/DD/slug/)."""
+def add_publish_date(df: pd.DataFrame, from_url: bool = False) -> pd.DataFrame:
+    """Publication date of the row's content: ACQUIRED minus timedelta days.
+
+    from_url=True parses the date in the URL instead (http://mashable.com/YYYY/MM/DD/slug/). In the file as
+    distributed that is the date of another article for most rows after June 2013 (see repair_urls).
+    """
     out = df.copy()
-    out["publish_date"] = pd.to_datetime(
-        out["url"].str.extract(r"mashable\.com/(\d{4}/\d{2}/\d{2})/")[0], format="%Y/%m/%d"
-    )
+    if from_url:
+        out["publish_date"] = pd.to_datetime(
+            out["url"].str.extract(r"mashable\.com/(\d{4}/\d{2}/\d{2})/")[0], format="%Y/%m/%d"
+        )
+    else:
+        out["publish_date"] = ACQUIRED - pd.to_timedelta(out["timedelta"], unit="D")
+    return out
+
+
+def repair_urls(df: pd.DataFrame, path: str | Path = REALIGN_CSV) -> pd.DataFrame:
+    """Give each row the URL its features and shares belong to.
+
+    In OnlineNewsPopularity.csv the url column is shifted against all other columns from 6 June 2013 on: row i's
+    content belongs to url[i + k], with k growing from 1 to 152 through the file (scripts/a1_realign_urls.py
+    estimates k and writes data/external/url_realignment.csv). `url` becomes the repaired URL (NaN for the last
+    152 rows, whose URL is not in the file) and `url_in_file` keeps the column as distributed.
+    df must be in the original file order.
+    """
+    k = pd.read_csv(path).offset.to_numpy()
+    if len(k) != len(df):
+        raise ValueError("url_realignment.csv does not match the CSV; rerun scripts/a1_realign_urls.py")
+    given = df["url"].to_numpy()
+    j = np.arange(len(df)) + np.maximum(k, 0)
+    out = df.copy()
+    out["url_in_file"] = given
+    out["url"] = np.where((k >= 0) & (j < len(df)), given[np.minimum(j, len(df) - 1)], None)
     return out
 
 
@@ -52,10 +82,20 @@ def clean(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
-def load(path: str | Path = RAW_CSV) -> pd.DataFrame:
-    """Load, clean, add publish_date and sort chronologically (oldest first)."""
-    df = clean(add_publish_date(load_raw(path)))
-    return df.sort_values(["publish_date", "url"]).reset_index(drop=True)
+def load(path: str | Path = RAW_CSV, repaired: bool = True) -> pd.DataFrame:
+    """Load, repair the url column, clean, add publish_date and sort chronologically (oldest first).
+
+    repaired=False returns the file as distributed (shifted url column, dates parsed from that URL), which is what
+    every analysis before the repair used; it is kept for the diagnosis in scripts/a2_alignment_validation.py.
+    """
+    raw = load_raw(path).reset_index(drop=True)
+    if not repaired:
+        df = clean(add_publish_date(raw, from_url=True))
+        return df.sort_values(["publish_date", "url"]).reset_index(drop=True)
+    raw = repair_urls(raw)
+    raw["_file_row"] = np.arange(len(raw))
+    df = clean(add_publish_date(raw))
+    return df.sort_values(["publish_date", "_file_row"]).drop(columns="_file_row").reset_index(drop=True)
 
 
 # ---------------------------------------------------------------- feature groups

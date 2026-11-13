@@ -1,0 +1,25 @@
+variant,lever,theta,se,pct,r2_shares,r2_lever
+"week folds, LightGBM (main)",imgs,0.0339,0.0068,2.3766,0.1924,0.2486
+"week folds, LightGBM (main)",videos,0.0455,0.0097,3.2058,0.1924,0.3097
+"week folds, LightGBM (main)",length,0.0592,0.0087,4.1855,0.1924,0.2546
+"week folds, LightGBM (main)",title_len,0.0566,0.0282,3.9989,0.1924,0.1793
+"week folds, LightGBM (main)",links_out,0.0427,0.0063,3.0042,0.1924,0.2329
+"week folds, LightGBM (main)",links_self,0.062,0.0129,4.3906,0.1924,0.2306
+"week folds, LightGBM (main)",weekend,0.2537,0.0176,28.8821,0.1836,-0.0293
+"week folds, LightGBM (main)",vol_same,-0.144,0.014,-9.5004,0.1924,0.6673
+"week folds, LightGBM (main)",vol_other,-0.212,0.0305,-13.6679,0.1924,0.7877
+"random folds, LightGBM",imgs,0.0377,0.0066,2.6447,0.198,0.2631
+"random folds, LightGBM",videos,0.0429,0.0092,3.0209,0.198,0.3182
+"random folds, LightGBM",length,0.0599,0.0087,4.2358,0.198,0.2579
+"random folds, LightGBM",title_len,0.0561,0.0277,3.9624,0.198,0.1804
+"random folds, LightGBM",links_out,0.0414,0.0062,2.9145,0.198,0.2377
+"random folds, LightGBM",links_self,0.0644,0.0124,4.5617,0.198,0.2399
+"week folds, extra trees",imgs,0.0403,0.007,2.8333,0.1754,0.2482
+"week folds, extra trees",videos,0.0454,0.0096,3.1959,0.1754,0.3028
+"week folds, extra trees",length,0.0542,0.0085,3.8269,0.1754,0.2515
+"week folds, extra trees",title_len,0.0758,0.0283,5.3973,0.1754,0.1551
+"week folds, extra trees",links_out,0.0452,0.0061,3.1858,0.1754,0.2394
+"week folds, extra trees",links_self,0.0628,0.013,4.4473,0.1754,0.2346
+"week folds, extra trees",weekend,0.2753,0.0158,31.6977,0.167,0.0977
+"week folds, extra trees",vol_same,-0.1521,0.0146,-10.0063,0.1754,0.673
+"week folds, extra trees",vol_other,-0.2765,0.0356,-17.4425,0.1754,0.8032

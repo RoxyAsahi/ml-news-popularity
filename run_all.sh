@@ -1,8 +1,38 @@
 #!/usr/bin/env bash
 # Reproduce every table and figure. Run from the repo root after setup (see README).
-# The Upworthy part (u*) downloads the archive from OSF and GloVe vectors from GitHub; it takes several hours
-# on 4 cores (u1b and u2 on the confirmatory split dominate).
+#   ./run_all.sh report   only the current report (v20), about 40 minutes on 4 cores
+#   ./run_all.sh          the report, then the experiments of the earlier reports (v1-v18), several hours
 set -euo pipefail
+# ---------------------------------------------------------------------------------------------------------
+# Report v20 ("What Can Be Called Before Publication? A Misaligned Benchmark, Its Repair, and the Signal in the
+# Headline"). Everything in the report comes from this block; run it alone with  ./run_all.sh report
+# Needs data/raw/OnlineNewsPopularity.csv and data/external/mashable_sitemap_titles.csv (committed;
+# scripts/fetch_mashable_titles.py rebuilds it); downloads bge-base-en-v1.5 from Hugging Face once (embeddings are
+# cached in data/interim/). Judge (JEV) outputs and the Upworthy reference curves are read from
+# explore/jev/results/, so no API key is needed; explore/jev/ holds the scripts that produced them.
+# About 40 minutes on 4 cores.
+report() {
+  for s in scripts/a1_realign_urls.py scripts/a2_alignment_validation.py scripts/v1_past_only_called.py \
+           scripts/v2_judge_summary.py scripts/v3_signal_groups.py scripts/v4_top_pick_value.py \
+           scripts/v5_learners.py scripts/v6_headline_terms.py scripts/v7_word_memory.py \
+           scripts/fig_called.py scripts/fig_judge.py scripts/a3_export_realigned.py; do
+    echo "== $s"; python "$s"
+  done
+}
+# The day-volume and lever estimates quoted in Sec. 5.2 (double ML) come from explore/editorial_dml/ (its own
+# run_all.sh; extra packages lightgbm, econml, onnxruntime; about an hour; outputs in explore/editorial_dml/out/,
+# cite_*.csv). It reads data/external/realigned.csv, which a3_export_realigned.py writes. Run with
+#   ./run_all.sh levers
+levers() { (cd explore/editorial_dml && ./run_all.sh); }
+if [ "${1:-}" = "levers" ]; then levers; exit 0; fi
+if [ "${1:-}" = "report" ]; then report; exit 0; fi
+report
+# ---------------------------------------------------------------------------------------------------------
+# Earlier reports (v1-v18), kept for the record; nothing in the current report comes from here. The Mashable
+# scripts (00_eda, e*, s*, main_results) were written before the url column was found to be shifted: they now run
+# on the repaired loader, so anything that used the URL, its date or its slug no longer reproduces the numbers in
+# report/v18 (those numbers were affected by the shift). The Upworthy part (u*) is unaffected; it downloads the
+# archive from OSF and GloVe vectors from GitHub and takes several hours on 4 cores.
 ./scripts/u0_download_upworthy.sh
 for split in exploratory holdout confirmatory; do
   python scripts/u1_design_ladder.py $split          # version fixed on the exploratory split (superseded by u1b)
@@ -25,12 +55,4 @@ for s in scripts/00_eda.py scripts/01_pilot.py scripts/e1_drift.py scripts/e3_le
          scripts/s1_stories.py scripts/s1b_twin_precision.py scripts/s1c_annotation_agreement.py scripts/s2_rq1_anatomy.py scripts/s3_rq1_story_similarity.py \
          scripts/s4_rq2_twin_effects.py scripts/s5_rq3_competition.py scripts/s6_rq3_memory.py scripts/s7_rq4_uncertainty.py scripts/s8_rashomon.py scripts/s9_precision_power.py scripts/s10_split_attention.py scripts/s11_chance.py scripts/s12_slug_model.py scripts/s13_sensitivity.py scripts/s14_context_training.py scripts/fig_v2.py; do
   if [ -f "$s" ]; then echo "== $s"; python "$s"; fi
-done
-# v19 report ("What can be called before publication?"). Needs data/external/mashable_sitemap_titles.csv (committed;
-# scripts/fetch_mashable_titles.py rebuilds it) and downloads bge-base-en-v1.5 from Hugging Face once (cached in
-# data/interim/). Judge (JEV) outputs are read from the cached API/open-model results in explore/jev/results/,
-# so no API key is needed; explore/jev/ holds the scripts that produced them.
-for s in scripts/v1_past_only_called.py scripts/v2_judge_summary.py scripts/v3_signal_groups.py \
-         scripts/v4_by_quarter_and_value.py scripts/fig_v19.py scripts/fig_v19_called.py; do
-  echo "== $s"; python "$s"
 done

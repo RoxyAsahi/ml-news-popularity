@@ -3,8 +3,9 @@ and says which was shared most. Output: per-article probability (mean over order
 import sys, numpy as np, pandas as pd
 sys.path.insert(0, "/home/user/ml-news-popularity/src"); sys.path.insert(0, "/home/user/jev")
 from newspop.data import load
+from newspop.titles import aligned_titles
 import jevapi
-df = load().reset_index(drop=True); df["title"] = pd.read_csv("/home/user/explore/mash_titles.csv").title
+df = load().reset_index(drop=True); df["title"] = aligned_titles(df)
 NAMES = dict(lifestyle="Lifestyle", entertainment="Entertainment", bus="Business", socmed="Social Media", tech="Tech", world="World")
 df["channel"] = "Other"
 for c, nm in NAMES.items():
@@ -32,4 +33,4 @@ for ix, r in zip(meta, R):
     for j, i in enumerate(ix):
         acc.setdefault(i, []).append(pr.get(f"a{j}", np.nan))
 out = pd.DataFrame({"row": list(acc), "p_top": [np.nanmean(v) for v in acc.values()]})
-out.to_csv("/home/user/jev/api_lineup.csv", index=False); print(len(out))
+out.to_csv("/home/user/jev/rep_lineup.csv", index=False); print(len(out))

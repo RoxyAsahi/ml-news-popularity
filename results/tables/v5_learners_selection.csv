@@ -1,0 +1,16 @@
+family,setting,val_pair_sec
+"ridge, 58 features",1,0.5542928840293959
+"ridge, 58 features",100,0.5555834378920954
+"ridge, 58 features",1000,0.5568022943179781
+"ridge, 58 features",10000,0.5560494712314035
+"k-NN, 58 features",50,0.5432873274780426
+"k-NN, 58 features",150,0.5527872378562466
+"k-NN, 58 features",500,0.5537193045348628
+"random forest, 58 features",5,0.5930094999103782
+"random forest, 58 features",20,0.5878472844595806
+"ridge, headline TF-IDF",1,0.5914321563004122
+"ridge, headline TF-IDF",10,0.6011830077074745
+"ridge, headline TF-IDF",100,0.5917906434844954
+"ridge, headline embedding",100,0.5980641692059508
+"ridge, headline embedding",1000,0.6091414231941208
+"ridge, headline embedding",10000,0.6129772360638107

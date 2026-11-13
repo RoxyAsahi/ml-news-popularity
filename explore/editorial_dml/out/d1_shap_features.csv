@@ -1,0 +1,61 @@
+feature,mean_abs_shap,rank,share,group
+kw_avg_avg,0.11072,1,0.11756,keyword history (kw_*)
+self_reference_min_shares,0.06407,2,0.06803,linked articles' shares (self_reference_*)
+kw_max_avg,0.05846,3,0.06207,keyword history (kw_*)
+self_reference_avg_sharess,0.05699,4,0.06051,linked articles' shares (self_reference_*)
+vol_other,0.04952,5,0.05258,editorial levers
+vol_same,0.04719,6,0.0501,editorial levers
+data_channel_is_tech,0.03578,7,0.03799,section + LDA topics
+num_videos,0.03417,8,0.03628,editorial levers
+data_channel_is_entertainment,0.03281,9,0.03484,section + LDA topics
+kw_max_max,0.0315,10,0.03345,keyword history (kw_*)
+num_hrefs,0.02938,11,0.03119,editorial levers
+kw_min_avg,0.02858,12,0.03034,keyword history (kw_*)
+kw_min_max,0.02495,13,0.02649,keyword history (kw_*)
+num_imgs,0.02378,14,0.02525,editorial levers
+global_subjectivity,0.01878,15,0.01994,dictionary sentiment
+LDA_02,0.01858,16,0.01973,section + LDA topics
+n_unique_tokens,0.01671,17,0.01774,other text statistics
+LDA_00,0.01496,18,0.01588,section + LDA topics
+kw_min_min,0.01332,19,0.01414,keyword history (kw_*)
+self_reference_max_shares,0.0133,20,0.01412,linked articles' shares (self_reference_*)
+min_positive_polarity,0.0125,21,0.01327,dictionary sentiment
+kw_avg_max,0.0124,22,0.01317,keyword history (kw_*)
+LDA_01,0.01219,23,0.01294,section + LDA topics
+LDA_04,0.01179,24,0.01251,section + LDA topics
+kw_avg_min,0.01105,25,0.01173,keyword history (kw_*)
+num_self_hrefs,0.00969,26,0.01029,editorial levers
+n_non_stop_words,0.00949,27,0.01008,other text statistics
+is_weekend,0.0093,28,0.00987,editorial levers
+n_tokens_content,0.00873,29,0.00927,editorial levers
+title_sentiment_polarity,0.00857,30,0.00909,dictionary sentiment
+average_token_length,0.00834,31,0.00885,other text statistics
+LDA_03,0.00816,32,0.00866,section + LDA topics
+data_channel_is_socmed,0.00781,33,0.0083,section + LDA topics
+title_subjectivity,0.00742,34,0.00787,dictionary sentiment
+n_tokens_title,0.00732,35,0.00777,editorial levers
+data_channel_is_lifestyle,0.00668,36,0.00709,section + LDA topics
+global_rate_positive_words,0.00638,37,0.00677,dictionary sentiment
+abs_title_subjectivity,0.00563,38,0.00597,dictionary sentiment
+n_non_stop_unique_tokens,0.00554,39,0.00588,other text statistics
+kw_max_min,0.00551,40,0.00585,keyword history (kw_*)
+data_channel_is_world,0.00528,41,0.0056,section + LDA topics
+avg_negative_polarity,0.00506,42,0.00537,dictionary sentiment
+global_rate_negative_words,0.00481,43,0.0051,dictionary sentiment
+avg_positive_polarity,0.00448,44,0.00476,dictionary sentiment
+abs_title_sentiment_polarity,0.00359,45,0.00381,dictionary sentiment
+global_sentiment_polarity,0.00319,46,0.00339,dictionary sentiment
+rate_positive_words,0.00257,47,0.00273,dictionary sentiment
+rate_negative_words,0.00234,48,0.00248,dictionary sentiment
+min_negative_polarity,0.0022,49,0.00233,dictionary sentiment
+num_keywords,0.00219,50,0.00232,other text statistics
+weekday_is_monday,0.00215,51,0.00229,editorial levers
+max_negative_polarity,0.0019,52,0.00202,dictionary sentiment
+max_positive_polarity,0.00123,53,0.00131,dictionary sentiment
+weekday_is_saturday,0.00097,54,0.00103,editorial levers
+data_channel_is_bus,0.00069,55,0.00073,section + LDA topics
+weekday_is_sunday,0.00037,56,0.00039,editorial levers
+weekday_is_tuesday,0.00035,57,0.00037,editorial levers
+weekday_is_wednesday,0.00021,58,0.00023,editorial levers
+weekday_is_thursday,0.00013,59,0.00014,editorial levers
+weekday_is_friday,0.0001,60,0.0001,editorial levers

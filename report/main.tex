@@ -1,5 +1,6 @@
-% ML Final Group Project -- Online News Popularity (v19 storyline: what can be called before publication)
-% Limit: 8 pages INCLUDING figures and references. The v18 report is kept in report/v18/main.tex.
+% ML Final Group Project -- Online News Popularity (v20: misaligned benchmark, repair, headline signal)
+% Limit: 8 pages INCLUDING figures and references. Earlier reports: report/v18/main.tex, report/v19/main.tex
+% (both predate the repair of the url column and should not be used; see README).
 \documentclass[10pt,a4paper,twocolumn]{article}
 \usepackage[margin=1.9cm]{geometry}
 \usepackage{graphicx,booktabs,amsmath,hyperref,xcolor,caption}
@@ -7,9 +8,10 @@
 \graphicspath{{../results/figures/}}
 \captionsetup{font=small}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
+\raggedbottom
 
 \title{What Can Be Called Before Publication?\\
-Platform Signals, Headlines and the Limits of Prediction in Online News Popularity}
+A Misaligned Benchmark, Its Repair, and the Signal in the Headline}
 \author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
 \date{December 2026}
 
@@ -18,60 +20,62 @@ Platform Signals, Headlines and the Limits of Prediction in Online News Populari
 
 \begin{abstract}
 An editor who decides which of the day's articles to push needs to know what can be called before publication,
-and from what. We study this on the Mashable benchmark, to which we add the real headlines of 39{,}619 of its
-39{,}643 articles, recovered from the publisher's sitemap. Under a strictly past-only protocol, a gradient-boosted
-model on the benchmark's features ranks the day's articles with a Spearman correlation of 0.40, its top pick
-of the day lands in that day's top tenth 36\% of the time (11\% by chance), and it orders two articles from the
-same day and section correctly 61\% of the time. This skill sits in the article rather than its context, and
-most of it comes from platform history: how earlier articles with the same keywords did. For telling which of two
-articles will be shared more, the headline adds nothing we can detect. Supervised text models on the real headlines (TF-IDF, sentence embeddings) and a zero-shot
-decision model (JEV), via its API and as an open-weights 9B model, are at or near chance (50--52\%), even when the
-judge is most confident, and stay below a single history feature when given the article's features as well. The
-same judge, on the same kind of question, is right 66\% of the time (85\% when most confident) on randomized
-headline tests of one article (Upworthy). A simple Gaussian decomposition is consistent with both: if headline
-effects on Mashable shares were as large as on Upworthy clicks, a perfect headline judge would reach only about
-61\% across articles; the observed accuracy implies effects 0.35--0.7 times as large. The judge's only
-signal on Mashable, about 57\% on pairs from early 2013 and none later, comes with share recall for single early
-articles and is consistent with knowledge of older stories. Most of the variance is not explained by these data:
-the model, the day's context and the story together account for about a quarter of the variance of log shares. Choosing the headline is a separate, within-article decision; there an archive of 18{,}200
-observational headlines is worth about 1{,}000 randomized tests.
+and from what. We study this on the Online News Popularity benchmark (39{,}644 Mashable articles), to which we add
+the real headlines from the publisher's sitemap, with every model scored strictly on articles published after its
+training data. Doing so exposed an error in the benchmark itself: from 6 June 2013 on, the \texttt{url} column of
+the distributed file is shifted against the feature and share columns, by one row at first and by 152 rows at the
+end, so that for 79.8\% of the rows the URL belongs to another article. Analyses that use only the features are
+unaffected; anything that joins the URL, its date, its slug or scraped text to the shares is not. We repair the
+column with a monotone alignment on three fingerprints and validate the repair on signals it never used: a
+held-out fingerprint, the section predicted from the headline, and the shares themselves all return to their
+level in the unshifted months, and only at the estimated offset, not one row beside it. On the repaired data the headline is the strongest single signal. Scored past-only, a ridge
+regression on headline embeddings orders two articles from the same day and section correctly 61.2\% of the time,
+as well as a gradient-boosted model on all 58 features (60.6\%); their average reaches 63.1\% and an AUC of 0.746,
+and its top pick of the day gets 2.7 times the shares of a random article. On the file as distributed the same
+headline model is near chance (50.5\%). A zero-shot decision model (JEV) that reads only the two headlines is right
+56.5\% of the time without any training data, 64\% on the tenth of pairs it is most confident about, no worse when
+every headline is reworded, and it adds to the supervised models. On randomized headline tests within one article
+(Upworthy) the same judge is right 66\% of the time, 85\% when most confident. We release the row-to-URL table.
 \end{abstract}
 
 % ------------------------------------------------------------------
 \section{Introduction}
 Every day an editor decides which new articles to promote. Popularity prediction before publication is meant to
 support that decision, and the Online News Popularity dataset \citep{fernandes2015} is its standard benchmark:
-39{,}644 Mashable articles with 58 features and their share counts. Work on it mostly compares classifiers;
-tree ensembles reach a ROC-AUC of about 0.73--0.74. That number does not say what an editor can call. Shares
-depend on platform signals (the section, the day, how earlier articles on the same keywords did), on the
-article, on its headline, and on things no dataset records, from promotion to social influence and chance
-\citep{salganik2006,martin2016,hofman2017}. Which of these can be read before publication, and how much remains
-unexplained?
+39{,}644 Mashable articles with 58 features and their share counts. Work on it mostly compares classifiers on
+the features; tree ensembles reach a ROC-AUC of about 0.73. That number does not say what an editor can call, nor
+from what. Shares depend on platform signals (the section, the day, how earlier articles on the same keywords
+did), on the article, on its headline, and on things no dataset records
+\citep{salganik2006,martin2016,hofman2017}.
 
-Two things have kept this question open on the benchmark. It has no text, so the headline, the one part of an
-article that editors change most and that recent language models judge with ease, could not be tested; and
-its usual random cross-validation lets a model learn from the future. We fix both: we recover the real headline of
-99.94\% of the articles from Mashable's public sitemap, and we score every model strictly on articles published
-after its training data, with the editor's decisions as metrics (rank the day's lineup, pick the day's top
-article, choose between two articles of one section and day).
+Two things have kept the question open on this benchmark. It has no text, so the headline, the part of an
+article that editors change most and that language models read with ease, could not be tested; and its usual
+random cross-validation lets a model learn from the future. We set out to fix both: recover the real headlines
+from Mashable's public sitemap, and score every model only on articles published after its training data, with
+the editor's decisions as metrics. The second fix exposed a third problem. Under a rolling evaluation the headline
+was the best predictor until May 2013 and worthless from July, a step far too sharp for readers' tastes.
+Its cause is in the file: the \texttt{url} column is shifted against all other columns from 6 June 2013 on.
 
 \paragraph{Research questions.}
 \begin{enumerate}\setlength\itemsep{0pt}
-  \item[RQ1] How much of an article's popularity can be called before publication, measured on the decisions an
-             editor makes?
-  \item[RQ2] Where does that skill come from: the context, the story, the article; platform history or content?
-  \item[RQ3] What does the headline add? Can supervised text models or a zero-shot decision model call
-             popularity from it, across articles and within one article?
-  \item[RQ4] For the within-article choice of a headline, how much is an archive of past headlines worth compared
-             with randomized tests?
+  \item[RQ1] Is the benchmark's \texttt{url} column aligned with its features and shares, and can a misalignment
+             be repaired and the repair verified without any ground truth?
+  \item[RQ2] On the repaired data, how much of an article's popularity can be called before publication, on the
+             decisions an editor makes, and from which signals: platform history, the article's body, or its
+             headline?
+  \item[RQ3] Can a zero-shot decision model call popularity from the headline alone, without training data, and
+             does it add to supervised models?
+  \item[RQ4] Does the same judge carry over to the other headline decision, choosing between headlines of one
+             article, where randomized tests give the truth?
 \end{enumerate}
-\noindent Contributions: (i) a headline layer for the Mashable benchmark (40{,}161 sitemap entries, 99.94\% matched,
-100 of 100 audited matches correct), released with the code; (ii) a past-only, decision-level account of
-what can be called and from which signals, extending the content-versus-context comparison of
-\citet{hessel2017}; (iii) an evaluation of a zero-shot decision judge \citep{zheng2023judge,li2026jev} on same-day matched
-pairs of real Mashable headlines, with checks for prior knowledge and a clear contrast: near chance across articles, clearly
-informative within an article, and a simple variance decomposition consistent with the gap; (iv) an exchange rate
-between an observational headline archive and randomized experiments (half a page, from our earlier analysis).
+\noindent Contributions: (i) we document that the \texttt{url} column of a benchmark used for a decade is
+misaligned for four fifths of its rows, in the original UCI file; to our knowledge this is undocumented; (ii) a
+repair by monotone alignment, verified on signals the alignment never saw, released as a row-to-URL table
+together with 40{,}161 real headlines; (iii) a past-only, decision-level account of what can be called, in which
+headline text alone matches all 58 features and the two combine, a visible memory of headline words replaces the
+benchmark's keyword history, and the weekend premium is of the size the day's volume predicts; (iv) an evaluation of a zero-shot decision judge
+\citep{zheng2023judge,li2026jev} on a question with ground truth, across articles and within one article; (v) a
+caution for evaluation practice: a random split hides this error, a split by time shows it at once.
 
 % ------------------------------------------------------------------
 \section{Related Work}
@@ -80,110 +84,126 @@ Prediction before publication is hard \citep{bandari2012}; early shares help muc
 Cascade size is only partly predictable even with rich signals \citep{cheng2014,martin2016}, and social influence
 makes success partly unpredictable \citep{salganik2006}; \citet{hofman2017} argue for reporting what is
 predictable and from what. \citet{hessel2017} compared content and context for posts in the same community and
-hour; our within-day and within-section metrics apply the same idea, and equal group AUC in recommender
-evaluation \citep{zhou2018}. Items compete for limited attention \citep{wu2007,weng2012}. Active learning on
-streams of networked items \citep{yang2014wsdm,yang2014cikm} motivated our strictly past-only evaluation.
-\paragraph{Headlines.} Paired designs hold the item fixed: tweets by one author on one link \citep{tan2014},
-resubmissions of one image \citep{lakkaraju2013}. On the Upworthy archive of randomized headline tests
-\citep{matias2021}, within-test comparisons identify causal headline effects
-\citep{gligoric2023,banerjee2025,robertson2023}, and correlational estimates diverge from them
-\citep{banerjee2026}. Headline features predict news popularity on social media only modestly \citep{piotrkowicz2017},
-also with neural multi-task models \citep{lamprinidis2018}. Predicting the winning headline of a test is hard:
-linguistic features reach about 55\% pairwise
-accuracy \citep{gligoric2021}, and language models are only somewhat better \citep{ye2024lola}.
+hour; our same-day same-section pairs apply the same idea. Active learning on streams of networked items
+\citep{yang2014wsdm,yang2014cikm} motivated our strictly past-only evaluation.
+\paragraph{Headlines.} Headline features predict news popularity on social media only modestly
+\citep{piotrkowicz2017}, also with neural multi-task models \citep{lamprinidis2018}. Paired designs hold the item
+fixed: tweets by one author on one link \citep{tan2014}, resubmissions of one image \citep{lakkaraju2013}. On the
+Upworthy archive of randomized headline tests \citep{matias2021}, within-test comparisons identify causal
+headline effects \citep{gligoric2023,banerjee2025,robertson2023}. Predicting the winner of a test is hard:
+linguistic features reach about 55\% pairwise accuracy \citep{gligoric2021}, and language models are only
+somewhat better \citep{ye2024lola}.
 \paragraph{Judges.} LLMs are widely used as zero-shot judges \citep{zheng2023judge}. JEV is a decision-only
 model that returns calibrated probabilities over typed options instead of text; \citet{li2026jev} propose to
 accept its verdict when it is confident and escalate otherwise, and \citet{rao2026jev} compare it with LLM
-rubric judges. We ask whether such a judge can call popularity, a question with ground truth.
-\paragraph{Observational versus experimental data.} Observational methods can misestimate effects that
-experiments measure \citep{lalonde1986,gordon2019}; the two can be combined by correcting an observational
-model with experiments \citep{kallus2018}, by shrinkage \citep{rosenman2023}, or by the methods reviewed in
-\citep{colnet2024}; \citet{gentzel2019} argue for evaluating with interventional data.
+rubric judges. Confidence-based abstention is selective prediction \citep{geifman2017}.
+\paragraph{Benchmark errors.} Label errors are common in widely used test sets and can change which model
+looks best \citep{northcutt2021}, and leakage has invalidated results across ML-based science
+\citep{kapoor2023}. The error we report is of a third kind, a column that is valid in itself but joined to the
+wrong rows; it stays invisible as long as the column is treated as non-predictive.
 
 % ------------------------------------------------------------------
 \section{Data}
 \label{sec:data}
-\paragraph{Mashable.} 39{,}643 articles (one row with an impossible token rate removed) published between
-7 January 2013 and 27 December 2014, with 58 features: content (words, links, images, videos, 5 LDA topics, 16
-sentiment features, title length and sentiment), placement (6 channels, weekday) and history (keyword and
-self-reference statistics), and shares recorded once, in January 2015. Shares are heavy-tailed (median 1{,}400,
-maximum 843{,}300); we model $\log(1{+}\text{shares})$ and call an article \emph{popular} if it has at least
-1{,}400 shares \citep{fernandes2015}. The history features are computed from \emph{other} articles' shares: the
-keyword statistics use only articles from earlier days (\texttt{kw\_max\_max} equals the running maximum of earlier
-shares for 99.87\% of articles) but take their shares from the collection date, so their value is likely somewhat
-optimistic.
+\paragraph{Mashable.} The file has 39{,}644 rows (we drop one with an impossible token rate) with 58 features:
+content (words, links, images, videos, 5 LDA topics, 16 sentiment features, title length and sentiment),
+placement (6 channels, weekday) and history (keyword and self-reference statistics computed from other
+articles' shares), plus the shares, recorded once, in January 2015, the URL, and \texttt{timedelta}, the days
+between publication and collection. Shares are heavy-tailed (median 1{,}400); we model
+$\log(1{+}\text{shares})$ and call an article \emph{popular} if it has at least 1{,}400 shares
+\citep{fernandes2015}. Our copy is byte-identical to the file on the UCI repository (MD5 \texttt{6e6f1cfc\ldots}).
 
-\paragraph{Real headlines.} The dataset gives only the URL, whose slug is a shortened headline. Mashable lists
-every article with its full headline in monthly sitemap pages (\texttt{mashable.com/sitemap/YYYY/M}). We fetched the
-24 pages for 2013--2014 (one request per second, only listing pages, no article pages), giving 40{,}161
-headlines, and matched them to the dataset by slug: 39{,}619 of 39{,}643 articles (99.94\%) match; the 24 others
-are left out of all headline analyses. In a random audit of 100 matches, all headlines belonged to their article.
-Headlines are longer than slugs (median 9 vs.\ 4 words): the slug \emph{aaron-swartz} is the headline ``Technology's
-Greatest Minds Say Goodbye to Aaron Swartz''.
+\paragraph{Real headlines.} The URL's slug is a shortened headline. Mashable lists every article with its full
+headline in monthly sitemap pages; we fetched the 24 pages for 2013--2014 (one request per second, listing pages
+only), giving 40{,}161 headlines, and matched them to URLs by slug (in a random audit of 100 matches every
+headline belonged to its URL). Headlines are longer than slugs (median 9 vs.\ 4 words).
 
 \paragraph{Randomized headline tests.} For the within-article question we use the Upworthy Research Archive
-\citep{matias2021}: 22{,}743 A/B tests of its confirmatory split (2013--2015). Packages of one test that share image
-and lede form a \emph{cell} in which only the headline was randomized; 27{,}921 pairs of headlines in a cell differ
-significantly in click-through (two-proportion $|z|>1.96$). These pairs are the ground truth for ``which headline
-of this article does better''.
+\citep{matias2021}: 22{,}743 A/B tests of its confirmatory split (2013--2015). Packages of one test that share
+image and lede form a \emph{cell} in which only the headline was randomized; 27{,}921 pairs of headlines in a
+cell differ significantly in click-through ($|z|>1.96$). These pairs are the ground truth for ``which headline of
+this article does better''.
 
 % ------------------------------------------------------------------
 \section{Methods}
 \label{sec:method}
-\paragraph{Past-only protocol.} For every month from July 2013 on, we fit a model on all articles of earlier
-months and score that month; 2013-07 to 2014-12 gives 30{,}446 scored articles (30{,}423 with a headline, used for every comparison). The main model is histogram
-gradient boosting \citep{friedman2001,ke2017} (HistGB; learning rate 0.03, 15 leaves, 500 iterations) on the 58
-features, trained on log shares; in a chronological benchmark it matches a random forest and beats $L_1$
-logistic regression and $k$-NN (AUC 0.737 vs.\ 0.736, 0.717, 0.705).
+\paragraph{Detecting the shift.} Three things in a row can be compared with its URL. (a) The date: the URL
+contains one, and $\text{2015-01-08}-\texttt{timedelta}$ gives another, which agrees with the row's weekday
+flags on every row. (b) \texttt{n\_tokens\_title}: for the headline that belongs to a row it equals the number
+of alphanumeric runs in the HTML-escaped headline plus one. (c) The title's sentiment polarity and
+subjectivity, which TextBlob reproduces for most headlines. Where the file is aligned, (b) and (c) agree for
+86\% and 94\% of rows; for a wrong pairing, 14\% and 23\%.
 
-\paragraph{Decision metrics.} Besides ROC-AUC for popular articles we report what an editor would see:
-(a) \emph{day ranking}, the Spearman correlation between score and log shares among the articles of one day,
-averaged over days; (b) \emph{top pick}, how often the day's top-scored article is in that day's top 10\% by
-shares; (c) \emph{pair accuracy}, the share of all pairs of articles from the same day and section (or the same
-day) whose order by score matches their order by shares; and (d) pairwise AUC within a context (week, day,
-channel, channel$\times$day, same story), which removes skill that only tells contexts apart. Intervals are
-bootstraps over publication days (1{,}000 draws, the same for all models, so differences are paired) or over pairs.
+\paragraph{Repair.} The file is sorted by content date, and row $i$'s content matches the URL of row $i+k_i$
+with an offset $k_i\ge 0$ that never decreases: rows are missing from the feature side but not from the URL
+list. We estimate $k$ with a Viterbi alignment \citep{viterbi1967}: states $k=0,\dots,400$, transitions only
+to equal or larger $k$ at a cost of 6 per unit, and an emission score that requires the two dates to agree and
+adds the log-likelihood ratios of agreement or disagreement on (b) and (c), calibrated on January--April 2013
+against a deliberately wrong pairing. Rows whose URL would lie beyond the end of the file get none. From here on
+\emph{repaired} data means: each row with its recovered URL and headline, dates from \texttt{timedelta}; \emph{as
+distributed} means the URL written in the row and the date in that URL, as every earlier analysis has used them.
 
-\paragraph{Text models.} On the real headlines we fit, under the same protocol, a ridge regression on TF-IDF word
-uni- and bigrams, a ridge regression on 768-dimensional bge-base sentence embeddings \citep{xiao2024bge}, and
-HistGB on the 58 features plus 32 principal components of the embeddings (fitted on the training months). For
-cold start we score each headline's novelty as one minus its highest TF-IDF cosine to the headlines of the
-previous 30 days; we also give HistGB six \emph{crowding} features (how many and how similar earlier headlines were
-in the previous 1, 3, 7 and 30 days).
+\paragraph{Verifying it without ground truth.} We use three signals the alignment never saw. (1) A held-out
+fingerprint: the alignment is repeated with the date and the token count only, and the sentiment agreement is
+measured afterwards. (2) A feature: a logistic regression trained on January--March 2013, where the file is
+aligned, predicts the section (\texttt{data\_channel\_is\_*}) from the headline embedding. (3) The outcome: a
+headline model trained on January--March 2013 predicts shares. If the repair is right, all three return to their
+early-2013 level in every later period. Two further checks: the outcome model is scored with each row given the
+headline $d$ rows before or after the one the repair assigns ($d=-3,\dots,3$), and again without the rows on
+which both fingerprints disagree with the assigned headline (3.3\%).
+
+\paragraph{Past-only protocol and metrics.} For every month from July 2013 on, we fit a model on all articles of
+earlier months and score that month: 30{,}446 scored articles, 30{,}272 with a headline, used for every
+comparison. Besides ROC-AUC for popular articles we report what an editor would see: \emph{day ranking}, the
+Spearman correlation between score and log shares among the articles of one day, averaged over days; \emph{top
+pick}, how often the day's top-scored article is in that day's top 10\% by shares, and how its shares compare
+with a random article of the day (geometric mean ratio); and \emph{pair accuracy}, the share of all pairs of
+articles from the same day and section (or the same day) whose order by score matches their order by shares.
+Intervals are bootstraps over publication days (1{,}000 draws, the same for all models, so differences are
+paired) or over pairs.
+
+\paragraph{Models.} On the 58 features: histogram gradient boosting \citep{friedman2001,ke2017} (HistGB; learning
+rate 0.03, 15 leaves, 500 iterations), ridge regression, $k$-nearest neighbours and a random forest
+\citep{breiman2001}, all regressing log shares. On the headline: ridge regression on TF-IDF uni- and bigrams and
+on 768-dimensional bge-base sentence embeddings \citep{xiao2024bge}. To combine the two views we use HistGB on
+the features plus 32 principal components of the embedding (early fusion), and the plain mean of the HistGB and
+the headline-ridge predictions (late fusion; it has no parameters to tune, but we added it after seeing early
+fusion's scores, so it was not fixed in advance). Hyper-parameters of the compared families are
+chosen once, on March--June 2013 under the same rolling origin, and then frozen. We refit HistGB on feature
+groups (13 history, 28 body, 5 title, 14 placement features) to see where the skill sits.
+
+\paragraph{Word memory.} The nine \texttt{kw\_*} features summarize the shares of earlier articles with the same
+editor keyword, but the keywords are not in the data. We rebuild this memory from visible keys, the words and
+bigrams of the headline: for a key $k$ with $n_k$ earlier articles of mean log shares $\bar y_k$, its lift is
+$\frac{n_k}{n_k+m}(\bar y_k-\mu)$, with $\mu$ the mean over all earlier articles and the shrinkage $m$ estimated by
+the method of moments on articles before July 2013. Six aggregates per article (mean, maximum, minimum and sum of
+its keys' lifts, number of keys with a history, largest $n_k$) replace \texttt{kw\_*}. Like \texttt{kw\_*}, the
+memory uses past articles with their share counts as recorded in 2015; a variant admits only articles at least 30
+days old, whose counts were nearly final at the time.
+
+\paragraph{Day volume.} To ask what an editor could change we estimate partially linear models by double machine
+learning \citep{chernozhukov2018}: log shares and each lever (log counts of images, videos and links; the number
+of articles published that day in the same and in other sections) are predicted out of fold from confounders
+(date, weekday, section, LDA topics, keyword history, 64 principal components of the headline embedding) with
+gradient boosting, in five folds of whole calendar weeks, and residuals are regressed on residuals with standard
+errors clustered by week. As a negative-control outcome we use the shares of the older articles an article links to.
 
 \paragraph{Zero-shot judge.} JEV (TypeSafe, version 1.14.0, via its API) answers a typed \emph{choice} question
 with a probability for each option and no generated text \citep{li2026jev}. We ask: ``Which of these two articles
-was shared more often on social media?'', with a state line naming the site, the date and (for same-section pairs)
-the section, and the two headlines as options. Every pair is asked in both orders and the probabilities averaged,
-which removes position bias. We judge 4{,}000 random same-day same-section pairs and 4{,}000 same-day pairs; the
-same pairs with only the URL keywords; 2{,}000 pairs with the headline plus six dataset features (section,
-weekday, words, images, videos, \texttt{kw\_avg\_avg}); and whole-day lineups (``which of these articles was
-shared the most'', all of a day's headlines as options, three random orders). On Upworthy we ask which headline
-``got the higher click-through rate'' for 2{,}000 significant within-cell pairs and 4{,}000 random within-cell
-pairs. As an open-weights check we run
-the released student model JEV-9B (a Qwen3.5-9B with a LoRA adapter and a decision head) in 8-bit on CPU, on
-400 Upworthy and 400 Mashable section pairs with the same prompts. To check sensitivity to wording, 1{,}000 pairs of
-each kind are asked again with a different state line and question. Following \citet{li2026jev}, the judge's
-confidence is its larger option probability, and we report accuracy on its most confident 25\% and 10\%. Upworthy
-headlines are public, so a judge might have seen them; as a check we restrict to pairs in which neither headline
-won its test.
-
-\paragraph{Supervised headline ranking on Upworthy.} As a supervised reference we train ridge regressions on the
-randomized within-cell contrasts with frozen GloVe \citep{pennington2014} or RoBERTa \citep{liu2019roberta}
-headline representations, five-fold cross-validated over articles.
-
-\paragraph{A variance bound for headlines across articles.} Suppose the log-share difference of two articles is
-$\Delta = h + e$, with a headline part $h$ of standard deviation $\sigma_h$ and an independent rest $e$, and a
-judge's score correlates $\rho$ with $h$. For jointly Gaussian variables the probability that the judge orders the
-pair correctly is $\tfrac12 + \arcsin(\rho\,\sigma_h/\sigma_\Delta)/\pi$. We take $\rho$ and $\sigma_h$ from
-Upworthy (the judge's correlation with the randomized contrasts, and their standard deviation on the logit scale),
-$\sigma_\Delta$ from Mashable, and write $\sigma_h = c\cdot\sigma_h^{\text{Upworthy}}$, with $c$ the unknown ratio of
-headline effects on Mashable shares to those on Upworthy clicks.
-
-\paragraph{Archive versus experiments (RQ4).} Summarised from our earlier analysis: on Upworthy, a ridge model on
-GloVe and 15 headline features is trained either on an observational \emph{archive} (one headline per test with its
-week-demeaned click-through) or on the randomized contrasts of $k$ tests; the archive's \emph{exchange rate} $k^*$ is
-the number of tests at which experiments alone match the archive's decision accuracy.
+was shared more often on social media?'', with a state line naming the site, the date and the section, and the
+two headlines as options. Every pair is asked in both orders and the probabilities averaged, which removes
+position bias. On the repaired data we judge 4{,}000 random same-day same-section pairs and 4{,}000 same-day
+pairs; the section pairs again with only the URL keywords; 2{,}000 of them with the headline plus six features
+(words, images, videos, links, \texttt{kw\_avg\_avg}, self-reference shares); and whole-day lineups (``which of
+these articles was shared the most'', all of a day's headlines as options, three random orders). The judge's
+confidence is its larger option probability. Three checks: 1{,}000 pairs are asked again with a different state
+line and question; 400 pairs are run through the released open-weights student JEV-9B (8-bit, CPU); and, because
+a judge may have seen old articles, both headlines of 250 pairs from January--May 2013 and of 250 pairs from
+2014 were reworded (same meaning, names and numbers, different wording; the rewordings were written by an AI
+assistant, Claude, and are released) and judged again, which verbatim recall cannot survive. On Upworthy we ask which headline ``got the
+higher click-through rate'' for 2{,}000 significant within-cell pairs; as a supervised reference, ridge
+regressions on frozen RoBERTa \citep{liu2019roberta} or GloVe \citep{pennington2014} headline representations
+are trained on randomized contrasts, five-fold over articles.
 
 \paragraph{Reproducibility.} Seeds are fixed; every number and figure comes from a script in the code
 (\texttt{run\_all.sh}); judge outputs are cached and released, and the API key is not.
@@ -192,206 +212,278 @@ the number of tests at which experiments alone match the archive's decision accu
 \section{Results}
 \label{sec:results}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\textwidth]{fig_alignment.png}
+\caption{RQ1. (a) Estimated offset between a row's content and its URL in the distributed file, by publication
+month (largest value in the month; log scale above 1). (b) Accuracy on same-day same-section pairs by month,
+rolling origin from March 2013: the same headline model on the file as distributed and on the repaired data, with
+the feature model and their early fusion for scale.}
+\label{fig:align}
+\end{figure*}
+
 \begin{table}[t]
 \centering\footnotesize
-\caption{RQ1: what can be called before publication. Past-only scores, articles of 2013-07 to 2014-12; 95\%
-intervals bootstrap days. Pairs: all pairs from the same day and section (or day) with different shares.}
-\label{tab:called}
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{@{}lccc@{}}
+\caption{RQ1: the file as distributed (D) and repaired (R), by publication period. Agreement in \%; the last
+four rows use signals the alignment never saw. Models are trained on January--March 2013 only (their first
+column is April to 5 June); pairs are from the same day and section. Judge: two independent samples of 4{,}000 pairs, drawn before the repair (D) and after it (R); their first columns (857 and 829 pairs, both aligned) pool to 56.8\%.}
+\label{tab:align}
+\setlength{\tabcolsep}{2.6pt}
+\begin{tabular}{@{}llcccc@{}}
 \toprule
- & HistGB & \texttt{kw\_avg\_avg} & chance \\
+ & & to 5 Jun & 6 Jun-- & 2014 & 2014 \\
+ & & 2013 & Dec 2013 & H1 & H2 \\
 \midrule
-AUC (popular) & 0.724 {\scriptsize[0.718, 0.731]} & 0.639 & 0.5 \\
-Day ranking (Spearman) & 0.400 {\scriptsize[0.388, 0.413]} & 0.273 & 0 \\
-Top pick in day's top 10\% & 35.6\% {\scriptsize[31.7, 39.6]} & 28.1\% & 11.2\% \\
-Pair accuracy, day \& section & 60.9\% {\scriptsize[60.4, 61.4]} & 57.1\% & 50\% \\
-Pair accuracy, day & 64.7\% {\scriptsize[64.3, 65.2]} & 59.9\% & 50\% \\
+Offset (rows) & & 0 & 1--2 & 2--19 & 19--152 \\
+URL date $=$ content date & D & 100 & 97.6 & 86.4 & 32.1 \\
+Title word count agrees & D & 85.8 & 14.2 & 14.3 & 13.3 \\
+ & R & 85.8 & 80.9 & 88.9 & 91.3 \\
+\midrule
+Title sentiment agrees & D & 94.1 & 22.6 & 20.6 & 19.9 \\
+\quad (held out of alignment) & R & 94.1 & 92.8 & 93.1 & 92.6 \\
+Section from headline & D & 64.0 & 19.8 & 16.9 & 18.3 \\
+ & R & 64.0 & 64.1 & 63.4 & 64.0 \\
+Headline model, pair acc. & D & 60.5 & 50.5 & 50.3 & 50.0 \\
+ & R & 60.5 & 60.7 & 59.0 & 56.9 \\
+Zero-shot judge, pair acc. & D & 59.5 & 48.9 & 49.8 & 47.9 \\
+ & R & 54.0 & 57.2 & 58.9 & 55.6 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
+\subsection{A shifted column and its repair (RQ1)}
+\label{sec:rq1}
+\paragraph{The symptom.} On the file as distributed, a past-only ridge regression on headline embeddings orders
+same-day same-section pairs of March to 5 June 2013 correctly 60.7\% of the time, better than all 58 features. In June
+it drops to 53.5\% and from July on it is at chance (Fig.~\ref{fig:align}b, dashed). A model trained on
+January--March is right 60.5\% of the time from April to 5 June 2013 and 50.1\% [49.6, 50.6] on July 2013 to
+December 2014; the zero-shot judge falls from 59.5\% to 48.9\% at the same date (Table~\ref{tab:align}). We first read this
+as a break in the platform. The feature models show no break at all.
+
+\paragraph{The cause.} From row 8{,}009 (content date 6 June 2013) the URL in a row is that of the next row's
+article. The dataset's own title length agrees with the real headline of the row's URL for 85.8\% of rows before
+that point and for 14\% after it, the level of a random pairing; title sentiment falls from 94.1\% to 20--23\%
+(Table~\ref{tab:align}). The alignment finds an offset of 1 from June 2013, 2 from November 2013, 3 to 19 in the
+first half of 2014 and up to 152 by the end of December 2014 (Fig.~\ref{fig:align}a). In all, 31{,}635 rows
+(79.8\%) carry the URL of another article; 39{,}492 rows get their URL back; the last 152 rows have none, and 152
+URLs in the file belong to no row. Many of those orphan URLs are long-form features and series pages, so the
+likeliest history is that articles the feature extractor could not parse were removed from the feature table but
+not from the URL list. The original UCI file is identical to ours, so this is the benchmark, not a copy. To our
+knowledge the shift is undocumented: we found no report of it in the sources we searched (the UCI page, the
+Kaggle and OpenML copies, public GitHub notebooks, and the papers on the dataset that we read).
+
+\paragraph{The repair holds on signals it never used.} After the repair the URL date equals the content date on
+every row, and the title length agrees for 81--91\% of rows. Three held-out checks (Table~\ref{tab:align}):
+aligning on date and title length alone gives the same offset on 99.92\% of rows, and the sentiment fingerprint
+this alignment never saw returns to 92.6--93.1\% in every later period (94.1\% before the shift; 20--23\% as
+distributed). The gap to 94.1\% bounds wrongly assigned rows at about 2\%, and those can only be articles of the
+same day. The section, predicted from the headline by a classifier trained on early 2013, is right 64.0\% of the
+time before the shift, 17--20\% afterwards as distributed, and 63.4--64.1\% after the repair. And the outcome
+returns: the January--March headline model is right on 58.4\% [57.9, 58.9] of the same-day same-section pairs
+of July 2013 to December 2014, against 50.1\% as distributed. The signal sits at the estimated offset and
+nowhere else: with the headline of the row three, two or one before, or one, two or three after the assigned one,
+the same model scores 50.1\%, 50.0\%, 50.5\%, and 50.2\%, 49.9\%, 50.1\%. Without the 3.3\% of rows on
+which both fingerprints disagree it scores 58.5\%, so the result does not rest on doubtful rows. With monthly
+retraining the repaired series is flat across the point where the distributed one collapses
+(Fig.~\ref{fig:align}b; 61.2\% on the repaired data, 50.5\% [50.0, 51.0] as distributed).
+
+\paragraph{What the error affects.} Features and shares stayed together, so models that use only the
+features are untouched and the feature-only literature on this benchmark stands. Everything that joins the
+URL to a row does not: the date parsed from the URL is wrong for 14\% of rows in the first half of 2014 and for
+68\% in the second, the slug and any text scraped from the URL describe another article for four fifths of the
+rows, and a random split blends the aligned fifth with the rest (headline-only AUC 0.53 in five-fold
+cross-validation, which looks like a weak signal rather than an error; 0.71 after the repair). As an example of
+the size of the effect, the log shares of same-story article pairs (URL-slug cosine $\ge$ 0.5, at most a week
+apart) correlate at 0.07 [0.03, 0.10] as distributed and at 0.28 [0.24, 0.32] after the repair. Our own earlier
+analyses were affected in exactly this way.
+
+\begin{table}[t]
+\centering\footnotesize
+\caption{RQ2: what can be called before publication. Past-only scores on the repaired data, articles of 2013-07 to
+2014-12; 95\% intervals bootstrap days. Both: mean of the two predictions. Day ranking: Spearman correlation
+within a day. Top pick vs.\ random: shares relative to a random article of the day. Pairs: accuracy on all pairs
+from the same day and section (or day) with different shares.}
+\label{tab:called}
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+ & 58 features & headline & both & chance \\
+ & (HistGB) & (ridge) & & \\
+\midrule
+AUC (popular) & 0.724 & 0.701 & 0.746 {\scriptsize[.740, .751]} & 0.5 \\
+Day ranking ($\rho$) & 0.396 & 0.394 & 0.451 {\scriptsize[.439, .462]} & 0 \\
+Top pick in top 10\% & 34.3\% & 33.2\% & 40.9\% {\scriptsize[36.9, 44.8]} & 11.1\% \\
+Top pick vs.\ random & 2.07$\times$ & 2.28$\times$ & 2.72$\times$ {\scriptsize[2.48, 2.98]} & 1$\times$ \\
+Pairs, day \& section & 60.6\% & 61.2\% & 63.1\% {\scriptsize[62.6, 63.6]} & 50\% \\
+Pairs, day & 64.5\% & 64.0\% & 66.4\% {\scriptsize[66.1, 66.8]} & 50\% \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{v19_fig_called.png}
-\caption{RQ1--2, past-only scores. (a) Where the article a scorer ranks first each day falls among that day's
-articles by shares (tenths; top = at or above the day's 90th percentile); a random pick lands in each tenth about
-10\% of the time. (b) Pairwise AUC among articles sharing a context, HistGB classifier with all features and
-without the 13 history features (95\% intervals over weeks, or stories). (c) Accuracy on same-day same-section pairs
-of HistGB on one feature group alone and on all features but that group (95\% intervals over days).}
+\includegraphics[width=\textwidth]{fig_called.png}
+\caption{RQ2, past-only scores on the repaired data. (a) Where the article a scorer ranks first each day falls
+among that day's articles by shares (tenths; top = at or above the day's 90th percentile). (b) Accuracy on
+same-day same-section pairs: the headline, the features, both (early fusion), and HistGB refitted on one feature
+group alone or on all but the history features (95\% intervals over days).}
 \label{fig:called}
 \end{figure*}
 
-\subsection{What can be called (RQ1)}
-\label{sec:rq1}
-Before publication, the day's lineup can be ordered far better than by chance (Table~\ref{tab:called}). Past-only
-HistGB reaches an AUC of 0.724 for popular articles, close to the 0.73--0.74 usually reported with random
-cross-validation. In the editor's terms: within a day its scores correlate with log shares at 0.40; its top
-pick of the day lands in that day's top tenth on 35.6\% of days, three times the 11.2\% of a random pick; and of
-two articles from the same day and section it names the more shared one 60.9\% of the time (64.7\% for any two
-articles of a day, which can differ in section). A single feature, the average past popularity of the article's
-keywords (\texttt{kw\_avg\_avg}), already gets most of the way: 57.1\% on same-day same-section pairs and a top
-pick in the top tenth on 28\% of days. For an editor who promotes the past-only model's top pick each day, the pick gets
-on average 2.1 [1.9, 2.3] times the shares of a random article of the same day (geometric mean over 545 days)
-and beats the day's median article on 79\% of days (its median is 3{,}500 shares; all articles: 1{,}400).
-
-The ceiling is low: most of the variance is not explained by these data. The past-only model explains 16.2\% [15.3, 17.1]
-of the variance of log shares; adding fixed effects for channel$\times$day and the story an article belongs to
-(same-story articles recovered from near-identical URL slugs, about 71\% precise) raises this to about a quarter
-at most. Same-story articles barely share their fate (residual correlation 0.05 [0.02, 0.09]), and articles
-compete for the day's attention: on a day with twice as many articles each gets about 18\% fewer shares, an
-association that a confounder explaining 4\% of the residual variance would remove.
-
-\subsection{Where it comes from (RQ2)}
+\subsection{What can be called, and from what (RQ2)}
 \label{sec:rq2}
-\paragraph{The article, not its context.} Comparing articles within finer contexts (past-only HistGB
-classifier\footnote{A classifier for the popular label, as in our earlier analysis; Table~\ref{tab:called} uses a
-regressor on log shares, which ranks articles of a day better but separates the 1{,}400 threshold slightly worse
-(AUC 0.724 vs.\ 0.734, same months).}) shows where the skill lives: 0.734 overall, 0.727 within the same day, 0.690 within a channel,
-0.675 within channel and day, and 0.672 [0.602, 0.738] for pairs of same-story articles in the same channel.
-Knowing which days were good contributes nothing, the channel about 0.045, and holding the story fixed costs at
-most about 0.07 more; most of what the model knows is about the article itself.
+\paragraph{A good deal, and the headline alone as much as all features.} Table~\ref{tab:called} gives the
+past-only results. HistGB on the 58 features reaches an AUC of 0.724 [0.718, 0.730], close to the 0.73 usually
+reported with random cross-validation; within a day its scores correlate with log shares at 0.40, and it orders
+60.6\% [60.1, 61.0] of same-day same-section pairs correctly. A ridge regression that sees nothing but the
+headline's embedding does as well: AUC 0.701 [0.695, 0.707], the same day ranking (0.39), and 61.2\% [60.7, 61.7]
+on same-section pairs, 0.7 points [0.1, 1.2] more than the feature model. The two carry different information.
+Their mean reaches an AUC of 0.746, a day ranking of 0.45 and 63.1\% on pairs, 2.6 points [2.2, 2.9] above the
+features alone; early fusion gives less (AUC 0.739, 62.2\%). For an editor who promotes the top pick each day, the
+combined model's pick is in the day's top tenth on 41\% of days (features: 34\%; a random pick: 11\%), beats the
+day's median article on 85\% of 545 days and gets 2.7 times the shares of a random article of that day (features
+alone: 2.1 times; ratio 1.31 [1.19, 1.46]). Its median is 4{,}400 shares; that of all articles is 1{,}400.
 
-\paragraph{Mostly platform history.} Refitting past-only HistGB on groups of features (Fig.~\ref{fig:called}c)
-shows which signals carry the skill on same-day same-section pairs. The 13 history features alone reach 59.7\%
-[59.2, 60.1] of the full model's 60.9\%; the 28 body features alone 57.6\%; the five title features of the
-dataset 52.0\%; and channel and weekday, constant within such pairs, 50.9\%. Leaving a group out costs 2.8 points
-for history (58.1\%), 1.1 for the body, 0.2 for placement and nothing for the title features. Across all articles the
-picture is similar (AUC: history alone 0.682, body alone 0.664, title alone 0.541). History also keeps
-the skill alive within contexts: without it, AUC within channel and day falls from 0.675 to 0.628
-(Fig.~\ref{fig:called}b). What can be called is therefore mostly how the platform's audience has recently
-responded to an article's keywords, some of how the article is built, and almost nothing of its title.
+\paragraph{Which signals.} Refitting HistGB on groups of features (Fig.~\ref{fig:called}b) shows where the
+feature model's skill sits: the 13 history features alone reach 59.5\% on same-section pairs, the 28 body features
+57.5\%, the dataset's five title features (length and sentiment) 52.1\%, and channel and weekday, constant within
+such pairs, 50.0\%; without history the model falls to 57.7\%. The real headline, at 61.2\%, is worth more than
+any of these groups and more than all of them together. What the benchmark's title features miss is what the
+headline is about: the words with the largest positive weights within section and month include \emph{quotes},
+\emph{types}, \emph{resume}, \emph{LinkedIn}, \emph{LEGO} and \emph{hilarious}, the most negative \emph{recap},
+\emph{earnings}, \emph{events}, \emph{NBA} and \emph{Congress}. The headline works as a description of the kind
+of article, which the 5 LDA topics and keyword statistics capture only in part. The word memory makes this
+concrete. With the \texttt{kw\_*} columns replaced by its six aggregates, HistGB reaches an AUC of 0.734, 0.009
+[0.005, 0.013] above the original features, and 61.6\% on pairs (+1.0 points [0.6, 1.4]); fed only by articles at
+least 30 days old it still reaches 0.729 (+0.005 [0.001, 0.009]). The mean lift of a headline's words, with no
+model at all, orders 59.9\% of pairs, the benchmark's strongest history feature \texttt{kw\_avg\_avg} 56.9\%.
+Which words do well is long-lived, and a visible, reproducible memory of them beats the dataset's opaque one.
+Averaged with the embedding ridge it adds nothing (AUC 0.743 against 0.746): the embedding already carries it. The gain does not depend on the
+topic being familiar: by how similar a headline is to any headline of the previous 30 days, the combined AUC is
+0.737--0.757 in all five quintiles (most novel: 0.74), and six features counting similar earlier headlines add
+0.001 AUC.
 
-\paragraph{No cold-start penalty, no crowding signal.} Skill does not depend on whether the topic is new:
-binned by how similar an article's headline is to any headline of the previous 30 days, AUC is 0.721--0.728 in
-all five quintiles (most novel: 0.722). 19\% of articles have a similar headline (cosine $\geq$0.3) in the
-previous week, but six ex-ante crowding features change AUC by $-$0.0003 [$-$0.0011, 0.0005] and pair accuracy
-by $-$0.0002.
+\paragraph{Model families.} The picture does not depend on the learner. With settings chosen on March--June
+2013 and all models trained on the articles that have a headline, pair accuracy on the 58 features is 57.4\% for
+$k$-nearest neighbours ($k{=}500$), 58.4\% for ridge, 60.5\% for a random forest and 60.4\% for HistGB (AUC
+0.688, 0.705, 0.720, 0.724); on the headline, ridge reaches 60.0\% with TF-IDF and 61.2\% with embeddings (AUC
+0.684, 0.703). Non-linear learners gain two points on the tabular features, while a linear model suffices on
+the embedding.
 
-\subsection{What the headline adds (RQ3)}
+\paragraph{What an editor can change.} Prediction is not a to-do list. Adjusted for date, section, topic,
+keyword history and the headline's content, doubling an article's images, videos or outside links goes with 2--3\%
+more shares, but the same ``effects'' appear on a negative-control outcome (the shares of the older articles it
+links to: +3.5\%, +5.9\%, +2.2\%), so they are at least largely residual confounding, and the title's sentiment has no association
+beyond what the headline's content carries. One association is robust. Within the same week and weekday, a day with twice as many articles in the section
+carries 8.3\% [6.2, 10.4] fewer shares per article, and 11.8\% [6.8, 16.5] fewer for twice as many in other
+sections; the composition of what is published, as far as content predicts it, explains at most a quarter of
+this. Extrapolated to weekend volumes (42\% of a weekday's), the slope accounts for the whole weekend premium
+(+34\% [23, 46] predicted, +29\% [25, 33] observed, $-$2.5\% [$-$8, 4] at fixed volume), though weekdays almost
+never reach weekend volumes, and the data cannot separate crowding or exposure from unobserved same-day
+selection.
+
+\subsection{A zero-shot judge on the headline (RQ3)}
 \label{sec:rq3}
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{v19_fig_judge.png}
-\caption{RQ3. (a) Pairwise accuracy of scorers on Mashable pairs from the same day and section (past-only
-scorers: all such pairs in 2013-07 to 2014-12; judges: 4{,}000 random pairs; with features: 2{,}000) and on
-significantly different headline pairs within one randomized Upworthy test (judge: 2{,}000 pairs; ridge: all
-pairs, five-fold over articles); 95\% intervals over days or pairs. (b) Accuracy on the pairs a scorer is most
-confident about, by the share of pairs kept (judge: larger option probability; HistGB: absolute score
+\includegraphics[width=\textwidth]{fig_judge.png}
+\caption{RQ3--4. (a) Pairwise accuracy on Mashable pairs from the same day and section, repaired data (past-only
+models: all such pairs in 2013-07 to 2014-12; judges: 4{,}000 random pairs, 2{,}000 with features, 400 for the open
+model) and on significantly different headline pairs within one randomized Upworthy test (judge: 2{,}000 pairs;
+ridge: all pairs, five-fold over articles); 95\% intervals over days or pairs. (b) Accuracy on the pairs a scorer
+is most confident about, by the share of pairs kept (judge: larger option probability; models: absolute score
 difference).}
 \label{fig:judge}
 \end{figure*}
 
-\paragraph{Across articles the headline adds nothing detectable.} Real headlines carry almost no information about which of
-two articles will be shared more (Fig.~\ref{fig:judge}a). Past-only ridge regressions on TF-IDF or bge embeddings of
-the headline reach an AUC of 0.510 [0.504, 0.516] and 0.510 [0.503, 0.516] and day rankings of 0.008 and 0.014
-[0.001, 0.026]. Adding the embedding to HistGB makes it slightly \emph{worse} (AUC $-$0.0045 [$-$0.0062, $-$0.0028],
-day ranking $-$0.010), presumably because headline topics drift faster than the model is retrained. The zero-shot
-judge does no better. On 4{,}000 same-day same-section pairs it is right 51.1\% [49.4, 52.7] of the time, on
-4{,}000 same-day pairs 52.1\% [50.6, 53.7], although its answers are consistent across option orders (84\% and 88\%).
-Its confidence does not help (Fig.~\ref{fig:judge}b): on its most confident 10\% it reaches 52.8\% and 56.8\%,
-whereas HistGB is right on 79\% and 83\% of its most confident tenth. Given the whole day's lineup, its probability of ``shared the
-most'' correlates with log shares at 0.028 [0.016, 0.040] within days, and its top pick lands in the day's top
-tenth on 13.2\% [10.8, 15.8] of 720 days (random: 11.2\%). Shown the URL keywords instead of the headline, it reaches
-51.7\% and 50.1\%. On the pairs from months that HistGB scores, HistGB is right 62.0\% of the time and the judge
-49.1\%; combining the two (10-fold logistic regression) gives 62.4\%. Given the headline plus six of the dataset's
-features, the judge reaches 56.8\% [54.5, 59.0], the same as \texttt{kw\_avg\_avg} alone on those pairs (55.9\%).
-A second question wording (no date or section; ``Which article did readers share more on Facebook, Twitter,
-Google+ and LinkedIn?'') agrees with the first on 87.5\% of 1{,}000 pairs. The judge's accuracy is not uniform
-over time: 58.5\% and 56.3\% on section pairs from the first two quarters of 2013, 46--52\% in every later quarter.
-We did not anticipate this and checked it (Fig.~\ref{fig:quarter}). The scorers that cannot remember
-articles are not better in early 2013: HistGB with random cross-validation gets 61.9\% and 60.0\% there and
-60--66\% later, \texttt{kw\_avg\_avg} 55.2\% and 54.0\% against 55--57\% later. Only the judge is, with the
-headline and with the URL keywords alike (accuracy over quarters correlates 0.72 between the two). Asked directly how
-often a single article was shared (four share bands), the judge's expected band correlates with true shares at 0.24
-for 1{,}000 articles from the first half of 2013 and at 0.00 for 1{,}000 from 2014 (headline only, without URL or
-date: 0.23 and 0.03). This is what knowledge of older stories would produce, although a change in what Mashable
-readers shared cannot be excluded. Over the scored months the judge is at chance. The open-weights JEV-9B behaves like the API model: on the 400
-earliest section pairs (January--March 2013, where the API judge does best) it is right 56.0\% [51.3, 61.0] of the
-time against 57.8\% for the API, agreeing with it on 72\%; on 400 random pairs from the scored months it is right 50.0\% [45.2, 54.5] of the time
-(API: 48.3\%).
+\paragraph{Without training data, the judge reads part of the signal.} Shown two headlines from the same day and
+section, JEV names the more shared article 56.5\% [54.9, 58.1] of the time (Fig.~\ref{fig:judge}a), and 57.6\%
+[56.1, 59.3] for any two articles of a day. It has seen no Mashable share count from us; the supervised headline
+model, trained on 9{,}000 to 38{,}000 earlier articles, reaches 61.5\% on the 3{,}041 of these pairs in its scored
+months (judge on those: 57.3\%). The judge is consistent
+across option orders (82\%) and across periods (54.0\%, 57.2\%, 58.9\% and 55.6\% in the four periods of
+Table~\ref{tab:align}; the two draws from the unshifted months, 59.5\% and 54.0\%, pool to 56.8\%). Its confidence
+is informative: 61.7\% on its most confident quarter and 64.0\% [59.3, 68.5] on its most confident tenth
+(Fig.~\ref{fig:judge}b), though less sharply than the supervised models' own score gaps. Given a whole day's
+lineup, its top pick lands in the day's top tenth on 23.3\% [20.3, 26.3] of 720 days (random: 11.2\%). With only
+the URL keywords instead of the headline it reaches 52.5\% [50.8, 54.1]: the full headline matters. Given the
+headline plus six dataset features it reaches 60.6\% [58.4, 62.6] on 2{,}000 pairs (headline only: 56.3\%;
+\texttt{kw\_avg\_avg} alone: 58.1\%), so it can use numbers put in front of it.
 
-\begin{figure}[t]
-\centering
-\includegraphics[width=\columnwidth]{v19_fig_quarter.png}
-\caption{RQ3: accuracy on the 4{,}000 judged same-day same-section pairs by publication quarter (shaded: 95\%
-intervals over days for the judge with headlines and past-only HistGB). Only the judge is better in early 2013.}
-\label{fig:quarter}
-\end{figure}
+\paragraph{It adds to the supervised models.} A logistic combination of the judge's verdict with a model's score
+gap (10-fold over pairs) improves on the model alone: +1.7 points [0.4, 3.0] over the feature model (62.1\% to
+63.7\%), +1.6 [0.4, 2.8] over the headline ridge, and +1.7 [0.7, 2.9] over their mean (63.0\% to 64.7\%), the
+best single number in this report.
 
-\paragraph{Within an article the headline matters, and the judge sees it.} Asked the same kind of question about
-two headlines of one Upworthy article whose click-through differed significantly in a randomized test, the same
-judge is right 66.0\% [64.1, 68.2] of the time, and 85.0\% [81.8, 88.0] on its most confident quarter. It is not
-only recalling famous headlines: on pairs in which neither headline won its test it is right 63.4\% (with a winner:
-66.8\%). Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe);
-adding the judge's verdict to RoBERTa adds about 2 points. A second wording (``Which headline would make more readers
-click?'') gives 66.1\% on 1{,}000 of the pairs (first wording on the same pairs: 64.1\%; agreement 84\%). The open-weights JEV-9B is right on 60.3\% [55.5, 65.3] of 400 of the pairs (API on the same
-pairs: 63.3\%; agreement 68\%).
+\paragraph{Not verbatim recall, not the wording of the question.} With every headline reworded the judge is right on
+62.0\% of 250 pairs from early 2013 (original wording: 60.8\%) and on 53.6\% of 250 pairs from 2014 (original:
+52.4\%); over the 500 pairs the change is +1.2 points [$-$1.8, 4.2] and the decision is the same on 89\%. Asked how often a single article was shared, its expected share band correlates with true shares at 0.20
+for articles from the first half of 2013 and 0.21 for 2014, so the two periods are equally known to it, which does not show that it knows nothing about them. A
+second question wording gives 57.3\% on 1{,}000 of the pairs (first wording on these: 54.7\%; same decision on 87\%). The open-weights JEV-9B is right on 54.5\% [49.5, 59.3] of 400 of the pairs (API on these: 55.5\%; same
+decision on 77\%).
 
-\paragraph{Why the two differ.} On 4{,}000 random headline pairs of Upworthy cells, the true log-odds contrast
-(observed contrast with its sampling variance removed) has a standard deviation of $\sigma_h=0.42$, and the judge's
-verdict (log-odds) correlates $\rho=0.30$ with it. Between two Mashable articles
-of one day and section, log shares differ with standard deviation $\sigma_\Delta=1.27$. If headlines moved Mashable
-shares as much as Upworthy clicks ($c=1$), they would account for $(0.42/1.27)^2\approx11\%$ of that difference;
-a \emph{perfect} headline judge would then be right $\tfrac12+\arcsin(0.33)/\pi=60.6\%$ of the time and this judge
-53.1\% [52.7, 53.5]. The observed 51--52\% is consistent with $c\approx0.35$--$0.7$, i.e.\ headlines explaining roughly 1--5\% of
-the share difference. The argument assumes Gaussian effects and that the judge's skill on headlines carries over;
-it is a decomposition under these assumptions, not a measurement, and it does not identify $c$. What it shows is
-that the two results are consistent: a judge that clearly sees headline quality need not be able to call
-popularity across articles, because in that comparison the headline is a small part of a large, mostly
-unpredictable difference.
-
-\subsection{Choosing the headline: what an archive is worth (RQ4)}
+\subsection{The other headline decision (RQ4)}
 \label{sec:rq4}
-On Upworthy, where headlines were randomized, an idealized archive of 18{,}200 observational headlines (week-demeaned
-click-through) reaches a decision accuracy of 66.7\%; a learner trained on randomized contrasts needs 1{,}000 [670,
-1{,}810] tests to match it, and with all $\approx$9{,}600 usable tests reaches 68.4\%. An archive of the published
-(winning) headlines, as kept by a newsroom that already runs tests, is worth 730 [490, 1{,}130] tests; trained on raw
-click-through, the two archives are worth only 520 and 290. The worth grows far more slowly than the archive
-(1{,}000 to 18{,}200 headlines: 320 to 1{,}000 tests); a saturating curve fits best and puts a ceiling at about
-1{,}200 tests (750--2{,}430), but slow logarithmic growth cannot be ruled out. Used as a prior that experiments
-correct \citep{kallus2018}, the archive adds 9 points of accuracy at 25 tests and never costs more than 0.4 points,
-whereas pooling the two falls behind the experiments alone from 3{,}200 tests on. Choosing which tests to run by the
-archive's predictions or uncertainty does not beat random tests once the archive is the prior.
+Choosing between two headlines of one article is a different problem: everything but the wording is fixed. On
+Upworthy pairs whose click-through differed significantly in a randomized test, the same judge is right 66.0\%
+[64.0, 68.1] of the time, and 85.0\% [81.8, 88.0] on its most confident quarter (Fig.~\ref{fig:judge}); accuracy
+rises steadily as coverage falls, which is what selective prediction needs \citep{geifman2017,li2026jev}. It is
+not only recalling published headlines: on pairs in which neither headline won its test it is right 63.4\%.
+Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe); a second
+wording gives 66.1\% on 1{,}000 pairs, and the open-weights JEV-9B 60.3\% [55.3, 64.8] on 400 (API on these:
+63.3\%). The two settings measure different things. If wording moved Mashable shares as much as it moves
+Upworthy clicks, a judge with this sense of wording would be right on about 53\% of same-day same-section pairs
+under a Gaussian model; it is right on 56.5\%, so across articles the headline tells the judge, like the ridge,
+what the article is, not only how well it is worded.
 
 % ------------------------------------------------------------------
 \section{Discussion}
 \label{sec:discussion}
-\paragraph{What can be called.} Before publication an editor can call a good deal: the model's top pick of the day
-is three times as likely as a random pick to be among the day's most shared articles. That skill is about the
-article, not its context, and comes mostly from the platform's own history of what similar keywords did. What
-cannot be called is the larger part. About three quarters of the variance of log shares is not explained by the
-model, the day and the story. That remainder includes unmeasured promotion and seeding as well as the social
-influence and chance documented in cultural markets \citep{salganik2006,martin2016}.
+\paragraph{What can be called.} Before publication an editor can call a good deal: the day's top pick of a
+model that reads the headline and the platform's features is nearly four times as likely as a random pick to be
+among the day's most shared articles, and gets 2.7 times the shares. A good part of that skill is in a sentence the
+benchmark never contained: the headline alone picks as well as all 58 features. Most of the variation remains uncalled (a day ranking of 0.45), which includes
+unmeasured promotion as well as the social influence and chance documented in cultural markets
+\citep{salganik2006,martin2016}.
 
-\paragraph{Two different headline questions.} ``Will this article be popular?'' and ``Which headline should this
-article get?'' are different questions. The first compares articles, and there the headline is a small part of
-a large difference, so neither supervised text models nor a capable zero-shot judge can use it; the second holds
-the article fixed, and there the same judge is clearly informative and confident when right. Reports of headline
-effects from randomized tests \citep{matias2021,gligoric2023,banerjee2025} therefore do not imply that headlines
-help predict popularity, and the null result across articles does not imply that headlines do not matter. A
-newsroom can use a judge as \citet{li2026jev} suggest, accepting confident headline choices and testing the rest,
-and an archive of past headlines is worth hundreds of tests (RQ4), but neither tells it which articles will travel.
+\paragraph{A judge as a cold-start prior.} A newsroom with an archive should train on it; the supervised
+headline model beats the zero-shot judge by four to five points. But the judge needs no archive, is right on 64\% of the
+pairs it is most sure about, is unaffected by rewording, improves with a few numbers in the prompt and adds to a trained
+model. Within an article, where an archive cannot identify wording effects without experiments, it is right on
+85\% of its confident quarter. ``Accept the confident verdicts, test the rest'' \citep{li2026jev} is a workable
+rule for the second decision; for the first, the judge is one more feature.
 
-\paragraph{Limitations.} Shares were recorded once, in January 2015, so article age and date are confounded, and
-the history features use the collection-date shares of earlier articles, which makes their value somewhat
-optimistic. Mashable headlines were matched from a sitemap that lists the current headline, which may differ from
-the one at publication for some articles. The judge has probably seen some Mashable articles during training: its
-early-2013 signal looks like such knowledge, so its accuracy there is not a zero-shot result; over the scored
-months, the period of all past-only comparisons, it is at chance. We test one judge family (API and open 9B); two question wordings and four prompt formats (headline,
-keywords, headline with features, whole day) lead to the same conclusion. Upworthy and Mashable differ in outcome (clicks vs.\ shares), audience and era, which
-is why the variance argument leaves $c$ free. The same-story pairs are recovered automatically and are about 71\%
-precise, judged by two language models, not by humans.
+\paragraph{How the error stayed hidden, and how it surfaced.} The \texttt{url} column is documented as
+non-predictive, so models never touched it, and nothing in the file is wrong on its face: every URL is valid and
+nearly every date plausible. A random split would have shown a weak headline signal and invited the usual
+conclusion that titles matter little. What exposed it was evaluating by period: a signal that is strong for five
+months and exactly absent afterwards is not a property of readers. We also note our own detour. We first reported
+the step as a break in the platform, and a null result for headlines after it, and both were wrong. Two checks
+would have caught it earlier: comparing a recomputed feature with the stored one, and asking whether a null is at
+chance (data problem) or merely small (weak signal).
+
+\paragraph{Limitations.} The repair is inferred, not observed: the held-out checks bound misassigned rows at
+about 2\%, within the same day, and 152 rows cannot be repaired. The 2014 rewording sample is small, and the
+judge's accuracy on it (52--54\%) is below its level on all 2014 pairs. Why rows are missing from the feature side is
+our guess. Shares were recorded once, so article age and date are confounded, and the history features use
+shares of earlier articles as recorded at collection, which makes their value somewhat optimistic. The sitemap
+lists the current headline, which may differ from the one at publication. Day volume counts only the articles in
+the dataset, and its slope is an adjusted association identified within weeks, not an experiment. The headline's signal is predictive,
+not causal: across articles it mostly describes the article, and we do not claim that rewording a Mashable
+headline changes its shares. The judge may have seen Mashable articles in training; rewording and the equal
+similar accuracy across periods argue against recall but cannot exclude knowledge of which stories were big. We test one
+judge family, and Upworthy differs from Mashable in outcome (clicks vs.\ shares), audience and era. The
+rewordings were written by a language model, not by humans.
 
 \section{Conclusion}
-What can be called before publication on Mashable is real but limited: strictly from the past, a model orders
-the day's articles with a correlation of 0.40, and its daily top pick is three times as likely as a random pick to be a
-top-tenth article. The skill is article-level and rests mostly on platform history. The real headline, now added to
-the benchmark, adds nothing detectable to calling which article will be shared more, for supervised text models and for a
-zero-shot judge that, on the same kind of question, picks the better headline of one article 66\% of the time; a
-variance decomposition shows the two are consistent if headline effects on shares are modest.
-Popularity across articles and the choice of a headline within one are different problems, and only the second is
-one where headline models, and an archive of past tests, pay off.
+The standard benchmark for online news popularity has a \texttt{url} column that points to the wrong article for
+four fifths of its rows. A monotone alignment on date, title length and title sentiment repairs it, and signals
+the alignment never used confirm the repair. With the right headline attached, a linear model on its embedding
+calls popularity as well as a boosted model on all 58 features, the two together order the day's articles with a
+correlation of 0.45, and a zero-shot judge that has never seen the data is right 56.5\% of the time, 64\% when
+confident, and 66\% and 85\% when choosing between headlines of one article. Without the repair every Mashable headline result after June 2013 is at or near chance. Evaluation that respects time found the error; a recomputed feature located it; and a benchmark's
+``non-predictive'' columns deserve the same checks as its labels.
 
 \setlength{\bibsep}{0pt}\renewcommand{\bibfont}{\scriptsize}
 \bibliographystyle{plainnat}

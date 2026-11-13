@@ -1,0 +1,205 @@
+align,variant,window,scorer,metric,est,lo,hi
+true,week-block bootstrap,v19,orig_all,auc,0.724384722553955,0.7175585121398244,0.7311788222039454
+true,week-block bootstrap,v19,orig_all,rho_day,0.395837443710475,0.380871181796958,0.41043537803676156
+true,week-block bootstrap,v19,orig_all,top10,0.3431192660550459,0.30386740331491713,0.3834862385321101
+true,week-block bootstrap,v19,orig_all,pair_sec,0.6056483246836282,0.6013063540328318,0.6103174482750909
+true,week-block bootstrap,v19,orig_all,pair_day,0.6449525493750086,0.6406177178226498,0.6493860250262117
+true,week-block bootstrap,v19,no_kw,auc,0.7109540567853329,0.7043700998448108,0.7182648107861641
+true,week-block bootstrap,v19,no_kw,rho_day,0.365958893867851,0.34994841251055614,0.38189407269698167
+true,week-block bootstrap,v19,no_kw,top10,0.3192660550458716,0.2747171796895554,0.36813186813186816
+true,week-block bootstrap,v19,no_kw,pair_sec,0.5899204534327137,0.5847785160038281,0.5952247221139947
+true,week-block bootstrap,v19,no_kw,pair_day,0.6330381736786337,0.6282697604406123,0.6378703586332136
+true,week-block bootstrap,v19,no_kw+mim,auc,0.7293753291694862,0.7233777909501088,0.7351602947135424
+true,week-block bootstrap,v19,no_kw+mim,rho_day,0.4098879788899589,0.3951601725281369,0.4242553127964624
+true,week-block bootstrap,v19,no_kw+mim,top10,0.3669724770642202,0.32967032967032966,0.407366586013375
+true,week-block bootstrap,v19,no_kw+mim,pair_sec,0.612059282640877,0.6074269434369916,0.6172117394877581
+true,week-block bootstrap,v19,no_kw+mim,pair_day,0.6494082980048369,0.6453083610123591,0.6535809087713997
+true,week-block bootstrap,v19,no_kw+words,auc,0.7378385256633804,0.7320939642001639,0.7436417294418879
+true,week-block bootstrap,v19,no_kw+words,rho_day,0.4277330683059993,0.41296601185203025,0.44094741276571403
+true,week-block bootstrap,v19,no_kw+words,top10,0.3926605504587156,0.3504426689518433,0.4340659340659341
+true,week-block bootstrap,v19,no_kw+words,pair_sec,0.621177473518078,0.6155337608656964,0.6270912534246648
+true,week-block bootstrap,v19,no_kw+words,pair_day,0.6569472608644972,0.6525990820988964,0.6611505136259553
+true,week-block bootstrap,v19,no_kw+full_L30,auc,0.7301601192712763,0.7239638461117398,0.7363144796821127
+true,week-block bootstrap,v19,no_kw+full_L30,rho_day,0.41571792154575354,0.40083474704803085,0.42988838565844706
+true,week-block bootstrap,v19,no_kw+full_L30,top10,0.3761467889908257,0.3406446953781513,0.4147247706422018
+true,week-block bootstrap,v19,no_kw+full_L30,pair_sec,0.6141041075059472,0.608754339556713,0.6197380707153293
+true,week-block bootstrap,v19,no_kw+full_L30,pair_day,0.6515358838459947,0.647360846887642,0.6556238587927121
+true,week-block bootstrap,v19,orig_all+full,auc,0.7419876516490748,0.7363040767412738,0.7476576771842944
+true,week-block bootstrap,v19,orig_all+full,rho_day,0.4376044775026338,0.42337807171521835,0.4514049259584601
+true,week-block bootstrap,v19,orig_all+full,top10,0.3669724770642202,0.32409549394292664,0.41284403669724773
+true,week-block bootstrap,v19,orig_all+full,pair_sec,0.6245413544228697,0.6190491538567013,0.6305462347804582
+true,week-block bootstrap,v19,orig_all+full,pair_day,0.6600252243888967,0.6559700425567473,0.6636720437969963
+true,week-block bootstrap,v19,orig_all+full_L30,auc,0.7357111928366775,0.7296589600294179,0.7416945104087285
+true,week-block bootstrap,v19,orig_all+full_L30,rho_day,0.42637386043209186,0.41143229391692654,0.440160228555327
+true,week-block bootstrap,v19,orig_all+full_L30,top10,0.3669724770642202,0.3247706422018349,0.4091743119266055
+true,week-block bootstrap,v19,orig_all+full_L30,pair_sec,0.6194840129255972,0.6143356341219388,0.6251932875359034
+true,week-block bootstrap,v19,orig_all+full_L30,pair_day,0.6559884820525638,0.6517739185545967,0.6600036620084926
+true,week-block bootstrap,v19,kw_only,auc,0.6637897272698245,0.6565841167474151,0.6704419722500411
+true,week-block bootstrap,v19,kw_only,rho_day,0.3106312409274913,0.29684143580257183,0.3237908910446982
+true,week-block bootstrap,v19,kw_only,top10,0.30458715596330277,0.26422018348623855,0.3498328964613368
+true,week-block bootstrap,v19,kw_only,pair_sec,0.5824554026576964,0.5765842218001308,0.5890744715593431
+true,week-block bootstrap,v19,kw_only,pair_day,0.6108859725304094,0.6062453262780376,0.6152343161667494
+true,week-block bootstrap,v19,full_only,auc,0.710007738016679,0.7044784757356254,0.7157259174149863
+true,week-block bootstrap,v19,full_only,rho_day,0.4007455328385554,0.38552973027182325,0.4159839728324461
+true,week-block bootstrap,v19,full_only,top10,0.30458715596330277,0.26972477064220185,0.3400881746929541
+true,week-block bootstrap,v19,full_only,pair_sec,0.6067196977115241,0.6008388412854513,0.6122297502937911
+true,week-block bootstrap,v19,full_only,pair_day,0.6453411015769969,0.6412573052779216,0.6494836914556665
+true,week-block bootstrap,v19,tfidf_ridge,auc,0.6835557846488125,0.677189558723695,0.6894543479588856
+true,week-block bootstrap,v19,tfidf_ridge,rho_day,0.35949608424975565,0.3464983937819159,0.3715711258838949
+true,week-block bootstrap,v19,tfidf_ridge,top10,0.3357798165137615,0.30034795168067224,0.3706422018348624
+true,week-block bootstrap,v19,tfidf_ridge,pair_sec,0.6002684192639782,0.5939887372166133,0.6058558317933762
+true,week-block bootstrap,v19,tfidf_ridge,pair_day,0.625528089698851,0.6209206247007447,0.6298213227865221
+true,week-block bootstrap,v19,random,top10,0.11139354354339133,,
+true,week-block bootstrap,pre,orig_all,auc,0.6502483519211283,0.6323897734479779,0.6718287551370887
+true,week-block bootstrap,pre,orig_all,rho_day,0.24467855790370754,0.20402170254634852,0.2826389982668876
+true,week-block bootstrap,pre,orig_all,top10,0.15463917525773196,0.08571428571428572,0.24719101123595505
+true,week-block bootstrap,pre,orig_all,pair_sec,0.583084442030953,0.5723940212047659,0.5945729225914997
+true,week-block bootstrap,pre,orig_all,pair_day,0.600680674755845,0.5908455398759398,0.612244632551291
+true,week-block bootstrap,pre,no_kw,auc,0.6544029306492416,0.644232544708436,0.6661032993260552
+true,week-block bootstrap,pre,no_kw,rho_day,0.22682087118131364,0.18465921391575593,0.27241099300489935
+true,week-block bootstrap,pre,no_kw,top10,0.1958762886597938,0.11879857340572766,0.28870136348520115
+true,week-block bootstrap,pre,no_kw,pair_sec,0.5775635804145172,0.566466459154645,0.5896003486385931
+true,week-block bootstrap,pre,no_kw,pair_day,0.5990307783367861,0.5877600229334432,0.6109309981270855
+true,week-block bootstrap,pre,no_kw+mim,auc,0.6673953110899764,0.652583364795535,0.683582967318517
+true,week-block bootstrap,pre,no_kw+mim,rho_day,0.2674734246241122,0.23638780818662536,0.2987611528274673
+true,week-block bootstrap,pre,no_kw+mim,top10,0.27835051546391754,0.2079207920792079,0.3596794448116324
+true,week-block bootstrap,pre,no_kw+mim,pair_sec,0.5881980269707666,0.579656657329362,0.5956369317569858
+true,week-block bootstrap,pre,no_kw+mim,pair_day,0.6082494820952945,0.5981954569946695,0.6180054249244133
+true,week-block bootstrap,pre,no_kw+words,auc,0.6869569369536285,0.6727581151209692,0.704267669566102
+true,week-block bootstrap,pre,no_kw+words,rho_day,0.28921817521033416,0.25121066411778153,0.3240117098721443
+true,week-block bootstrap,pre,no_kw+words,top10,0.25773195876288657,0.1958762886597938,0.3258649460451663
+true,week-block bootstrap,pre,no_kw+words,pair_sec,0.6028147343651009,0.592087912538112,0.6129829326830867
+true,week-block bootstrap,pre,no_kw+words,pair_day,0.6158774785439479,0.6050515196855446,0.6270341296092836
+true,week-block bootstrap,pre,no_kw+full_L30,auc,0.6760160038285576,0.6652194847341885,0.6909891482785485
+true,week-block bootstrap,pre,no_kw+full_L30,rho_day,0.25988089924552876,0.22683696558393585,0.2912811462153029
+true,week-block bootstrap,pre,no_kw+full_L30,top10,0.24742268041237114,0.17204301075268819,0.3294238932686476
+true,week-block bootstrap,pre,no_kw+full_L30,pair_sec,0.5897818807131867,0.577755248946542,0.6022157822950385
+true,week-block bootstrap,pre,no_kw+full_L30,pair_day,0.6098623853211009,0.5994765463065077,0.6205043466619306
+true,week-block bootstrap,pre,orig_all+full,auc,0.684818038000151,0.6705087581252117,0.70262486013895
+true,week-block bootstrap,pre,orig_all+full,rho_day,0.31335284056577856,0.28161818222375795,0.3413298232820305
+true,week-block bootstrap,pre,orig_all+full,top10,0.24742268041237114,0.1782178217821782,0.3238095238095238
+true,week-block bootstrap,pre,orig_all+full,pair_sec,0.6013213865508191,0.5928498326406397,0.6107771126839813
+true,week-block bootstrap,pre,orig_all+full,pair_day,0.6183856170464634,0.6075861191312312,0.6296728556464135
+true,week-block bootstrap,pre,orig_all+full_L30,auc,0.669361989333404,0.6546823658229576,0.6871057707320943
+true,week-block bootstrap,pre,orig_all+full_L30,rho_day,0.25829038126296644,0.22426998584134825,0.28844715717065555
+true,week-block bootstrap,pre,orig_all+full_L30,top10,0.21649484536082475,0.12871287128712872,0.30927835051546393
+true,week-block bootstrap,pre,orig_all+full_L30,pair_sec,0.5905059281382931,0.5792660455319775,0.6030518831249697
+true,week-block bootstrap,pre,orig_all+full_L30,pair_day,0.6070435039952649,0.5958460036366944,0.6201243315561086
+true,week-block bootstrap,pre,kw_only,auc,0.5682524265594022,0.5448427493159362,0.595176870907298
+true,week-block bootstrap,pre,kw_only,rho_day,0.15634536475898125,0.12024778632476185,0.18868478856318588
+true,week-block bootstrap,pre,kw_only,top10,0.20618556701030927,0.13861386138613863,0.27956989247311825
+true,week-block bootstrap,pre,kw_only,pair_sec,0.550796452167617,0.5412438432373557,0.562059591576795
+true,week-block bootstrap,pre,kw_only,pair_day,0.5664508730393607,0.5581622919182234,0.5755460954729545
+true,week-block bootstrap,pre,full_only,auc,0.6427620267462517,0.6219534328633279,0.6653040162731698
+true,week-block bootstrap,pre,full_only,rho_day,0.2547438980956405,0.2213149444124857,0.2870300284717794
+true,week-block bootstrap,pre,full_only,top10,0.2268041237113402,0.15730337078651685,0.29896907216494845
+true,week-block bootstrap,pre,full_only,pair_sec,0.5820888768214318,0.5679729353018826,0.5965205172366331
+true,week-block bootstrap,pre,full_only,pair_day,0.5980689553122226,0.5856523853984277,0.6102310852557696
+true,week-block bootstrap,pre,tfidf_ridge,auc,0.6231657063678027,0.6019479194274621,0.6500790008430389
+true,week-block bootstrap,pre,tfidf_ridge,rho_day,0.26944267307832614,0.2314212463037137,0.3066922681139121
+true,week-block bootstrap,pre,tfidf_ridge,top10,0.2268041237113402,0.13978494623655913,0.32989690721649484
+true,week-block bootstrap,pre,tfidf_ridge,pair_sec,0.5996922798443298,0.5869771661672486,0.6127063325008282
+true,week-block bootstrap,pre,tfidf_ridge,pair_day,0.604409588635691,0.5928294590946726,0.6158262568683501
+true,week-block bootstrap,pre,random,top10,0.11197754915472222,,
+true,doubtful rows dropped from the evaluation,v19,orig_all,auc,0.7260114551083592,0.7192490045274456,0.7319285024710516
+true,doubtful rows dropped from the evaluation,v19,orig_all,rho_day,0.3965881021676869,0.38273413265684714,0.40992779593768497
+true,doubtful rows dropped from the evaluation,v19,orig_all,top10,0.3431192660550459,0.30270642201834863,0.381651376146789
+true,doubtful rows dropped from the evaluation,v19,orig_all,pair_sec,0.60588853450342,0.6011507462363515,0.610114094959873
+true,doubtful rows dropped from the evaluation,v19,orig_all,pair_day,0.6459234455778188,0.6418475099392499,0.6497943288544991
+true,doubtful rows dropped from the evaluation,v19,no_kw,auc,0.7126164954498546,0.7060735185106894,0.7189913797268227
+true,doubtful rows dropped from the evaluation,v19,no_kw,rho_day,0.36672885593294896,0.3527059623923029,0.3794597363305958
+true,doubtful rows dropped from the evaluation,v19,no_kw,top10,0.326605504587156,0.28990825688073396,0.3670183486238532
+true,doubtful rows dropped from the evaluation,v19,no_kw,pair_sec,0.5899012432170007,0.585448125253446,0.5945315899207402
+true,doubtful rows dropped from the evaluation,v19,no_kw,pair_day,0.6339045495173802,0.629690940428219,0.6379033863603112
+true,doubtful rows dropped from the evaluation,v19,no_kw+mim,auc,0.7304506520311473,0.724285364863181,0.7363908151192928
+true,doubtful rows dropped from the evaluation,v19,no_kw+mim,rho_day,0.40933411148009075,0.3958988400403964,0.4227630906686204
+true,doubtful rows dropped from the evaluation,v19,no_kw+mim,top10,0.3651376146788991,0.326605504587156,0.4091743119266055
+true,doubtful rows dropped from the evaluation,v19,no_kw+mim,pair_sec,0.6115300234140226,0.6070288900475687,0.6164448010986899
+true,doubtful rows dropped from the evaluation,v19,no_kw+mim,pair_day,0.6499827074322109,0.6458909623904602,0.6538953164576887
+true,doubtful rows dropped from the evaluation,v19,no_kw+words,auc,0.7392569847077587,0.7334139402076453,0.7450035682605914
+true,doubtful rows dropped from the evaluation,v19,no_kw+words,rho_day,0.4277801244399365,0.4146973635849841,0.44127874303618747
+true,doubtful rows dropped from the evaluation,v19,no_kw+words,top10,0.3889908256880734,0.3504587155963303,0.42935779816513764
+true,doubtful rows dropped from the evaluation,v19,no_kw+words,pair_sec,0.6208218875020741,0.6163283599302218,0.6256277243601946
+true,doubtful rows dropped from the evaluation,v19,no_kw+words,pair_day,0.6578227534259496,0.6540014696559482,0.661672781360671
+true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,auc,0.7314224036025894,0.7255825876975999,0.7370302818492396
+true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,rho_day,0.41556804326715474,0.40284597223212415,0.4284394407152942
+true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,top10,0.3779816513761468,0.3394495412844037,0.4202293577981651
+true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,pair_sec,0.6139390252146285,0.6092592113898089,0.6188602303131212
+true,doubtful rows dropped from the evaluation,v19,no_kw+full_L30,pair_day,0.6522700425352251,0.6485002363705796,0.656029081821234
+true,doubtful rows dropped from the evaluation,v19,orig_all+full,auc,0.7434506942489915,0.7375103676249959,0.7490131797739852
+true,doubtful rows dropped from the evaluation,v19,orig_all+full,rho_day,0.43764613632803606,0.4247429389150298,0.45076310195338215
+true,doubtful rows dropped from the evaluation,v19,orig_all+full,top10,0.3577981651376147,0.3192660550458716,0.3963302752293578
+true,doubtful rows dropped from the evaluation,v19,orig_all+full,pair_sec,0.6245951709346558,0.6199001551953623,0.6296712471594749
+true,doubtful rows dropped from the evaluation,v19,orig_all+full,pair_day,0.6609994205866897,0.6571508863813051,0.6647524312771618
+true,doubtful rows dropped from the evaluation,v19,orig_all+full_L30,auc,0.737127657378741,0.7312130419737422,0.7426785933633131
+true,doubtful rows dropped from the evaluation,v19,orig_all+full_L30,rho_day,0.4273302451906891,0.4141188445423006,0.4406573111239087
+true,doubtful rows dropped from the evaluation,v19,orig_all+full_L30,top10,0.3688073394495413,0.33206422018348625,0.4091743119266055
+true,doubtful rows dropped from the evaluation,v19,orig_all+full_L30,pair_sec,0.6196788407293375,0.6150778151784495,0.6248285165856792
+true,doubtful rows dropped from the evaluation,v19,orig_all+full_L30,pair_day,0.656973845552666,0.6532900911597868,0.6607431973021137
+true,doubtful rows dropped from the evaluation,v19,kw_only,auc,0.665343331926072,0.6581992047710937,0.6712106546469745
+true,doubtful rows dropped from the evaluation,v19,kw_only,rho_day,0.3135072449636433,0.3000285842367397,0.3273073579910023
+true,doubtful rows dropped from the evaluation,v19,kw_only,top10,0.29541284403669726,0.25871559633027524,0.3339449541284404
+true,doubtful rows dropped from the evaluation,v19,kw_only,pair_sec,0.5826957467598312,0.57729852071943,0.5878435767839807
+true,doubtful rows dropped from the evaluation,v19,kw_only,pair_day,0.6121069309510014,0.6076252920055945,0.61634378119746
+true,doubtful rows dropped from the evaluation,v19,full_only,auc,0.71133866216343,0.7054212332114178,0.7172170962402441
+true,doubtful rows dropped from the evaluation,v19,full_only,rho_day,0.402109178260257,0.38909020440666825,0.41548437878724676
+true,doubtful rows dropped from the evaluation,v19,full_only,top10,0.29908256880733947,0.26238532110091745,0.3394495412844037
+true,doubtful rows dropped from the evaluation,v19,full_only,pair_sec,0.6065829661449211,0.6014257721180579,0.6117313949521833
+true,doubtful rows dropped from the evaluation,v19,full_only,pair_day,0.6463018608599571,0.6425309709705619,0.6500990060498278
+true,doubtful rows dropped from the evaluation,v19,tfidf_ridge,auc,0.6845167839384557,0.6793200830817006,0.6897845673378966
+true,doubtful rows dropped from the evaluation,v19,tfidf_ridge,rho_day,0.36101618360122834,0.34923242264711196,0.3726116308591067
+true,doubtful rows dropped from the evaluation,v19,tfidf_ridge,top10,0.344954128440367,0.30642201834862387,0.3872018348623853
+true,doubtful rows dropped from the evaluation,v19,tfidf_ridge,pair_sec,0.6005420254051363,0.5954234428140962,0.6054124416933874
+true,doubtful rows dropped from the evaluation,v19,tfidf_ridge,pair_day,0.6265422949258665,0.6227871628856059,0.6302261600245216
+true,doubtful rows dropped from the evaluation,v19,random,top10,0.11188046963047814,,
+true,doubtful rows dropped from the evaluation,pre,orig_all,auc,0.6517542069553772,0.6311603902579256,0.6728348754590656
+true,doubtful rows dropped from the evaluation,pre,orig_all,rho_day,0.24667100383965979,0.20981905404804252,0.2835754969026147
+true,doubtful rows dropped from the evaluation,pre,orig_all,top10,0.15463917525773196,0.08247422680412371,0.2268041237113402
+true,doubtful rows dropped from the evaluation,pre,orig_all,pair_sec,0.5856027423347934,0.5731691926965663,0.5975241313324141
+true,doubtful rows dropped from the evaluation,pre,orig_all,pair_day,0.602022348127164,0.5913693248197942,0.6123400431024768
+true,doubtful rows dropped from the evaluation,pre,no_kw,auc,0.6552079344588568,0.6345401680490081,0.6754441628251692
+true,doubtful rows dropped from the evaluation,pre,no_kw,rho_day,0.2236692815351496,0.1865788536644987,0.26344312574157913
+true,doubtful rows dropped from the evaluation,pre,no_kw,top10,0.20618556701030927,0.13402061855670103,0.28865979381443296
+true,doubtful rows dropped from the evaluation,pre,no_kw,pair_sec,0.5789849552466196,0.5665598507816593,0.590396735201005
+true,doubtful rows dropped from the evaluation,pre,no_kw,pair_day,0.5988747245829399,0.5881866092628176,0.6093946748884048
+true,doubtful rows dropped from the evaluation,pre,no_kw+mim,auc,0.6680464379697165,0.6494743026266819,0.687750277377737
+true,doubtful rows dropped from the evaluation,pre,no_kw+mim,rho_day,0.27215765994936447,0.23932999366243143,0.3016456576613368
+true,doubtful rows dropped from the evaluation,pre,no_kw+mim,top10,0.27835051546391754,0.1958762886597938,0.3711340206185567
+true,doubtful rows dropped from the evaluation,pre,no_kw+mim,pair_sec,0.589792420491335,0.5787910958699714,0.5998743686886651
+true,doubtful rows dropped from the evaluation,pre,no_kw+mim,pair_day,0.6085694050991501,0.5971648946932658,0.6189321450508304
+true,doubtful rows dropped from the evaluation,pre,no_kw+words,auc,0.6872501182770304,0.6717294886354221,0.7039626885938591
+true,doubtful rows dropped from the evaluation,pre,no_kw+words,rho_day,0.29148708012918934,0.2559539496404753,0.3249669809294673
+true,doubtful rows dropped from the evaluation,pre,no_kw+words,top10,0.24742268041237114,0.16494845360824742,0.32989690721649484
+true,doubtful rows dropped from the evaluation,pre,no_kw+words,pair_sec,0.6040754142068178,0.5922923404605618,0.6160186080616775
+true,doubtful rows dropped from the evaluation,pre,no_kw+words,pair_day,0.615140069247718,0.6043770068310864,0.6247560378169124
+true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,auc,0.6786957654912337,0.660207151083551,0.6984932253703634
+true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,rho_day,0.26181872731106354,0.22551142031959656,0.29679505025874897
+true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,top10,0.23711340206185566,0.16494845360824742,0.31958762886597936
+true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,pair_sec,0.5916968196533994,0.5796370913583415,0.603828353152065
+true,doubtful rows dropped from the evaluation,pre,no_kw+full_L30,pair_day,0.6107176581680831,0.5989942958317074,0.6214453997261759
+true,doubtful rows dropped from the evaluation,pre,orig_all+full,auc,0.6856798426132078,0.6687418199449418,0.7031478924255047
+true,doubtful rows dropped from the evaluation,pre,orig_all+full,rho_day,0.3169565431199913,0.2820245890400191,0.3491246780356658
+true,doubtful rows dropped from the evaluation,pre,orig_all+full,top10,0.25773195876288657,0.17500000000000002,0.3402061855670103
+true,doubtful rows dropped from the evaluation,pre,orig_all+full,pair_sec,0.6023138449819082,0.590784740384299,0.6147264095788502
+true,doubtful rows dropped from the evaluation,pre,orig_all+full,pair_day,0.6183112999685237,0.6074396056887876,0.6283990419575761
+true,doubtful rows dropped from the evaluation,pre,orig_all+full_L30,auc,0.6729040125530336,0.6535793099011923,0.6916224754073903
+true,doubtful rows dropped from the evaluation,pre,orig_all+full_L30,rho_day,0.26601363674815337,0.22879768480568027,0.2987446243626328
+true,doubtful rows dropped from the evaluation,pre,orig_all+full_L30,top10,0.1958762886597938,0.12371134020618557,0.27835051546391754
+true,doubtful rows dropped from the evaluation,pre,orig_all+full_L30,pair_sec,0.5919348695486574,0.5803842165599409,0.602438235295546
+true,doubtful rows dropped from the evaluation,pre,orig_all+full_L30,pair_day,0.6088684293358514,0.5977218023430884,0.618529825839136
+true,doubtful rows dropped from the evaluation,pre,kw_only,auc,0.5682454643911619,0.5505253207490118,0.5870757347964172
+true,doubtful rows dropped from the evaluation,pre,kw_only,rho_day,0.16012890446706946,0.12735992011912303,0.19286464168652317
+true,doubtful rows dropped from the evaluation,pre,kw_only,top10,0.18556701030927836,0.1134020618556701,0.25798969072164923
+true,doubtful rows dropped from the evaluation,pre,kw_only,pair_sec,0.5521329270615121,0.5407791089211118,0.5624857031357439
+true,doubtful rows dropped from the evaluation,pre,kw_only,pair_day,0.567429965376141,0.5585094232208926,0.5772542243731228
+true,doubtful rows dropped from the evaluation,pre,full_only,auc,0.6434023964187473,0.6256573058544761,0.6594608513372764
+true,doubtful rows dropped from the evaluation,pre,full_only,rho_day,0.2524610987769539,0.21264909207764643,0.2852349466051464
+true,doubtful rows dropped from the evaluation,pre,full_only,top10,0.23711340206185566,0.15463917525773196,0.31958762886597936
+true,doubtful rows dropped from the evaluation,pre,full_only,pair_sec,0.583222243382213,0.5685722143519444,0.5966584070785923
+true,doubtful rows dropped from the evaluation,pre,full_only,pair_day,0.597922568460812,0.5857440279015239,0.6084385208036656
+true,doubtful rows dropped from the evaluation,pre,tfidf_ridge,auc,0.6252937818000885,0.60793985928942,0.6444500096815526
+true,doubtful rows dropped from the evaluation,pre,tfidf_ridge,rho_day,0.2770794543823067,0.24361175099205173,0.3091733068169425
+true,doubtful rows dropped from the evaluation,pre,tfidf_ridge,top10,0.23711340206185566,0.15463917525773196,0.31958762886597936
+true,doubtful rows dropped from the evaluation,pre,tfidf_ridge,pair_sec,0.6017901352123405,0.5893487253819356,0.6139024748203815
+true,doubtful rows dropped from the evaluation,pre,tfidf_ridge,pair_day,0.6051463644948064,0.5941950462595421,0.6153577402494954
+true,doubtful rows dropped from the evaluation,pre,random,top10,0.11300005745569158,,

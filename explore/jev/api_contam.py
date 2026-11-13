@@ -16,6 +16,7 @@ STATE = ("Upworthy, a viral news website, ran a randomized A/B test of headlines
 Q = "Which headline got the higher click-through rate?"
 sc = np.load("/home/user/explore/oof_score_confirmatory_roberta.npy")
 print("sig pairs", len(sig), "no-winner", len(nw), "with-winner", len(ww))
+out = []
 for nm, pick in sets.items():
     jobs = [(STATE, {"winner": {"type": "choice", "instructions": Q, "criteria": {"A": H[(S.ev_a if o == 0 else S.ev_b)[i]], "B": H[(S.ev_b if o == 0 else S.ev_a)[i]]}}})
             for o in (0, 1) for i in pick]
@@ -24,4 +25,6 @@ for nm, pick in sets.items():
     p = (pA[:n] + 1 - pA[n:]) / 2; zz = S.zz[pick]
     acc = np.mean((p > .5) == (zz > 0)); se = np.sqrt(acc * (1 - acc) / n)
     dr = sc[S.ev_a[pick]] - sc[S.ev_b[pick]]
+    out.append(pd.DataFrame(dict(set=nm, pair=pick, p0=pA[:n], p1=pA[n:], zz=zz)))
     print(f"{nm}: n={n} Jev {acc:.3f} ± {1.96*se:.3f}   RoBERTa (supervised) {np.mean((dr > 0) == (zz > 0)):.3f}   median |z| {np.median(np.abs(zz)):.2f}")
+pd.concat(out).to_csv("/home/user/jev/api_upw_winner_split.csv", index=False)
