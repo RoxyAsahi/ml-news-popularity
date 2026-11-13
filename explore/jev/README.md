@@ -17,3 +17,5 @@ Exploratory scripts (paths point at the exploration machine; not part of run_all
 
 The v19 scripts (`scripts/v2_judge_summary.py`, `scripts/v4_by_quarter_and_value.py`, `scripts/fig_v19.py`) read the
 cached outputs in `results/`; rerunning the API scripts needs a TypeSafe key in `$TYPESAFE_API_KEY`.
+* `api_paraphrase.py` - paraphrase test: 250 early-2013 pairs with every headline reworded
+  (`results/paraphrases_2013H1.txt`, written by an AI assistant; sources in `results/paraphrase_sources.txt`).

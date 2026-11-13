@@ -31,6 +31,6 @@ done
 # data/interim/). Judge (JEV) outputs are read from the cached API/open-model results in explore/jev/results/,
 # so no API key is needed; explore/jev/ holds the scripts that produced them.
 for s in scripts/v1_past_only_called.py scripts/v2_judge_summary.py scripts/v3_signal_groups.py \
-         scripts/v4_by_quarter_and_value.py scripts/fig_v19.py scripts/fig_v19_called.py; do
+         scripts/v4_by_quarter_and_value.py scripts/v5_regime_break.py scripts/fig_v19.py scripts/fig_v19_called.py; do
   echo "== $s"; python "$s"
 done
