@@ -1,0 +1,67 @@
+setting,period,scorer,scoring,est,lo,hi,n
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, real headline",as in v19 (url column as distributed),0.5950991831971996,0.5601928009260573,0.6321337675053201,857
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, real headline",re-scored (true rows),0.5950991831971996,0.5613532140935987,0.6288844246961045,857
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, URL keywords",re-scored (true rows),0.5495915985997666,0.5171613907207833,0.5822254901960784,857
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, real headline, most confident 25%",re-scored (true rows),0.6869158878504673,0.6143463613393731,0.7488589593955403,214
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, real headline, most confident 10%",re-scored (true rows),0.7058823529411765,0.6128747628083492,0.802522349936143,85
+same-day same-section pairs,2013-01-07..2013-06-05,headline-word memory (past-only),re-scored (true rows),0.5790725326991677,0.5469748709501171,0.6064090324897197,841
+same-day same-section pairs,2013-01-07..2013-06-05,kw_avg_avg,re-scored (true rows),0.5530921820303384,0.5161403959950533,0.5873766871659132,857
+same-day same-section pairs,2013-01-07..2013-06-05,"JEV, real headline","re-scored, same true section",0.5950991831971996,0.5631503821111294,0.6281041282676338,857
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, real headline",as in v19 (url column as distributed),0.4887050588609609,0.4717358634989585,0.5050166641613978,3143
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, real headline",re-scored (true rows),0.5938110749185668,0.5775541546093427,0.609969865076842,3070
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, URL keywords",re-scored (true rows),0.5205211726384364,0.5029188337008175,0.5390367707658495,3070
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, real headline, most confident 25%",re-scored (true rows),0.6766623207301173,0.644055522349827,0.7095173933706217,767
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, real headline, most confident 10%",re-scored (true rows),0.7198697068403909,0.6699983660130719,0.7697791353383459,307
+same-day same-section pairs,2013-06-06..2014-12-31,headline-word memory (past-only),re-scored (true rows),0.6278918214402085,0.6101496146354768,0.6469681438861828,3069
+same-day same-section pairs,2013-06-06..2014-12-31,kw_avg_avg,re-scored (true rows),0.597557003257329,0.5788882893735813,0.6159380431823199,3070
+same-day same-section pairs,2013-06-06..2014-12-31,"JEV, real headline","re-scored, same true section",0.5677655677655677,0.5250862898599005,0.6087017245567161,546
+same-day same-section pairs,all,"JEV, real headline",as in v19 (url column as distributed),0.5115,0.49526131127591844,0.5268349182395964,4000
+same-day same-section pairs,all,"JEV, real headline",re-scored (true rows),0.5940921823274764,0.5786934016167096,0.6092733893116024,3927
+same-day same-section pairs,all,"JEV, URL keywords",re-scored (true rows),0.5268652915711739,0.5115168807726003,0.5422224412266013,3927
+same-day same-section pairs,all,"JEV, real headline, most confident 25%",re-scored (true rows),0.6778797145769623,0.6488559465990893,0.706675983436853,981
+same-day same-section pairs,all,"JEV, real headline, most confident 10%",re-scored (true rows),0.6964285714285714,0.6501176938024614,0.7372262773722628,392
+same-day same-section pairs,all,headline-word memory (past-only),re-scored (true rows),0.6173913043478261,0.6023922535083419,0.6327896077144453,3910
+same-day same-section pairs,all,kw_avg_avg,re-scored (true rows),0.5878533231474408,0.5726624544681674,0.6047513336994113,3927
+same-day same-section pairs,all,"JEV, real headline","re-scored, same true section",0.5844618674269423,0.5583265764554521,0.6116417261832708,1403
+same-day pairs,2013-01-07..2013-06-05,"JEV, real headline",as in v19 (url column as distributed),0.5493975903614458,0.5169878826530613,0.5851461818365593,830
+same-day pairs,2013-01-07..2013-06-05,"JEV, real headline",re-scored (true rows),0.5493975903614458,0.5136970537391742,0.5856101587049043,830
+same-day pairs,2013-01-07..2013-06-05,"JEV, URL keywords",re-scored (true rows),0.5240963855421686,0.4867539066244847,0.5609482341557813,830
+same-day pairs,2013-01-07..2013-06-05,"JEV, real headline, most confident 25%",re-scored (true rows),0.6231884057971014,0.5454320432043204,0.6947647344166868,207
+same-day pairs,2013-01-07..2013-06-05,"JEV, real headline, most confident 10%",re-scored (true rows),0.5662650602409639,0.45454545454545453,0.6842105263157895,83
+same-day pairs,2013-01-07..2013-06-05,headline-word memory (past-only),re-scored (true rows),0.583743842364532,0.5495490183579806,0.6192278521298492,812
+same-day pairs,2013-01-07..2013-06-05,kw_avg_avg,re-scored (true rows),0.5674698795180723,0.5327312743689718,0.6032471061547149,830
+same-day pairs,2013-01-07..2013-06-05,"JEV, real headline","re-scored, same true section",0.5263157894736842,0.447999297999298,0.6014839654640765,152
+same-day pairs,2013-06-06..2014-12-31,"JEV, real headline",as in v19 (url column as distributed),0.5138801261829653,0.4959058966974039,0.5308799377935896,3170
+same-day pairs,2013-06-06..2014-12-31,"JEV, real headline",re-scored (true rows),0.5803310613437196,0.5634197542576683,0.5974256562200059,3081
+same-day pairs,2013-06-06..2014-12-31,"JEV, URL keywords",re-scored (true rows),0.5131450827653359,0.4958434579631514,0.5322116316473525,3081
+same-day pairs,2013-06-06..2014-12-31,"JEV, real headline, most confident 25%",re-scored (true rows),0.6649350649350649,0.6287474303713528,0.6966618580101733,770
+same-day pairs,2013-06-06..2014-12-31,"JEV, real headline, most confident 10%",re-scored (true rows),0.6948051948051948,0.6460310925200092,0.7450541494546806,308
+same-day pairs,2013-06-06..2014-12-31,headline-word memory (past-only),re-scored (true rows),0.620253164556962,0.6022469830442522,0.638187116833548,3081
+same-day pairs,2013-06-06..2014-12-31,kw_avg_avg,re-scored (true rows),0.5983446932814022,0.5811618171615058,0.6143098147169532,3081
+same-day pairs,2013-06-06..2014-12-31,"JEV, real headline","re-scored, same true section",0.5607985480943739,0.5222390914779839,0.5996245618494636,551
+same-day pairs,all,"JEV, real headline",as in v19 (url column as distributed),0.52125,0.5058123718335283,0.5358456244589879,4000
+same-day pairs,all,"JEV, real headline",re-scored (true rows),0.5737663001789823,0.5594730475879719,0.5890534714970412,3911
+same-day pairs,all,"JEV, URL keywords",re-scored (true rows),0.5154691894656098,0.4997423920063554,0.5316217377341197,3911
+same-day pairs,all,"JEV, real headline, most confident 25%",re-scored (true rows),0.6560900716479018,0.6237113402061856,0.686892408464557,977
+same-day pairs,all,"JEV, real headline, most confident 10%",re-scored (true rows),0.6751918158567775,0.6324899691358025,0.7189329589329589,391
+same-day pairs,all,headline-word memory (past-only),re-scored (true rows),0.6126380683277678,0.5972789978899996,0.6290112797215468,3893
+same-day pairs,all,kw_avg_avg,re-scored (true rows),0.5917923804653541,0.577184745152817,0.6070583077272242,3911
+same-day pairs,all,"JEV, real headline","re-scored, same true section",0.5533428165007113,0.5190831202558196,0.5897586206896551,703
+whole-day lineup,2013-01-07..2013-06-05,"JEV, within-day Spearman",as in v19 (url column as distributed),0.14376679537973122,0.11622751436265613,0.1704825893781869,150
+whole-day lineup,2013-01-07..2013-06-05,"JEV, top pick in day's top 10%",as in v19 (url column as distributed),0.19333333333333333,0.13333333333333333,0.26,150
+whole-day lineup,2013-01-07..2013-06-05,random pick in day's top 10%,as in v19 (url column as distributed),0.11173025963274821,0.10983466447090615,0.11387298555778617,150
+whole-day lineup,2013-06-06..2014-12-31,"JEV, within-day Spearman",as in v19 (url column as distributed),-0.002822527759751022,-0.01571889352629144,0.010738685290204218,570
+whole-day lineup,2013-06-06..2014-12-31,"JEV, top pick in day's top 10%",as in v19 (url column as distributed),0.11578947368421053,0.0911842105263158,0.14385964912280702,570
+whole-day lineup,2013-06-06..2014-12-31,random pick in day's top 10%,as in v19 (url column as distributed),0.11205719023153468,0.11116331656475423,0.11298606292685118,570
+whole-day lineup,all,"JEV, within-day Spearman",as in v19 (url column as distributed),0.027716914560974443,0.01601694670658483,0.04060263532805936,720
+whole-day lineup,all,"JEV, top pick in day's top 10%",as in v19 (url column as distributed),0.13194444444444445,0.10833333333333334,0.15833333333333333,720
+whole-day lineup,all,random pick in day's top 10%,as in v19 (url column as distributed),0.11198907969012084,0.11117672482195007,0.11282861668014363,720
+whole-day lineup,2013-01-07..2013-06-05,"JEV, within-day Spearman",re-scored (true rows),0.14376679537973122,0.11584122781362043,0.17137469527904695,150
+whole-day lineup,2013-01-07..2013-06-05,"JEV, top pick in day's top 10%",re-scored (true rows),0.19333333333333333,0.13333333333333333,0.26,150
+whole-day lineup,2013-01-07..2013-06-05,random pick in day's top 10%,re-scored (true rows),0.11173025963274821,0.10978126914532739,0.11380796681440143,150
+whole-day lineup,2013-06-06..2014-12-31,"JEV, within-day Spearman",re-scored (true rows),0.15976092821342494,0.14783069206574923,0.17259312682629205,570
+whole-day lineup,2013-06-06..2014-12-31,"JEV, top pick in day's top 10%",re-scored (true rows),0.23333333333333334,0.2,0.27017543859649124,570
+whole-day lineup,2013-06-06..2014-12-31,random pick in day's top 10%,re-scored (true rows),0.11151784374363509,0.11062689278581023,0.11237433042174132,570
+whole-day lineup,all,"JEV, within-day Spearman",re-scored (true rows),0.15642881720640542,0.14468081784254558,0.1686421382512058,720
+whole-day lineup,all,"JEV, top pick in day's top 10%",re-scored (true rows),0.225,0.19302083333333334,0.25833333333333336,720
+whole-day lineup,all,random pick in day's top 10%,re-scored (true rows),0.11156209705386701,0.11074812528626506,0.11248458563513056,720

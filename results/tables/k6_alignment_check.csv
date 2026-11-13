@@ -1,0 +1,13 @@
+target,rows,url,score,n
+"section (7 classes), accuracy","2013-05-01..2013-06-05 (held out, file aligned)",as distributed,0.5423250564334086,1772
+"section (7 classes), accuracy",2013-06-06..2013-12-31,as distributed,0.19152674736431083,10244
+"section (7 classes), accuracy",2013-06-06..2013-12-31,re-aligned,0.5063451776649747,10244
+"section (7 classes), accuracy",2014,as distributed,0.1631915093453555,21294
+"section (7 classes), accuracy",2014,re-aligned,0.4439748285902132,21294
+"section (7 classes), accuracy",chance (majority class / 0.5),,0.23124484748557295,31538
+"has video (num_videos > 0), AUC","2013-05-01..2013-06-05 (held out, file aligned)",as distributed,0.7290315777157882,1772
+"has video (num_videos > 0), AUC",2013-06-06..2013-12-31,as distributed,0.5248903934167921,10244
+"has video (num_videos > 0), AUC",2013-06-06..2013-12-31,re-aligned,0.7164718900716279,10244
+"has video (num_videos > 0), AUC",2014,as distributed,0.5001757654392557,21294
+"has video (num_videos > 0), AUC",2014,re-aligned,0.6324498429600839,21294
+"has video (num_videos > 0), AUC",chance (majority class / 0.5),,0.5,31538
