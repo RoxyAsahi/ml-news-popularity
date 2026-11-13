@@ -1,0 +1,7 @@
+quantity,value,lo,hi
+"articles per section-day, weekend / weekday",0.421,,
+"other-section articles per day, weekend / weekday",0.36,,
+volume effect from weekdays only: same section (log-log slope),-0.134,,
+volume effect from weekdays only: other sections (log-log slope),-0.189,,
+weekend premium predicted from crowding alone (%),35.801,25.808,46.588
+weekend premium estimated directly (%),29.112,24.953,33.409
