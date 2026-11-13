@@ -1,0 +1,7 @@
+metric,est,lo,hi
+geo_mean_ratio_top_vs_day_median,2.633933952222408,2.3863088731814748,2.9225215149756614
+geo_mean_ratio_top_vs_random_article,2.1161648312366776,1.9178546515256683,2.338804065009052
+median_shares_top_pick,3500.0,,
+median_shares_all_scored,1400.0,,
+share_top_pick_above_day_median,0.7871559633027523,,
+days,545.0,,
