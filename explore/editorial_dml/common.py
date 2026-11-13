@@ -55,7 +55,8 @@ STYLE = {
     "word_len": ("average word length", "average_token_length"),
 }
 DAY_LEVEL = ["weekend", "vol_same", "vol_other"]
-ADDED = ["day", "week", "chan", "dow", "vol_same", "vol_other", "row", "vol_same_lead7", "url_in_file", "title"]  # columns build() adds
+ADDED = ["day", "week", "chan", "dow", "vol_same", "vol_other", "row", "vol_same_lead7", "url_in_file", "title",
+         "vol_same_lag1", "vol_same_lead1", "vol_other_lag1", "vol_other_lead1"]  # columns build() adds
 
 
 def groups(df):
@@ -87,6 +88,12 @@ def build():
     # volume one week later (same weekday): placebo treatment
     key = d.assign(n=n_same).drop_duplicates(["day", "chan"]).set_index(["day", "chan"]).n
     full["vol_same_lead7"] = np.log(pd.MultiIndex.from_arrays([day + 7, chan]).map(key).to_numpy(dtype=float))
+    nday = d.groupby("day").size()
+    for nme, sh in [("lag1", -1), ("lead1", 1)]:     # neighbouring days, for the spillover check (d7)
+        ns = pd.MultiIndex.from_arrays([day + sh, chan]).map(key).to_numpy(dtype=float)
+        nd = pd.Series(day + sh).map(nday).to_numpy(dtype=float)
+        full[f"vol_same_{nme}"] = np.log(ns)
+        full[f"vol_other_{nme}"] = np.log(np.clip(nd - ns, 1, None))
     keep = ((full.n_tokens_content > 0)      # 1,181 pages whose text was not parsed: all content features are 0
             & (full.n_unique_tokens <= 1)    # one corrupt row
             & full.title.notna()).to_numpy()  # last 152 rows (true url outside the file) + 24 without a sitemap headline
@@ -139,6 +146,7 @@ def control_sets(df):
         W["title-ldachan" + tag] = np.column_stack([c[:, [0] + ([c.shape[1] - 1] if tag == "" else [])], kw, nk, P])
         W["title-emb" + tag] = W["topic" + tag]
         W["title-time" + tag] = np.column_stack([c[:, 1:], lda, kw, nk, P])
+    W["content"] = np.column_stack([chan_d, lda, kw, nk, P])          # what the article is, no date or weekday (d7)
     return W
 
 

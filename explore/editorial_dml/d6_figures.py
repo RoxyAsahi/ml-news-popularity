@@ -1,6 +1,6 @@
 """D6: figures for the editorial-lever analysis (reads the CSVs in out/).
 
-fig_levers.png         raw association vs the predictive model's what-if vs the deconfounded estimate
+fig_levers.png         raw association vs the predictive model's what-if vs the adjusted (double ML) estimate
 fig_dose_response.png  effect by bin of images, videos, body length and internal links
 """
 import matplotlib

@@ -1,4 +1,5 @@
-"""D2: deconfounded effect of each editorial lever, with the confounder set growing step by step.
+"""D2: adjusted association of each editorial lever with shares, with the confounder set growing step by step.
+(Whether the adjusted number can be read as an effect is the subject of d5; for article levers it cannot.)
 
 Ladder of confounder sets W (common.control_sets):
   none   nothing held fixed (raw slope)

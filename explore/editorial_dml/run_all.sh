@@ -6,7 +6,7 @@
 set -euo pipefail
 cd "$(dirname "$0")"
 PY=${PY:-python}
-for s in d0_title_embeddings d1_naive d2_dml_ladder d3_dose_response d4_heterogeneity d5_sensitivity d6_figures; do
+for s in d0_title_embeddings d1_naive d2_dml_ladder d3_dose_response d4_heterogeneity d5_sensitivity d7_weekend_crowding d6_figures d8_cite_tables; do
   [ -f "$s.py" ] || continue
   echo "== $s"; HF_HUB_DISABLE_XET=1 $PY -W ignore "$s.py" > "out/$s.log" 2>&1 || { echo "FAILED: $s (see out/$s.log)"; exit 1; }
 done
