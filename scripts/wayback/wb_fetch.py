@@ -54,7 +54,7 @@ _last = [0.0]
 def log(*a):
     line = dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S ") + " ".join(str(x) for x in a)
     print(line, flush=True)
-    with open(os.path.join(ARGS.root, "log.txt"), "a", encoding="utf-8") as f:
+    with open(os.path.join(ARGS.root, "log%s.txt" % ARGS.tag), "a", encoding="utf-8") as f:
         f.write(line + "\n")
 
 
@@ -116,9 +116,10 @@ def cdx_query(name, params):
         if not resume:
             break
     os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path + ".tmp", "w", encoding="utf-8") as f:
+    tmp = "%s.%d.tmp" % (path, os.getpid())
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(rows, f)
-    os.replace(path + ".tmp", path)
+    os.replace(tmp, path)
     return rows
 
 
@@ -232,7 +233,7 @@ def save_raw(kind, ts, key, data):
 
 
 def status(**kw):
-    path = os.path.join(ARGS.root, "status.json")
+    path = os.path.join(ARGS.root, "status%s.json" % ARGS.tag)
     cur = {}
     if os.path.exists(path):
         try:
@@ -241,9 +242,10 @@ def status(**kw):
         except Exception:
             cur = {}
     cur.update(kw, updated=dt.datetime.utcnow().isoformat())
-    with open(path + ".tmp", "w", encoding="utf-8") as f:
+    tmp = "%s.%d.tmp" % (path, os.getpid())
+    with open(tmp, "w", encoding="utf-8") as f:
         json.dump(cur, f, indent=1)
-    os.replace(path + ".tmp", path)
+    os.replace(tmp, path)
 
 
 def months(a="201301", b="201502"):
@@ -323,20 +325,22 @@ def stage_lists():
 
 # ------------------------------------------------------------------ stage: artcdx / articles
 def stage_artcdx():
-    d = dt.date(2013, 1, 1)
+    days = [dt.date(2013, 1, 1) + dt.timedelta(days=k) for k in range(730)]
+    if ARGS.reverse:
+        days.reverse()
     n = 0
-    while d <= dt.date(2014, 12, 31):
+    for i, d in enumerate(days):
         name = "art_" + d.strftime("%Y%m%d")
         rows = cdx_query(name, {"url": "mashable.com/%s/" % d.strftime("%Y/%m/%d"), "matchType": "prefix",
                                 "from": d.strftime("%Y%m%d"), "to": "20151231", "filter": "statuscode:200",
                                 "fl": "timestamp,original,digest"})
         n += len(rows or [])
-        if d.day == 1:
-            log("artcdx", d, "rows so far", n)
-            status(artcdx_day=str(d), artcdx_rows=n)
-        d += dt.timedelta(days=1)
-    status(artcdx_finished=True, artcdx_rows=n)
-    log("artcdx finished", n)
+        if i % 20 == 0:
+            log("artcdx", d, i + 1, "/ 730 rows so far", n)
+            status(artcdx_day=str(d), artcdx_pos=i + 1, artcdx_rows=n)
+    missing = [d for d in days if not os.path.exists(os.path.join(ARGS.root, "cdx", "art_%s.json" % d.strftime("%Y%m%d")))]
+    status(artcdx_finished=not missing, artcdx_rows=n, artcdx_missing=len(missing))
+    log("artcdx finished", n, "missing days", len(missing))
 
 
 def article_plan():
@@ -382,8 +386,8 @@ def stage_articles():
     log("articles plan: pass1", len(p1), "pass2", len(p2), "pass3", len(p3), "done", len(done))
     n = 0
     for pno, plan in ((1, p1), (2, p2), (3, p3)):
-        if ARGS.max_pass and pno > ARGS.max_pass:
-            break
+        if (ARGS.max_pass and pno > ARGS.max_pass) or (ARGS.only_pass and pno != ARGS.only_pass):
+            continue
         for i, (aid, (ts, orig, dig, _)) in enumerate(plan):
             key = "%s_%s" % (ts, hashlib.md5(aid.encode()).hexdigest()[:10])
             if key in done:
@@ -435,20 +439,24 @@ def main():
     global ARGS
     ap = argparse.ArgumentParser()
     ap.add_argument("--root", required=True)
-    ap.add_argument("--stage", default="all", choices=["all", "lists", "artcdx", "articles"])
+    ap.add_argument("--stage", default="all", help="all, or a comma list of lists,artcdx,articles")
     ap.add_argument("--delay", type=float, default=1.0)
     ap.add_argument("--max-pass", type=int, default=0)
+    ap.add_argument("--only-pass", type=int, default=0, help="articles stage: run only this pass (1, 2 or 3)")
+    ap.add_argument("--reverse", action="store_true", help="artcdx stage: walk the days from the end")
+    ap.add_argument("--tag", default="", help="suffix for log/status files when several processes share --root")
     ap.add_argument("--keep-awake", action="store_true", help="Windows: no idle sleep while running on mains power")
     ARGS = ap.parse_args()
     os.makedirs(os.path.join(ARGS.root, "parsed"), exist_ok=True)
     if ARGS.keep_awake:
         keep_awake_on_ac()
     log("start", ARGS.stage, "delay", ARGS.delay, "python", sys.version.split()[0])
-    if ARGS.stage in ("all", "lists"):
+    st = ["lists", "artcdx", "articles"] if ARGS.stage == "all" else ARGS.stage.split(",")
+    if "lists" in st:
         stage_lists()
-    if ARGS.stage in ("all", "artcdx"):
+    if "artcdx" in st:
         stage_artcdx()
-    if ARGS.stage in ("all", "articles"):
+    if "articles" in st:
         stage_articles()
     log("all done")
 
