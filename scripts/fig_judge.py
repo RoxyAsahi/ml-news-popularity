@@ -1,5 +1,5 @@
-"""Figures for the v19 report. Reads results/tables/v1_*, v2_judge_summary.csv and explore/jev/results.
-Output: results/figures/v19_fig_judge.png"""
+"""Figure for RQ3-4 (repaired data). Reads results/tables/v1_*, v2_judge_summary.csv and explore/jev/results.
+Output: results/figures/fig_judge.png"""
 from pathlib import Path
 import sys
 import numpy as np, pandas as pd
@@ -31,21 +31,20 @@ def rep(name):
 
 MS, UP = "mashable_same_section_pairs", "upworthy_sig_pairs"
 rows = [("Across Mashable articles, same day & section", None, None),
-        ("HistGB, 58 features", v1("hgb"), BLUE),
-        ("kw_avg_avg alone (keyword history)", v1("kw_avg_avg"), BLUE),
-        ("HistGB + headline embedding", v1("hgb_bge"), BLUE),
+        ("HistGB, 58 features + headline", v1("hgb_bge"), BLUE),
+        ("Ridge, headline embedding", v1("bge"), BLUE),
         ("Ridge, TF-IDF of headline", v1("tfidf"), BLUE),
-        ("Ridge, bge headline embedding", v1("bge"), BLUE),
-        ("JEV judge, headline", v2(MS, "judge_api"), BLUE),
-        ("... its most confident 10%", v2(MS, "judge_api", "acc_top10pct_conf"), BLUE),
-        ("JEV-9B (open), headline", v2(MS + "_scored_months", "judge_open_9b"), BLUE),
+        ("HistGB, 58 features", v1("hgb"), BLUE),
         ("JEV judge, headline + 6 features", v2("mashable_same_section_pairs_featprompt", "judge_api_title_plus_features"), BLUE),
+        ("JEV judge, headline (zero-shot)", v2(MS, "judge_api"), BLUE),
+        ("... its most confident 10%", v2(MS, "judge_api", "acc_top10pct_conf"), BLUE),
+        ("JEV-9B (open weights), headline", v2(MS, "judge_open_9b"), BLUE),
+        ("JEV judge, URL keywords only", v2(MS, "judge_api_urlkeywords"), BLUE),
         ("Within one Upworthy article, randomized", None, None),
-        ("JEV judge, headline", v2(UP, "judge_api"), ORANGE),
-        ("... its most confident 25%", v2(UP, "judge_api", "acc_top25pct_conf"), ORANGE),
-        ("JEV-9B (open), headline", v2(UP, "judge_open_9b"), ORANGE),
         ("Ridge on RoBERTa, trained on tests", rep("roberta"), ORANGE),
-        ("Ridge on GloVe, trained on tests", rep("glove"), ORANGE)]
+        ("JEV judge, headline (zero-shot)", v2(UP, "judge_api"), ORANGE),
+        ("... its most confident 25%", v2(UP, "judge_api", "acc_top25pct_conf"), ORANGE),
+        ("JEV-9B (open weights), headline", v2(UP, "judge_open_9b"), ORANGE)]
 rows = [r for r in rows if r[2] is None or r[1] is not None]
 
 plt.rcParams.update({"font.size": 7.5, "axes.edgecolor": MUTED, "axes.labelcolor": INK, "xtick.color": INK, "ytick.color": INK})
@@ -76,15 +75,17 @@ def curve(p, truth):
     k = np.arange(1, len(c) + 1); keep = k / len(c); acc = np.cumsum(c) / k; m = keep >= 0.05
     return keep[m], acc[m]
 U = pd.read_csv(J / "api_upw_pairs.csv"); pu = ((U.p0 + 1 - U.p1) / 2).to_numpy()
-x, yy = curve(pu, U.zz.to_numpy() > 0); b.plot(x, yy, color=ORANGE, lw=2, label="JEV, Upworthy (within article)")
-P = pd.read_csv(J / "api_mash_titles_section.csv"); pm = ((P.p0_title + 1 - P.p1_title) / 2).to_numpy(); tm = y[P.a] > y[P.b]
-x, yy = curve(pm, tm); b.plot(x, yy, color=BLUE, lw=2, label="JEV, Mashable (across articles)")
-S = pd.read_csv(ROOT / "data" / "interim" / "v1_scores.csv"); h = np.full(len(df), np.nan); h[S.row] = S.hgb
-ok = ~np.isnan(h[P.a]) & ~np.isnan(h[P.b]); dh = (h[P.a] - h[P.b])[ok]
-x, yy = curve(dh, tm[ok]); b.plot(x, yy, color=BLUE, lw=1.5, ls=(0, (2.5, 1.5)), label="HistGB on features, Mashable")
+x, yy = curve(pu, U.zz.to_numpy() > 0); b.plot(x, yy, color=ORANGE, lw=2, label="JEV judge, Upworthy (within article)")
+P = pd.read_csv(J / "rep_mash_titles_section.csv"); pm = ((P.p0_title + 1 - P.p1_title) / 2).to_numpy(); tm = y[P.a] > y[P.b]
+x, yy = curve(pm, tm); b.plot(x, yy, color=BLUE, lw=2, label="JEV judge, Mashable (across articles)")
+S = pd.read_csv(ROOT / "data" / "interim" / "v1_scores.csv"); S = S[S.has_title]
+for col_, lab_, ls_ in [("bge", "headline ridge, Mashable", (0, (2.5, 1.5))), ("hgb_bge", "features + headline, Mashable", (0, (1, 1)))]:
+    h = np.full(len(df), np.nan); h[S.row] = S[col_]
+    ok = ~np.isnan(h[P.a]) & ~np.isnan(h[P.b]); dh = (h[P.a] - h[P.b])[ok]
+    x, yy = curve(dh, tm[ok]); b.plot(x, yy, color=BLUE, lw=1.3, ls=ls_, label=lab_)
 b.axhline(0.5, color=MUTED, lw=0.8, ls="--")
 b.set_xlabel("share of pairs kept (most confident first)"); b.set_ylabel("accuracy on kept pairs")
 b.set_xlim(0, 1); b.set_ylim(0.32, 0.95); b.set_yticks([0.5, 0.6, 0.7, 0.8, 0.9]); b.legend(frameon=False, fontsize=6.5, loc="lower right", ncol=1)
 b.spines[["top", "right"]].set_visible(False); b.set_title("(b) Does confidence help?", loc="left", fontsize=8)
-fig.tight_layout(); fig.savefig(ROOT / "results" / "figures" / "v19_fig_judge.png", dpi=300)
+fig.tight_layout(); fig.savefig(ROOT / "results" / "figures" / "fig_judge.png", dpi=300)
 print("saved")

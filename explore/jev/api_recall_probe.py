@@ -5,8 +5,9 @@ on the period where its pairwise accuracy is higher."""
 import sys, numpy as np, pandas as pd
 sys.path.insert(0, "/home/user/ml-news-popularity/src"); sys.path.insert(0, "/home/user/jev")
 from newspop.data import load
+from newspop.titles import aligned_titles
 import jevapi
-df = load().reset_index(drop=True); df["title"] = pd.read_csv("/home/user/explore/mash_titles.csv").title
+df = load().reset_index(drop=True); df["title"] = aligned_titles(df)
 NAMES = dict(lifestyle="Lifestyle", entertainment="Entertainment", bus="Business", socmed="Social Media", tech="Tech", world="World")
 df["channel"] = "Other"
 for c, nm in NAMES.items():
@@ -25,7 +26,7 @@ for i in np.r_[early, late]:
 R = jevapi.call_many(jobs, cache=jevapi.Cache("/home/user/jev/cache_recall.jsonl"), workers=24, log_every=10**9)
 P = np.array([[np.nan] * 4 if isinstance(r, Exception) else [r["answers"]["shares"]["probabilities"][k] for k in "ABCD"] for r in R])
 out = pd.DataFrame(dict(row=np.r_[early, late], period=["2013H1"] * 1000 + ["2014"] * 1000, pA=P[:, 0], pB=P[:, 1], pC=P[:, 2], pD=P[:, 3]))
-out.to_csv("/home/user/jev/api_recall_probe.csv", index=False)
+out.to_csv("/home/user/jev/rep_recall_probe.csv", index=False)
 from scipy.stats import spearmanr
 from sklearn.metrics import roc_auc_score
 out["exp_band"] = P @ np.arange(4); out["shares"] = df.shares.to_numpy()[out.row]

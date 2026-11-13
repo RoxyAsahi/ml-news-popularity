@@ -1,24 +1,24 @@
-"""Late-period variant: 400 Mashable section pairs from the scored months (2013-07 on), positions >= 400 in the pair file.
+"""Repaired data: 400 random Mashable section pairs from the whole period (k = row of rep_mash_titles_section.csv).
 Open-weights baseline: JEV-9B (int8, CPU) on the same prompts as the API runs. 400 Upworthy significant pairs and
 400 Mashable same-day same-section pairs with real headlines, both option orders. Resumable."""
 import os, sys, time, numpy as np, pandas as pd
 sys.path.insert(0, "/home/user/ml-news-popularity/src"); sys.path.insert(0, "/home/user/jev")
 from newspop import upw_rank as ur
 from newspop.data import load
+from newspop.titles import aligned_titles
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 400
 S = ur.setup("confirmatory"); H = S.H.to_numpy()[S.hid]
 U = pd.read_csv("/home/user/jev/api_upw_pairs.csv").iloc[:0]
 USTATE = ("Upworthy, a viral news website, ran a randomized A/B test of headlines for the same story. "
           "Each headline was shown to a random share of the site's visitors.")
 UQ = "Which headline got the higher click-through rate?"
-df = load().reset_index(drop=True); df["title"] = pd.read_csv("/home/user/explore/mash_titles.csv").title
+df = load().reset_index(drop=True); df["title"] = aligned_titles(df)
 NAMES = dict(lifestyle="Lifestyle", entertainment="Entertainment", bus="Business", socmed="Social Media", tech="Tech", world="World")
 df["channel"] = "Other"
 for c, nm in NAMES.items():
     df.loc[df[f"data_channel_is_{c}"] == 1, "channel"] = nm
-M = pd.read_csv("/home/user/jev/api_mash_titles_section.csv")
-late = np.flatnonzero(pd.to_datetime(df.publish_date.to_numpy()[M.a]) >= pd.Timestamp("2013-07-01"))
-late = np.random.default_rng(1).choice(late, N, replace=False)
+M = pd.read_csv("/home/user/jev/rep_mash_titles_section.csv")
+late = np.sort(np.random.default_rng(1).choice(len(M), N, replace=False))
 MQ = "Which of these two articles was shared more often on social media?"
 items = []
 for k, i in enumerate(U.pair):
@@ -32,7 +32,7 @@ for k in late:
     for o in (0, 1):
         x, y = (df.title[a], df.title[b]) if o == 0 else (df.title[b], df.title[a])
         items.append(("mash", k, o, st, MQ, [x, y]))
-out = "/home/user/jev/local_runs_late.csv"
+out = "/home/user/jev/rep_local_runs.csv"
 done = set()
 if os.path.exists(out):
     D = pd.read_csv(out); done = set(zip(D.set, D.k, D.order))

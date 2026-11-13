@@ -1,15 +1,17 @@
 """Second question wording (robustness): 1,000 Mashable same-day same-section pairs and 1,000 Upworthy significant
-within-cell pairs, the same pairs as the main runs, both orders, with a different state line and question."""
+within-cell pairs, a random 1,000 of the main run's pairs on the repaired data (Mashable; k = row of rep_mash_titles_section.csv) and its first 1,000 (Upworthy), both orders, with a different state line and question."""
 import sys, numpy as np, pandas as pd
 sys.path.insert(0, "/home/user/ml-news-popularity/src"); sys.path.insert(0, "/home/user/jev")
 from newspop import upw_rank as ur
 from newspop.data import load
+from newspop.titles import aligned_titles
 import jevapi
 N = 1000
 S = ur.setup("confirmatory"); H = S.H.to_numpy()[S.hid]
 U = pd.read_csv("/home/user/jev/api_upw_pairs.csv").iloc[:N]
-df = load().reset_index(drop=True); df["title"] = pd.read_csv("/home/user/explore/mash_titles.csv").title
-M = pd.read_csv("/home/user/jev/api_mash_titles_section.csv").iloc[:N]
+df = load().reset_index(drop=True); df["title"] = aligned_titles(df)
+M = pd.read_csv("/home/user/jev/rep_mash_titles_section.csv").sample(N, random_state=0).sort_index()
+MK = M.index.to_numpy(); M = M.reset_index(drop=True)
 US, UQ = "Two headlines written for the same story on Upworthy.", "Which headline would make more readers click?"
 MS = "Two news articles from Mashable, a site about technology, digital culture and entertainment."
 MQ = "Which article did readers share more on Facebook, Twitter, Google+ and LinkedIn?"
@@ -27,8 +29,8 @@ pA = np.array([np.nan if isinstance(r, Exception) else r["answers"]["q"]["probab
 print("errors", int(np.isnan(pA).sum()))
 pu, pm = pA[:2 * N].reshape(N, 2), pA[2 * N:].reshape(N, 2)
 out = pd.concat([pd.DataFrame(dict(set="upw", k=np.arange(N), p0=pu[:, 0], p1=pu[:, 1])),
-                 pd.DataFrame(dict(set="mash", k=np.arange(N), p0=pm[:, 0], p1=pm[:, 1]))])
-out.to_csv("/home/user/jev/api_prompt2.csv", index=False)
+                 pd.DataFrame(dict(set="mash", k=MK, p0=pm[:, 0], p1=pm[:, 1]))])
+out.to_csv("/home/user/jev/rep_prompt2.csv", index=False)
 y = np.log1p(df.shares.to_numpy())
 for s, P, truth in [("upw", pu, U.zz.to_numpy() > 0), ("mash", pm, y[M.a] > y[M.b])]:
     p = (P[:, 0] + 1 - P[:, 1]) / 2

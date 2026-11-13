@@ -1,13 +1,17 @@
-"""Jev on Mashable with the real headlines (sitemap) vs URL keywords, same-day pairs. usage: N_PAIRS MODE (section|day)"""
+"""Jev on Mashable with the real headlines (sitemap) vs URL keywords, same-day pairs, on the repaired data
+(load() gives each row its true URL). usage: N_PAIRS MODE (section|day) [FIELDS, default title,slugt]
+Output: /home/user/jev/rep_mash_titles_{mode}.csv (a, b = rows of load(); url_a, url_b for reference)."""
 import sys, numpy as np, pandas as pd
 sys.path.insert(0, "/home/user/ml-news-popularity/src"); sys.path.insert(0, "/home/user/jev")
 from newspop.data import load
 from newspop import stories as st
+from newspop.titles import aligned_titles
 import jevapi
 n, mode = int(sys.argv[1]), sys.argv[2]
+FIELDS = (sys.argv[3] if len(sys.argv) > 3 else "title,slugt").split(",")
 df = load().reset_index(drop=True)
 df["slugt"] = st.slug_text(df.url).fillna("")
-df["title"] = pd.read_csv("/home/user/explore/mash_titles.csv").title
+df["title"] = aligned_titles(df)
 NAMES = dict(lifestyle="Lifestyle", entertainment="Entertainment", bus="Business", socmed="Social Media", tech="Tech", world="World")
 df["channel"] = "Other"
 for c, nm in NAMES.items():
@@ -22,6 +26,7 @@ while len(P) < n:
     if df.shares[a] != df.shares[b]:
         P.add((min(a, b), max(a, b)))
 P = pd.DataFrame(sorted(P), columns=["a", "b"])
+P["url_a"], P["url_b"] = df.url[P.a].to_numpy(), df.url[P.b].to_numpy()
 Q = "Which of these two articles was shared more often on social media?"
 
 
@@ -40,9 +45,9 @@ def job(a, b, o, field):
 
 
 cache = jevapi.Cache(f"/home/user/jev/cache_mash_titles.jsonl")
-for field in ["title", "slugt"]:
+for field in FIELDS:
     R = jevapi.call_many([job(a, b, o, field) for o in (0, 1) for a, b in zip(P.a, P.b)], cache=cache, workers=24, log_every=2000)
     pA = np.array([np.nan if isinstance(r, Exception) else r["answers"]["more_shared"]["probabilities"]["A"] for r in R])
     print(field, "errors", int(np.isnan(pA).sum()))
     P[f"p0_{field}"], P[f"p1_{field}"] = pA[:n], pA[n:]
-P.to_csv(f"/home/user/jev/api_mash_titles_{mode}.csv", index=False)
+P.to_csv(f"/home/user/jev/rep_mash_titles_{mode}.csv", index=False)
