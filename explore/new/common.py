@@ -41,3 +41,47 @@ def channel(df: pd.DataFrame) -> np.ndarray:
     names = np.array([c.replace("data_channel_is_", "") for c in cols] + ["other"])
     M = df[cols].to_numpy()
     return names[np.where(M.sum(1) > 0, M.argmax(1), len(cols))]
+
+
+NETS = ["twitter", "facebook", "linked_in", "google_plus", "pinterest", "stumble_upon"]
+STATES = ["new", "rising", "hot", "page"]
+
+
+def load_obs(df: pd.DataFrame, path=None, lists_only: bool = False) -> pd.DataFrame:
+    """Archive sightings joined to the rows of load_fixed() (column `row`), sorted by article and capture time."""
+    O = pd.read_parquet(path or ROOT / "data" / "interim" / "wb_obs.parquet")
+    if lists_only:
+        O = O[O.src != "article"]
+    O = O[(O.age_h > 0) & O.total.notna()].copy()
+    row_of = pd.Series(np.arange(len(df)), index=df.art_id.to_numpy())
+    row_of = row_of[row_of.index.notna() & ~row_of.index.duplicated()]
+    O["row"] = O.art_id.map(row_of)
+    return O.dropna(subset=["row"]).astype({"row": int}).sort_values(["row", "ts"]).reset_index(drop=True)
+
+
+def early_state(O: pd.DataFrame, h: float) -> pd.DataFrame:
+    """One row per article seen at age <= h: its LAST such sighting plus what was seen before it."""
+    o = O[O.age_h <= h]
+    g = o.groupby("row")
+    last = g.tail(1).set_index("row")
+    E = pd.DataFrame(index=last.index)
+    E["age"] = last.age_h
+    E["l_total"] = np.log1p(last.total)
+    for k in NETS:
+        E["l_" + k] = np.log1p(last[k].fillna(0))
+    E["fb_share"] = last.facebook.fillna(0) / (last.total + 1)
+    E["l_rate0"] = E.l_total - np.log(E.age.clip(lower=0.05))  # log average shares per hour so far
+    for c in STATES:
+        E["col_" + c] = (last.col == c).astype(float)
+    E["rank"] = last["rank"]
+    E["n_sight"] = g.size()
+    E["ever_rising"] = g.col.apply(lambda v: float((v == "rising").any()))
+    E["ever_hot"] = g.col.apply(lambda v: float((v == "hot").any()))
+    for k in ["vel_last", "vel_slope", "vel_max", "vel_min", "vel_first", "vel_n"]:
+        E[k] = last[k]
+    return E
+
+
+COUNT_COLS = ["age", "l_total"] + ["l_" + k for k in NETS] + ["fb_share", "l_rate0"]
+STATE_COLS = ["col_" + c for c in STATES] + ["rank", "n_sight", "ever_rising", "ever_hot"]
+VEL_COLS = ["vel_last", "vel_slope", "vel_max", "vel_min", "vel_first", "vel_n"]
