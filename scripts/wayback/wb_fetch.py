@@ -404,6 +404,33 @@ def stage_articles():
     log("articles finished")
 
 
+def keep_awake_on_ac():
+    """Windows only: while this process runs AND the machine is on mains power, ask Windows not to idle-sleep.
+    On battery the request is dropped, and it disappears automatically when the process exits."""
+    if os.name != "nt":
+        return
+    import ctypes
+    import threading
+
+    class SPS(ctypes.Structure):
+        _fields_ = [("ACLineStatus", ctypes.c_byte), ("BatteryFlag", ctypes.c_byte),
+                    ("BatteryLifePercent", ctypes.c_byte), ("SystemStatusFlag", ctypes.c_byte),
+                    ("BatteryLifeTime", ctypes.c_ulong), ("BatteryFullLifeTime", ctypes.c_ulong)]
+
+    def loop():
+        k = ctypes.windll.kernel32
+        while True:
+            try:
+                s = SPS()
+                k.GetSystemPowerStatus(ctypes.byref(s))
+                k.SetThreadExecutionState(0x80000000 | (0x00000001 if s.ACLineStatus == 1 else 0))
+            except Exception:
+                pass
+            time.sleep(60)
+
+    threading.Thread(target=loop, daemon=True).start()
+
+
 def main():
     global ARGS
     ap = argparse.ArgumentParser()
@@ -411,8 +438,11 @@ def main():
     ap.add_argument("--stage", default="all", choices=["all", "lists", "artcdx", "articles"])
     ap.add_argument("--delay", type=float, default=1.0)
     ap.add_argument("--max-pass", type=int, default=0)
+    ap.add_argument("--keep-awake", action="store_true", help="Windows: no idle sleep while running on mains power")
     ARGS = ap.parse_args()
     os.makedirs(os.path.join(ARGS.root, "parsed"), exist_ok=True)
+    if ARGS.keep_awake:
+        keep_awake_on_ac()
     log("start", ARGS.stage, "delay", ARGS.delay, "python", sys.version.split()[0])
     if ARGS.stage in ("all", "lists"):
         stage_lists()
