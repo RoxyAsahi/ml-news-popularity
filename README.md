@@ -3,25 +3,20 @@
 UvA *Machine Learning* (6012B0809Y), Final Group Project, Group 3.
 Deadline: **Sunday 13 December 2026, 23:59 CET** (Canvas). Deliverable: one zip with a ≤ 8-page PDF report and all code.
 
-## Research questions
+## Research questions (report v19: *What Can Be Called Before Publication?*)
 
-The project asks **how reliable the "popular" label is, and how much of what a model learns generalises**.
+All Mashable results use a strictly past-only protocol (monthly rolling origin) and decision-level metrics
+(day ranking, the day's top pick, same-day same-section pairs).
 
-| RQ | Question | Experiments |
+| RQ | Question | Scripts |
 | --- | --- | --- |
-| RQ1 Time & drift | Do shares keep growing with article age? How much worse is a chronological split than a random one, and does half-life recency weighting help? | E1, E2 |
-| RQ2 Share-derived features | `kw_*` and `self_reference_*` are built from earlier articles' share counts. Are they point-in-time, do they carry a clock, and how much performance depends on them? | E3 |
-| RQ3 Threshold & data size | How do ROC-AUC and PR-AUC change from the median to the 95th-percentile threshold? Learning curves (1%–100%) and regularisation strength for linear, kNN and boosting models. | E4, E5, E6 |
-| RQ4 Clustering | Do clusters in topic (LDA) + sentiment space differ in popularity? | E7 |
+| RQ1 | How much of an article's popularity can be called before publication? | `v1_past_only_called.py`, `v4_by_quarter_and_value.py`, `s11_chance.py` |
+| RQ2 | Where does the skill come from: context, story, article; platform history or content? | `s2_rq1_anatomy.py`, `v3_signal_groups.py`, `s5_rq3_competition.py` |
+| RQ3 | What does the real headline add, for supervised text models and a zero-shot judge (JEV), across articles and within one (Upworthy)? | `v1_past_only_called.py`, `v2_judge_summary.py`, `explore/jev/` |
+| RQ4 | How many randomized tests is an archive of past headlines worth? | `u3`–`u10` |
 
-Pilot findings (untuned, `scripts/01_pilot.py`):
-
-- Shares barely depend on article age (Spearman ρ = 0.03; youngest article is 8 days old), so shares can be used as a label without age correction.
-- The share of articles with ≥ 1400 shares drifts by month between 44% and 68%.
-- Gradient boosting reaches ROC-AUC ≈ 0.74 on a chronological split; dropping `kw_*` and `self_reference_*` costs ≈ 0.04. These features are point-in-time (not leakage), but three keyword columns act as a clock; removing those costs nothing.
-- Half-life recency weighting did not beat unweighted training in the pilot.
-
-The full plan is in [`docs/PLAN.md`](docs/PLAN.md); results notes per experiment are in [`docs/results/`](docs/results/), and the remaining work is queued in [`docs/TASKS.md`](docs/TASKS.md).
+Real headlines: `data/external/mashable_sitemap_titles.csv` (40,161 sitemap entries, 99.94% of the dataset matched;
+`scripts/fetch_mashable_titles.py`, `src/newspop/titles.py`). The previous report (v18) is kept in `report/v18/`.
 
 ## Setup
 
