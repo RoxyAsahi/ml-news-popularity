@@ -26,7 +26,10 @@ Feature sets (see k1_build_features.py for the rebuilt families; lag 1 unless st
   tfidf_ridge       ridge on TF-IDF of the headline (v19's text baseline)
   ...+judge         (true alignment only) + the cached zero-shot JEV lineup score of the headline (k5_rescore_judge.py)
 Resumable: scores are cached per feature set and month in data/interim/kw_rebuild/scores_{align}/.
-Output: results/tables/k2_metrics_{align}.csv, results/tables/k2_diffs_{align}.csv
+Robustness on the key feature sets: the same with calendar weeks resampled as blocks, and (true alignment) with
+the rows left out where neither title fingerprint agrees after re-alignment.
+Output: results/tables/k2_metrics_{align}.csv, k2_diffs_{align}.csv, k2_robust_metrics_{align}.csv,
+        k2_robust_diffs_{align}.csv
 """
 from __future__ import annotations
 
@@ -161,50 +164,71 @@ def pair_counts(s, yy, groups):
     return c, t
 
 
-rows, diffs = [], []
-for wname, (lo, hi) in WINDOWS.items():
-    ev = np.flatnonzero((day >= lo).to_numpy() & (day <= hi).to_numpy() & has_title)
-    days = np.unique(dn[ev]); D = len(days); di = np.searchsorted(days, dn[ev])
-    yv, pv, cv = y[ev], pop[ev], chan[ev]
-    day_rows = [np.flatnonzero(di == d) for d in range(D)]
-    per = {}
-    for mname in MODELS:
-        s = scores[mname][ev]
-        rho, top, cs, ts, cd, td = (np.full(D, np.nan) for _ in range(6))
-        for d, idx in enumerate(day_rows):
-            if len(idx) >= 10:
-                rho[d] = np.corrcoef(rankdata(s[idx]), rankdata(yv[idx]))[0, 1]
-                top[d] = float(yv[idx][np.argmax(s[idx])] >= np.quantile(yv[idx], 0.9))
-            cs[d], ts[d] = pair_counts(s, yv, [idx[cv[idx] == c] for c in np.unique(cv[idx])])
-            cd[d], td[d] = pair_counts(s, yv, [idx])
-        per[mname] = (s, rho, top, cs, ts, cd, td)
-    base_top = np.nanmean([np.mean(yv[i] >= np.quantile(yv[i], 0.9)) if len(i) >= 10 else np.nan for i in day_rows])
+KEY = ["orig_all", "no_kw", "no_kw+mim", "no_kw+words", "no_kw+full_L30", "orig_all+full", "orig_all+full_L30", "kw_only", "full_only", "tfidf_ridge"]
+doubt = np.zeros(n, bool)  # rows where neither title fingerprint agrees after re-alignment (k4_realign.py)
+if ALIGN == "true":
+    ra = pd.read_csv(INT / "realigned.csv").set_index("file_row")
+    doubt = (~ra.token_count_agrees.astype(bool) & ~ra.sentiment_agrees.astype(bool)).reindex(df.file_row.to_numpy()).to_numpy()
 
-    def stats(mname, w):
-        s, rho, top, cs, ts, cd, td = per[mname]; ok = ~np.isnan(rho)
-        return dict(auc=roc_auc_score(pv, s, sample_weight=w[di]),
-                    rho_day=np.sum(w[ok] * rho[ok]) / np.sum(w[ok]), top10=np.sum(w[ok] * top[ok]) / np.sum(w[ok]),
-                    pair_sec=np.sum(w * cs) / np.sum(w * ts), pair_day=np.sum(w * cd) / np.sum(w * td))
 
-    rng = np.random.default_rng(0)
-    W = [np.bincount(rng.integers(0, D, D), minlength=D).astype(float) for _ in range(B)]
-    point = {m: stats(m, np.ones(D)) for m in MODELS}
-    boot = {m: pd.DataFrame([stats(m, w) for w in W]) for m in MODELS}
-    for m in MODELS:
-        for k, v in point[m].items():
-            rows.append(dict(window=wname, scorer=m, metric=k, est=v, lo=boot[m][k].quantile(.025), hi=boot[m][k].quantile(.975)))
-        for ref in ["orig_all", "no_kw"]:
-            if m == ref:
-                continue
-            bd = boot[m] - boot[ref]
-            for k in point[m]:
-                diffs.append(dict(window=wname, scorer=m, vs=ref, metric=k, diff=point[m][k] - point[ref][k],
-                                  lo=bd[k].quantile(.025), hi=bd[k].quantile(.975)))
-    rows.append(dict(window=wname, scorer="random", metric="top10", est=base_top, lo=np.nan, hi=np.nan))
-    print(wname, "articles", len(ev), "days", D, flush=True)
+def evaluate(models, keep, block, tag):
+    """Metrics, intervals and paired differences. block = 1 resamples days, 7 resamples calendar weeks as blocks."""
+    rows, diffs = [], []
+    for wname, (lo, hi) in WINDOWS.items():
+        ev = np.flatnonzero((day >= lo).to_numpy() & (day <= hi).to_numpy() & has_title & keep)
+        days = np.unique(dn[ev]); D = len(days); di = np.searchsorted(days, dn[ev])
+        yv, pv, cv = y[ev], pop[ev], chan[ev]
+        day_rows = [np.flatnonzero(di == d) for d in range(D)]
+        per = {}
+        for mname in models:
+            s = scores[mname][ev]
+            rho, top, cs, ts, cd, td = (np.full(D, np.nan) for _ in range(6))
+            for d, idx in enumerate(day_rows):
+                if len(idx) >= 10:
+                    rho[d] = np.corrcoef(rankdata(s[idx]), rankdata(yv[idx]))[0, 1]
+                    top[d] = float(yv[idx][np.argmax(s[idx])] >= np.quantile(yv[idx], 0.9))
+                cs[d], ts[d] = pair_counts(s, yv, [idx[cv[idx] == c] for c in np.unique(cv[idx])])
+                cd[d], td[d] = pair_counts(s, yv, [idx])
+            per[mname] = (s, rho, top, cs, ts, cd, td)
+        base_top = np.nanmean([np.mean(yv[i] >= np.quantile(yv[i], 0.9)) if len(i) >= 10 else np.nan for i in day_rows])
 
-Rm = pd.DataFrame(rows); Dm = pd.DataFrame(diffs)
-Rm.insert(0, "align", ALIGN); Dm.insert(0, "align", ALIGN)
+        def stats(mname, w):
+            s, rho, top, cs, ts, cd, td = per[mname]; ok = ~np.isnan(rho)
+            return dict(auc=roc_auc_score(pv, s, sample_weight=w[di]),
+                        rho_day=np.sum(w[ok] * rho[ok]) / np.sum(w[ok]), top10=np.sum(w[ok] * top[ok]) / np.sum(w[ok]),
+                        pair_sec=np.sum(w * cs) / np.sum(w * ts), pair_day=np.sum(w * cd) / np.sum(w * td))
+
+        rng = np.random.default_rng(0)
+        blk = np.unique(days // block, return_inverse=True)[1]; nb = blk.max() + 1
+        W = [np.bincount(rng.integers(0, nb, nb), minlength=nb).astype(float)[blk] for _ in range(B)]
+        point = {m: stats(m, np.ones(D)) for m in models}
+        boot = {m: pd.DataFrame([stats(m, w) for w in W]) for m in models}
+        for m in models:
+            for k, v in point[m].items():
+                rows.append(dict(window=wname, scorer=m, metric=k, est=v, lo=boot[m][k].quantile(.025), hi=boot[m][k].quantile(.975)))
+            for ref in ["orig_all", "no_kw"]:
+                if m == ref:
+                    continue
+                bd = boot[m] - boot[ref]
+                for k in point[m]:
+                    diffs.append(dict(window=wname, scorer=m, vs=ref, metric=k, diff=point[m][k] - point[ref][k],
+                                      lo=bd[k].quantile(.025), hi=bd[k].quantile(.975)))
+        rows.append(dict(window=wname, scorer="random", metric="top10", est=base_top, lo=np.nan, hi=np.nan))
+        print(tag, wname, "articles", len(ev), "days", D, "blocks", nb, flush=True)
+    Rm, Dm = pd.DataFrame(rows), pd.DataFrame(diffs)
+    Rm.insert(0, "align", ALIGN); Dm.insert(0, "align", ALIGN); Rm.insert(1, "variant", tag); Dm.insert(1, "variant", tag)
+    return Rm, Dm
+
+
+# robustness on the key feature sets: week-block bootstrap; and (true alignment) without the doubtful rows
+key = [m for m in KEY if m in scores]
+rob = [evaluate(key, np.ones(n, bool), 7, "week-block bootstrap")]
+if doubt.any():
+    rob.append(evaluate(key, ~doubt, 1, "doubtful rows dropped from the evaluation"))
+pd.concat([r[0] for r in rob]).to_csv(TAB / f"k2_robust_metrics_{ALIGN}.csv", index=False)
+pd.concat([r[1] for r in rob]).to_csv(TAB / f"k2_robust_diffs_{ALIGN}.csv", index=False)
+Rm, Dm = evaluate(MODELS, np.ones(n, bool), 1, "main")
+Rm = Rm.drop(columns="variant"); Dm = Dm.drop(columns="variant")
 Rm.to_csv(TAB / f"k2_metrics_{ALIGN}.csv", index=False); Dm.to_csv(TAB / f"k2_diffs_{ALIGN}.csv", index=False)
 pd.set_option("display.width", 250); pd.set_option("display.max_rows", 500)
 for wname in WINDOWS:

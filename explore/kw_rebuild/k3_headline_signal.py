@@ -10,8 +10,9 @@ Signals (all strictly past-only, lag 1 day, from k1_build_features.py), under bo
 (C) Periods: before the first shifted row (2013-03-01 .. 2013-06-05), 2013-06-06 .. 2013-12-31, 2014.
 (D) Split-half reliability of the lifts of frequent headline words (random halves of the articles, 200 splits) per
     period: do words carry a stable popularity difference inside a day and section at all?
-(E) Which memory horizon carries the signal (true alignment, 2013-07 .. 2014-12): all history, windows of 7/30/90
-    days, exponential decay, raw-share mimic of the original recipe, momentum; and lags 1 .. 30 days.
+(E) Which memory horizon carries the signal (true alignment): all history, windows of 7/30/90 days, exponential
+    decay, raw-share mimic of the original recipe, momentum; and lags 1 .. 30 days. Reported on 2013-03..06 (before
+    the evaluation window, where the variant is chosen) and on the evaluation window 2013-07 .. 2014-12.
 Output: results/tables/k3_series.csv, k3_change_point.csv, k3_periods.csv, k3_word_reliability.csv,
         k3_horizons.csv; results/figures/k3_headline_signal.png
 """
@@ -140,21 +141,28 @@ for a, v in V.items():
 Dd = pd.DataFrame(rows); Dd.to_csv(TAB / "k3_word_reliability.csv", index=False)
 
 # (E) horizons and lags, true alignment, v19 window
-v = V["true"]; days = v.days("2013-07-01", "2014-12-31")
+v = V["true"]
 rows = []
 H = {"all history, EB lift": "all_all_mean", "all history, raw shares (original recipe)": "mim_avg_avg", "window 90 d": "win_w90_mean",
      "window 30 d": "win_w30_mean", "window 7 d": "win_w7_mean", "decay, half-life 90 d": "dec_h90_mean", "decay, half-life 30 d": "dec_h30_mean",
      "decay, half-life 7 d": "dec_h7_mean", "momentum 7 d minus all": "mom_w7_minus_all_mean", "momentum 30 d minus all": "mom_w30_minus_all_mean",
      "all history, EB lift, max over words": "all_all_max", "all history, EB lift, sum over words": "all_all_sum"}
+EP = {"2013-03-01..2013-06-30 (before the evaluation window; variant chosen here)": ("2013-03-01", "2013-06-30"),
+      "2013-07-01..2014-12-31 (evaluation window)": ("2013-07-01", "2014-12-31")}
 for src in ["tit", "slug"]:
     for name, col in H.items():
-        est, lo, hi = ratio_ci(*v.daily(v.F[1][f"{src}_{col}"].to_numpy()), days)
-        rows.append(dict(source=src, feature=name, lag_days=1, rho=est, lo=lo, hi=hi))
+        nd = v.daily(v.F[1][f"{src}_{col}"].to_numpy())
+        for p, (a, b) in EP.items():
+            est, lo, hi = ratio_ci(*nd, v.days(a, b))
+            rows.append(dict(period=p, source=src, feature=name, lag_days=1, rho=est, lo=lo, hi=hi))
     for L in [3, 7, 14, 30]:
-        est, lo, hi = ratio_ci(*v.daily(v.F[L][f"{src}_all_all_mean"].to_numpy()), days)
-        rows.append(dict(source=src, feature="all history, EB lift", lag_days=L, rho=est, lo=lo, hi=hi))
-est, lo, hi = ratio_ci(*DW[("true", "kw_avg_avg")], days)
-rows.append(dict(source="dataset", feature="kw_avg_avg", lag_days=np.nan, rho=est, lo=lo, hi=hi))
+        nd = v.daily(v.F[L][f"{src}_all_all_mean"].to_numpy())
+        for p, (a, b) in EP.items():
+            est, lo, hi = ratio_ci(*nd, v.days(a, b))
+            rows.append(dict(period=p, source=src, feature="all history, EB lift", lag_days=L, rho=est, lo=lo, hi=hi))
+for p, (a, b) in EP.items():
+    est, lo, hi = ratio_ci(*DW[("true", "kw_avg_avg")], v.days(a, b))
+    rows.append(dict(period=p, source="dataset", feature="kw_avg_avg", lag_days=np.nan, rho=est, lo=lo, hi=hi))
 E = pd.DataFrame(rows); E.to_csv(TAB / "k3_horizons.csv", index=False)
 
 # figure
@@ -168,7 +176,7 @@ for (a, name), (col, ls, lab) in style.items():
 ax.axvline(FIRST_SHIFTED, color="k", ls=":", lw=1); ax.axhline(0, color="k", lw=.5)
 ax.text(FIRST_SHIFTED + pd.Timedelta(days=6), -0.07, "first shifted row\n2013-06-06", fontsize=7)
 ax.set_ylabel("Spearman with log shares\nwithin day and section"); ax.legend(fontsize=7, frameon=False, loc="upper left", ncol=1)
-ax.set_ylim(-0.1, 0.48)
+ax.set_ylim(-0.1, 0.56)
 fig.tight_layout(); FIG.mkdir(parents=True, exist_ok=True); fig.savefig(FIG / "k3_headline_signal.png", dpi=200)
 
 pd.set_option("display.width", 250); pd.set_option("display.max_rows", 300)
