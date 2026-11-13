@@ -13,7 +13,7 @@ Metrics (evaluation months), all per day then pooled
   auc1400, auc_top5 (threshold = pooled 95th pct), rho_day,
   cap@k      share of ALL shares captured by picking each day's top-k scored articles, k = 1, 3, 10%
   hit1@k     share of top-1% articles (pooled threshold) among the picks
-Resumable: per-month scores cached in data/interim/n1_scores.parquet.
+Resumable: per-month scores cached in data/interim/n1_scores_fixed.parquet.
 """
 from __future__ import annotations
 
@@ -29,17 +29,18 @@ from sklearn.model_selection import KFold
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
-from newspop.anatomy import HGB_PARAMS  # noqa: E402
-from newspop.data import load  # noqa: E402
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from common import HGB_PARAMS, features, load_fixed  # noqa: E402
+
 
 FIRST = "2013-07"
-CACHE = ROOT / "data" / "interim" / "n1_scores.parquet"
-df = load().reset_index(drop=True)
+CACHE = ROOT / "data" / "interim" / "n1_scores_fixed.parquet"
+df = load_fixed()
 n = len(df)
 s = df.shares.to_numpy().astype(float)
 y = np.log1p(s)
-X = df.drop(columns=[c for c in ["url", "shares", "publish_date", "timedelta"] if c in df.columns]).select_dtypes("number").to_numpy()
-day = pd.to_datetime(df.publish_date).dt.normalize()
+X = features(df).to_numpy()
+day = pd.to_datetime(df.date).dt.normalize()
 dn = (day - day.min()).dt.days.to_numpy()
 month = day.dt.to_period("M").astype(str).to_numpy()
 NAMES = ["log_mean", "poisson", "gamma", "lognorm", "sig2", "q90", "clf_top5", "clf_1400"]
