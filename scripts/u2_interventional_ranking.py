@@ -123,6 +123,7 @@ def fit_ridge(X, t, intercept=True):
 
 rows_out = []
 SIG = np.where(ev_sig)[0]
+HELD = []
 CORR = {}   # (rep, train) -> correctness on each significant within-test pair, filled fold by fold
 folds = GroupKFold(5).split(np.zeros(len(tests)), groups=article)
 for fold, (tr_t, te_t) in enumerate(folds):
@@ -174,6 +175,8 @@ for fold, (tr_t, te_t) in enumerate(folds):
             pred = np.zeros(len(d))
             pred[te_rows] = mdl.predict(X(te_rows))
             rho = spearmanr(pred[te_obs], y[te_obs])[0]
+            # held-out predictions on one random headline per test, kept for observational metrics (u5)
+            HELD.append(pd.DataFrame({"rep": rep, "train": mname, "test": te_t, "row": te_obs, "pred": pred[te_obs]}))
             dp = pred[ev_a[te_pairs]] - pred[ev_b[te_pairs]]
             dy = zz[te_pairs]
             ok = np.sign(dp) == np.sign(dy)
@@ -203,6 +206,10 @@ keys = sorted(CORR)
 np.savez_compressed(ROOT / "results" / "tables" / f"u2_pairs_{split}.npz",
                     configs=np.array(["|".join(c) for c in keys]), correct=np.array([CORR[c] for c in keys]),
                     article=ev_art[SIG])
+H_ = pd.concat(HELD)
+H_["y"] = y[H_.row]
+H_["week"] = tests.week.to_numpy()[H_.test]
+H_.to_csv(ROOT / "results" / "tables" / f"u2_heldout_{split}.csv.gz", index=False)
 R = pd.DataFrame(rows_out)
 R.to_csv(ROOT / "results" / "tables" / f"u2_ranking_{split}.csv", index=False)
 S = R.groupby(["rep", "train"])[["across_spearman", "within_acc", "within_acc_sig", "lift_pct", "ceiling_pct"]].mean()

@@ -8,8 +8,10 @@ for split in exploratory holdout confirmatory; do
   python scripts/u1_design_ladder.py $split          # version fixed on the exploratory split (superseded by u1b)
   python scripts/u1b_design_ladder_strict.py $split  # effect estimates vs out-of-split randomized truth
   python scripts/u2_interventional_ranking.py $split # observational vs decision metric
-  python scripts/u3_archive_vs_experiments.py $split # archive vs randomized tests
+  python scripts/u3_archive_vs_experiments.py $split # archive vs randomized tests (pooling)
+  python scripts/u6_exchange_rate.py $split          # idealized/published archives, sizes, priors
 done
+python scripts/u7_exchange_curve.py                  # exchange rate with training-draw intervals
 python scripts/u4_archive_worth.py
 python scripts/u5_leaderboard.py
 for s in scripts/00_eda.py scripts/01_pilot.py scripts/e1_drift.py scripts/e3_leakage.py \
