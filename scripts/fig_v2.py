@@ -199,5 +199,52 @@ def fig_f():
     fig.savefig(FIG / "v2_fig_f_upworthy.png", dpi=300)
 
 
-fig_a(); fig_b(); fig_c(); fig_d(); fig_e(); fig_f()
+def fig_g():
+    """Upworthy, confirmatory split: (a) accuracy on significantly different within-test headline pairs against
+    the number of randomized tests used for training, with the observational archive as reference lines;
+    (b) observational validation metric against the interventional one, per model."""
+    C = pd.read_csv(TAB / "u4_curves.csv").query("split == 'confirmatory'")
+    W = pd.read_csv(TAB / "u4_archive_worth.csv").set_index("split").loc["confirmatory"]
+    fig, (a, b) = plt.subplots(1, 2, figsize=(7.0, 2.4), gridspec_kw={"width_ratios": [1.25, 1.0]})
+    for m, col, lab in [("E", "0.25", "randomized tests only"), ("POOL", "#d08c2b", "archive + tests, pooled"),
+                        ("PRIOR", ACC, "archive as prior + tests")]:
+        r = C[C.method == m].sort_values("k")
+        a.plot(r.k, r.acc, marker="o", ms=2.5, color=col, lw=1.2, label=lab)
+        if m == "E":
+            a.fill_between(r.k, r.lo, r.hi, color=col, alpha=0.15, lw=0)
+    for key, ls_, lab in [("O", "--", "archive, week-demeaned"), ("O-raw", ":", "archive, raw CTR")]:
+        a.axhline(W[key], color=GREY, ls=ls_, lw=1)
+        a.text(26, W[key] + 0.002, f"{lab} ({W[key]:.3f})", fontsize=6.5, color="0.35")
+    a.axvline(W["kstar_O"], color="0.8", lw=0.8)
+    a.set_xscale("log")
+    a.set_xlabel("randomized headline tests used for training")
+    a.set_ylabel("accuracy, within-test pairs")
+    a.set_ylim(0.56, 0.70)
+    a.legend(frameon=False, fontsize=6.5, loc="lower right")
+    a.set_title(f"(a) an archive of 18,200 headlines is worth ~{round(W['kstar_O'], -1):,.0f} tests", fontsize=8)
+    L = pd.read_csv(TAB / "u5_leaderboard.csv").query("split == 'confirmatory' and rep == 'GloVe+H15'")
+    lab = {"OBS": ("raw target", (4, -1)), "OBS-FE": ("week-demeaned", (4, -1)),
+           "OBS-FE+TOPIC": ("week+topic\ndemeaned", (5, 0)), "NAT": ("natural pairs", (5, 0)),
+           "MIX (OBS-FE + NAT)": ("demeaned + pairs", (-4, 3), "right"), "ORACLE": ("randomized (oracle)", (-4, 0), "right"),
+           "OBS-HGB": ("boosted trees", (4, -1))}
+    for _, r in L.iterrows():
+        col = "0.25" if r.train == "ORACLE" else ACC
+        b.errorbar(r.across_spearman, r.within_acc_sig, yerr=[[r.within_acc_sig - r.lo], [r.hi - r.within_acc_sig]],
+                   fmt="o", ms=3.5, color=col, lw=0.8)
+        t = lab[r.train]
+        b.annotate(t[0], (r.across_spearman, r.within_acc_sig), fontsize=6, xytext=t[1], textcoords="offset points",
+                   color="0.3", ha=t[2] if len(t) > 2 else "left", va="center")
+    b.set_xlim(0.25, 0.345)
+    b.set_xlabel("observational metric:\nSpearman with CTR across tests")
+    b.set_ylabel("interventional metric")
+    b.set_title("(b) validation vs. decision metric (GloVe + 15 features)", fontsize=8)
+    fig.tight_layout(pad=0.3)
+    fig.savefig(FIG / "v2_fig_g_archive.png", dpi=300)
+
+
+import sys
+if len(sys.argv) > 1:
+    globals()[sys.argv[1]]()
+else:
+    fig_a(); fig_b(); fig_c(); fig_d(); fig_e(); fig_g()
 print("figures written")
