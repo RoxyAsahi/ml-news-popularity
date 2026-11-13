@@ -14,3 +14,9 @@ Run from the repo root with `python explore/<script>.py` after `pip install -e .
 | f7_rashomon.py | Do near-equally-accurate models agree on feature-group importance? | 30/33 models within 0.01 val AUC; importance varies up to 2x; channel vs LDA ranks swap |
 | f8_conformal.py | CQR + adaptive conformal under drift; selective classification | 80% interval spans x6 in shares; ACI fixes monthly under-coverage; top-10% confident -> 0.875 accuracy |
 | f9_anatomy_ci.py | f3 with out-of-fold scores and week-cluster bootstrap CIs, plus twin ICC | within channel 0.66, same-story same-channel twins 0.60 [0.54, 0.66]; story ICC 0.04-0.10 |
+
+## kw_rebuild/ (2026-11-13)
+
+Past-only rebuild of the keyword memory, and the finding that the `url` column of the CSV is shifted against all
+other columns from 2013-06-06 on. The slug-based rows of the table above (f1, f2, f4, f6, f9) were computed on the
+shifted column and need to be redone. See `kw_rebuild/README.md`.

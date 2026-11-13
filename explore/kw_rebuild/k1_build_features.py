@@ -5,7 +5,7 @@ meta keyword (editor tags). The tags themselves are not in the data. Here the sa
 from keys that are visible: URL-slug words, words and bigrams of the real headline, and the section.
 
 For article i published on day t and a key k, the memory is computed from the articles with key k published on
-days in [t - W, t - L]:
+the W days that end at day t - L, i.e. days in [t - L - W + 1, t - L]:
   L (lag, "embargo")  1 = strictly earlier days (default); 3, 7, 14, 30 = only articles at least L days old,
                       whose share counts were (nearly) final by day t. Shares are still the January-2015 crawl
                       values, so L = 1 inherits the same hindsight as the original kw_* columns.
@@ -104,7 +104,7 @@ class Stream:
 
     def window(self, lag: int, W: int | None):
         hi = self.hi(lag)
-        lo = self.start if W is None else np.maximum(np.searchsorted(self.comp, self.comp - W, "left"), self.start)
+        lo = self.start if W is None else np.maximum(np.searchsorted(self.comp, self.comp - W - lag + 1, "left"), self.start)
         lo = np.minimum(lo, hi)
         n = (hi - lo).astype(float)
         return n, self.cy[hi] - self.cy[lo]

@@ -123,7 +123,8 @@ for name in SETS:
     D = design(name)
     for m in todo:
         tr, te = month < m, month == m
-        s[te] = HistGradientBoostingRegressor(random_state=0, **HGB_PARAMS).fit(D[tr], y[tr]).predict(D[te])
+        keep = ~np.isnan(D[tr]).all(axis=0)  # a memory column can be empty in the first months
+        s[te] = HistGradientBoostingRegressor(random_state=0, **HGB_PARAMS).fit(D[tr][:, keep], y[tr]).predict(D[te][:, keep])
         np.save(f, s)
     print("scored", name, D.shape[1], "features", flush=True)
 # text baseline of v19: ridge on TF-IDF of the headline, same rolling origin
