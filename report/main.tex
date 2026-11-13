@@ -231,9 +231,9 @@ pick of the day lands in that day's top tenth on 35.6\% of days, three times the
 two articles from the same day and section it names the more shared one 60.9\% of the time (64.7\% for any two
 articles of a day, which can differ in section). A single feature, the average past popularity of the article's
 keywords (\texttt{kw\_avg\_avg}), already gets most of the way: 57.1\% on same-day same-section pairs and a top
-pick in the top tenth on 28\% of days. For an editor who promotes the model's top pick each day, the pick has a
-median of 3{,}500 shares (all articles: 1{,}400); on 79\% of 545 days it beats the day's median article, and on
-average it gets 2.1 [1.9, 2.3] times the shares of a random article of that day (geometric mean over days).
+pick in the top tenth on 28\% of days. For an editor who promotes the past-only model's top pick each day, the pick gets
+on average 2.1 [1.9, 2.3] times the shares of a random article of the same day (geometric mean over 545 days)
+and beats the day's median article on 79\% of days (its median is 3{,}500 shares; all articles: 1{,}400).
 
 The ceiling is low: most of the variance is not explained by these data. The past-only model explains 16.2\% [15.3, 17.1]
 of the variance of log shares; adding fixed effects for channel$\times$day and the story an article belongs to
@@ -385,7 +385,7 @@ precise, judged by two language models, not by humans.
 
 \section{Conclusion}
 What can be called before publication on Mashable is real but limited: strictly from the past, a model orders
-the day's articles with a correlation of 0.40, and its daily top pick is three times as likely as chance to be a
+the day's articles with a correlation of 0.40, and its daily top pick is three times as likely as a random pick to be a
 top-tenth article. The skill is article-level and rests mostly on platform history. The real headline, now added to
 the benchmark, adds nothing detectable to calling which article will be shared more, for supervised text models and for a
 zero-shot judge that, on the same kind of question, picks the better headline of one article 66\% of the time; a

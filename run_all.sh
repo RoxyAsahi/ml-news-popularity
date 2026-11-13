@@ -26,3 +26,11 @@ for s in scripts/00_eda.py scripts/01_pilot.py scripts/e1_drift.py scripts/e3_le
          scripts/s4_rq2_twin_effects.py scripts/s5_rq3_competition.py scripts/s6_rq3_memory.py scripts/s7_rq4_uncertainty.py scripts/s8_rashomon.py scripts/s9_precision_power.py scripts/s10_split_attention.py scripts/s11_chance.py scripts/s12_slug_model.py scripts/s13_sensitivity.py scripts/s14_context_training.py scripts/fig_v2.py; do
   if [ -f "$s" ]; then echo "== $s"; python "$s"; fi
 done
+# v19 report ("What can be called before publication?"). Needs data/external/mashable_sitemap_titles.csv (committed;
+# scripts/fetch_mashable_titles.py rebuilds it) and downloads bge-base-en-v1.5 from Hugging Face once (cached in
+# data/interim/). Judge (JEV) outputs are read from the cached API/open-model results in explore/jev/results/,
+# so no API key is needed; explore/jev/ holds the scripts that produced them.
+for s in scripts/v1_past_only_called.py scripts/v2_judge_summary.py scripts/v3_signal_groups.py \
+         scripts/v4_by_quarter_and_value.py scripts/fig_v19.py scripts/fig_v19_called.py; do
+  echo "== $s"; python "$s"
+done
