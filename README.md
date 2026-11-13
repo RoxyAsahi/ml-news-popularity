@@ -26,7 +26,7 @@ decision-level metrics (day ranking, the day's top pick, same-day same-section p
 
 | RQ | Question | Scripts |
 | --- | --- | --- |
-| RQ1 | Is the `url` column aligned with features and shares, and can a repair be verified without ground truth? | `a1_realign_urls.py`, `a2_alignment_validation.py` |
+| RQ1 | Is the `url` column aligned with features and shares, and can a repair be verified without ground truth? | `a1_realign_urls.py`, `a2_alignment_validation.py`, `a4_archive_check.py` (share counts on archived homepages, `data/wayback/`) |
 | RQ2 | How much can be called before publication, and from which signals (history, body, headline)? What could an editor change? | `v1_past_only_called.py`, `v3_signal_groups.py`, `v4_top_pick_value.py`, `v5_learners.py`, `v6_headline_terms.py`, `v7_word_memory.py`, `explore/editorial_dml/` (day volume and levers, double ML) |
 | RQ3 | Can a zero-shot decision model (JEV) call popularity from the headline alone, and does it add to supervised models? | `v2_judge_summary.py`, `explore/jev/` |
 | RQ4 | Does the same judge carry over to choosing between headlines of one article (Upworthy randomized tests)? | `v2_judge_summary.py`, `explore/jev/` |
@@ -37,7 +37,8 @@ Real headlines: `data/external/mashable_sitemap_titles.csv` (40,161 sitemap entr
 Side analyses merged from exploration branches, on the repaired data: `explore/kw_rebuild/` (past-only keyword
 memory in many variants, an independent re-alignment and offset profile; the report uses the compact
 `scripts/v7_word_memory.py`) and `explore/editorial_dml/` (double ML for editorial levers and day volume; the
-report quotes `explore/editorial_dml/out/cite_*.csv`).
+report quotes `explore/editorial_dml/out/cite_*.csv`), and `explore/new/` with `scripts/wayback/` (Internet Archive captures of Mashable's
+homepage with early share counts; the report uses them only for the external check of the repair).
 
 **Earlier reports are superseded.** `report/v18/` and `report/v19/` were written before the shift was found. Their
 Mashable results that used the URL, its date, its slug or the headline (same-story twins in v18; "the headline

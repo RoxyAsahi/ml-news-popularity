@@ -28,7 +28,7 @@ end, so that for 79.8\% of the rows the URL belongs to another article. Analyses
 unaffected; anything that joins the URL, its date, its slug or scraped text to the shares is not. We repair the
 column with a monotone alignment on three fingerprints and validate the repair on signals it never used: a
 held-out fingerprint, the section predicted from the headline, and the shares themselves all return to their
-level in the unshifted months, and only at the estimated offset, not one row beside it. On the repaired data the headline is the strongest single signal. Scored past-only, a ridge
+level in the unshifted months, and only at the estimated offset, not one row beside it. An outside record agrees: share counts archived from the publisher's homepage hours after publication correlate 0.83 with the final counts of the repaired rows and 0.06 with those of the rows as distributed. On the repaired data the headline is the strongest single signal. Scored past-only, a ridge
 regression on headline embeddings orders two articles from the same day and section correctly 61.2\% of the time,
 as well as a gradient-boosted model on all 58 features (60.6\%); their average reaches 63.1\% and an AUC of 0.746,
 and its top pick of the day gets 2.7 times the shares of a random article. On the file as distributed the same
@@ -59,7 +59,7 @@ Its cause is in the file: the \texttt{url} column is shifted against all other c
 \paragraph{Research questions.}
 \begin{enumerate}\setlength\itemsep{0pt}
   \item[RQ1] Is the benchmark's \texttt{url} column aligned with its features and shares, and can a misalignment
-             be repaired and the repair verified without any ground truth?
+             be repaired, and the repair verified without ground truth in the file?
   \item[RQ2] On the repaired data, how much of an article's popularity can be called before publication, on the
              decisions an editor makes, and from which signals: platform history, the article's body, or its
              headline?
@@ -70,7 +70,7 @@ Its cause is in the file: the \texttt{url} column is shifted against all other c
 \end{enumerate}
 \noindent Contributions: (i) we document that the \texttt{url} column of a benchmark used for a decade is
 misaligned for four fifths of its rows, in the original UCI file; to our knowledge this is undocumented; (ii) a
-repair by monotone alignment, verified on signals the alignment never saw, released as a row-to-URL table
+repair by monotone alignment, verified on signals the alignment never saw and on an outside record, released as a row-to-URL table
 together with 40{,}161 real headlines; (iii) a past-only, decision-level account of what can be called, in which
 headline text alone matches all 58 features and the two combine, a visible memory of headline words replaces the
 benchmark's keyword history, and the weekend premium is of the size the day's volume predicts; (iv) an evaluation of a zero-shot decision judge
@@ -96,7 +96,7 @@ somewhat better \citep{ye2024lola}.
 \paragraph{Judges.} LLMs are widely used as zero-shot judges \citep{zheng2023judge}. JEV is a decision-only
 model that returns calibrated probabilities over typed options instead of text; \citet{li2026jev} propose to
 accept its verdict when it is confident and escalate otherwise, and \citet{rao2026jev} compare it with LLM
-rubric judges. Confidence-based abstention is selective prediction \citep{geifman2017}.
+rubric judges.
 \paragraph{Benchmark errors.} Label errors are common in widely used test sets and can change which model
 looks best \citep{northcutt2021}, and leakage has invalidated results across ML-based science
 \citep{kapoor2023}. The error we report is of a third kind, a column that is valid in itself but joined to the
@@ -150,7 +150,10 @@ aligned, predicts the section (\texttt{data\_channel\_is\_*}) from the headline 
 headline model trained on January--March 2013 predicts shares. If the repair is right, all three return to their
 early-2013 level in every later period. Two further checks: the outcome model is scored with each row given the
 headline $d$ rows before or after the one the repair assigns ($d=-3,\dots,3$), and again without the rows on
-which both fingerprints disagree with the assigned headline (3.3\%).
+which both fingerprints disagree with the assigned headline (3.3\%). Finally, an external record: Internet
+Archive captures of Mashable's homepage (2{,}148 captures, January 2013 to February 2014) show articles with their
+share count at capture time. A count seen hours after publication cannot exceed the count recorded in 2015 and
+should predict it, so we join each sighting to a row through the URL, repaired or as distributed.
 
 \paragraph{Past-only protocol and metrics.} For every month from July 2013 on, we fit a model on all articles of
 earlier months and score that month: 30{,}446 scored articles, 30{,}272 with a headline, used for every
@@ -214,7 +217,7 @@ are trained on randomized contrasts, five-fold over articles.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{fig_alignment.png}
+\includegraphics[width=0.9\textwidth]{fig_alignment.png}
 \caption{RQ1. (a) Estimated offset between a row's content and its URL in the distributed file, by publication
 month (largest value in the month; log scale above 1). (b) Accuracy on same-day same-section pairs by month,
 rolling origin from March 2013: the same headline model on the file as distributed and on the repaired data, with
@@ -287,6 +290,12 @@ which both fingerprints disagree it scores 58.5\%, so the result does not rest o
 retraining the repaired series is flat across the point where the distributed one collapses
 (Fig.~\ref{fig:align}b; 61.2\% on the repaired data, 50.5\% [50.0, 51.0] as distributed).
 
+\paragraph{An outside record agrees.} For articles published from 6 June 2013 on, the share count shown on the
+archived homepage 6 to 48 hours after publication correlates 0.83 with the log final shares of the row the repair
+assigns (6{,}292 articles), and 0.06 with those of the row that carries the URL in the file as distributed; before
+the shift both are 0.81. An early count can never exceed the final one: under the repair 0.08\% of 45{,}201
+sightings do, with the URL as written 24.1\%.
+
 \paragraph{What the error affects.} Features and shares stayed together, so models that use only the
 features are untouched and the feature-only literature on this benchmark stands. Everything that joins the
 URL to a row does not: the date parsed from the URL is wrong for 14\% of rows in the first half of 2014 and for
@@ -323,7 +332,7 @@ Pairs, day & 64.5\% & 64.0\% & 66.4\% {\scriptsize[66.1, 66.8]} & 50\% \\
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{fig_called.png}
+\includegraphics[width=0.88\textwidth]{fig_called.png}
 \caption{RQ2, past-only scores on the repaired data. (a) Where the article a scorer ranks first each day falls
 among that day's articles by shares (tenths; top = at or above the day's 90th percentile). (b) Accuracy on
 same-day same-section pairs: the headline, the features, both (early fusion), and HistGB refitted on one feature
@@ -387,7 +396,7 @@ selection.
 \label{sec:rq3}
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\textwidth]{fig_judge.png}
+\includegraphics[width=0.88\textwidth]{fig_judge.png}
 \caption{RQ3--4. (a) Pairwise accuracy on Mashable pairs from the same day and section, repaired data (past-only
 models: all such pairs in 2013-07 to 2014-12; judges: 4{,}000 random pairs, 2{,}000 with features, 400 for the open
 model) and on significantly different headline pairs within one randomized Upworthy test (judge: 2{,}000 pairs;
@@ -399,11 +408,10 @@ difference).}
 
 \paragraph{Without training data, the judge reads part of the signal.} Shown two headlines from the same day and
 section, JEV names the more shared article 56.5\% [54.9, 58.1] of the time (Fig.~\ref{fig:judge}a), and 57.6\%
-[56.1, 59.3] for any two articles of a day. It has seen no Mashable share count from us; the supervised headline
-model, trained on 9{,}000 to 38{,}000 earlier articles, reaches 61.5\% on the 3{,}041 of these pairs in its scored
+[56.1, 59.3] for any two articles of a day. The supervised headline model, trained on 9{,}000 to 38{,}000 earlier articles, reaches 61.5\% on the 3{,}041 of these pairs in its scored
 months (judge on those: 57.3\%). The judge is consistent
 across option orders (82\%) and across periods (54.0\%, 57.2\%, 58.9\% and 55.6\% in the four periods of
-Table~\ref{tab:align}; the two draws from the unshifted months, 59.5\% and 54.0\%, pool to 56.8\%). Its confidence
+Table~\ref{tab:align}). Its confidence
 is informative: 61.7\% on its most confident quarter and 64.0\% [59.3, 68.5] on its most confident tenth
 (Fig.~\ref{fig:judge}b), though less sharply than the supervised models' own score gaps. Given a whole day's
 lineup, its top pick lands in the day's top tenth on 23.3\% [20.3, 26.3] of 720 days (random: 11.2\%). With only
@@ -430,8 +438,7 @@ Upworthy pairs whose click-through differed significantly in a randomized test, 
 [64.0, 68.1] of the time, and 85.0\% [81.8, 88.0] on its most confident quarter (Fig.~\ref{fig:judge}); accuracy
 rises steadily as coverage falls, which is what selective prediction needs \citep{geifman2017,li2026jev}. It is
 not only recalling published headlines: on pairs in which neither headline won its test it is right 63.4\%.
-Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe); a second
-wording gives 66.1\% on 1{,}000 pairs, and the open-weights JEV-9B 60.3\% [55.3, 64.8] on 400 (API on these:
+Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe); the open-weights JEV-9B reaches 60.3\% [55.3, 64.8] on 400 (API on these:
 63.3\%). The two settings measure different things. If wording moved Mashable shares as much as it moves
 Upworthy clicks, a judge with this sense of wording would be right on about 53\% of same-day same-section pairs
 under a Gaussian model; it is right on 56.5\%, so across articles the headline tells the judge, like the ridge,
@@ -463,8 +470,7 @@ the step as a break in the platform, and a null result for headlines after it, a
 would have caught it earlier: comparing a recomputed feature with the stored one, and asking whether a null is at
 chance (data problem) or merely small (weak signal).
 
-\paragraph{Limitations.} The repair is inferred, not observed: the held-out checks bound misassigned rows at
-about 2\%, within the same day, and 152 rows cannot be repaired. The 2014 rewording sample is small, and the
+\paragraph{Limitations.} The repair is inferred; the archived homepage counts confirm it only for articles to February 2014. The held-out checks bound misassigned rows at about 2\%, within the same day, and 152 rows cannot be repaired. The 2014 rewording sample is small, and the
 judge's accuracy on it (52--54\%) is below its level on all 2014 pairs. Why rows are missing from the feature side is
 our guess. Shares were recorded once, so article age and date are confounded, and the history features use
 shares of earlier articles as recorded at collection, which makes their value somewhat optimistic. The sitemap
@@ -479,7 +485,7 @@ rewordings were written by a language model, not by humans.
 \section{Conclusion}
 The standard benchmark for online news popularity has a \texttt{url} column that points to the wrong article for
 four fifths of its rows. A monotone alignment on date, title length and title sentiment repairs it, and signals
-the alignment never used confirm the repair. With the right headline attached, a linear model on its embedding
+the alignment never used, and share counts archived at the time, confirm the repair. With the right headline attached, a linear model on its embedding
 calls popularity as well as a boosted model on all 58 features, the two together order the day's articles with a
 correlation of 0.45, and a zero-shot judge that has never seen the data is right 56.5\% of the time, 64\% when
 confident, and 66\% and 85\% when choosing between headlines of one article. Without the repair every Mashable headline result after June 2013 is at or near chance. Evaluation that respects time found the error; a recomputed feature located it; and a benchmark's
