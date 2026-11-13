@@ -254,7 +254,7 @@ Zero-shot judge, pair acc. & D & 59.5 & 48.9 & 49.8 & 47.9 \\
 \subsection{A shifted column and its repair (RQ1)}
 \label{sec:rq1}
 \paragraph{The symptom.} On the file as distributed, a past-only ridge regression on headline embeddings orders
-same-day same-section pairs of March--May 2013 correctly 60.7\% of the time, better than all 58 features. In June
+same-day same-section pairs of March to 5 June 2013 correctly 60.7\% of the time, better than all 58 features. In June
 it drops to 53.5\% and from July on it is at chance (Fig.~\ref{fig:align}b, dashed). A model trained on
 January--March is right 60.5\% of the time from April to 5 June 2013 and 50.1\% [49.6, 50.6] on July 2013 to
 December 2014; the zero-shot judge falls from 59.5\% to 48.9\% at the same date (Table~\ref{tab:align}). We first read this
@@ -279,7 +279,7 @@ this alignment never saw returns to 92.6--93.1\% in every later period (94.1\% b
 distributed). The gap to 94.1\% bounds wrongly assigned rows at about 2\%, and those can only be articles of the
 same day. The section, predicted from the headline by a classifier trained on early 2013, is right 64.0\% of the
 time before the shift, 17--20\% afterwards as distributed, and 63.4--64.1\% after the repair. And the outcome
-returns: the January--March headline model is right on 58.4\% [58.0, 58.9] of the same-day same-section pairs
+returns: the January--March headline model is right on 58.4\% [57.9, 58.9] of the same-day same-section pairs
 of July 2013 to December 2014, against 50.1\% as distributed. The signal sits at the estimated offset and
 nowhere else: with the headline of the row three, two or one before, or one, two or three after the assigned one,
 the same model scores 50.1\%, 50.0\%, 50.5\%, and 50.2\%, 49.9\%, 50.1\%. Without the 3.3\% of rows on
@@ -315,7 +315,7 @@ AUC (popular) & 0.724 & 0.701 & 0.746 {\scriptsize[.740, .751]} & 0.5 \\
 Day ranking ($\rho$) & 0.396 & 0.394 & 0.451 {\scriptsize[.439, .462]} & 0 \\
 Top pick in top 10\% & 34.3\% & 33.2\% & 40.9\% {\scriptsize[36.9, 44.8]} & 11.1\% \\
 Top pick vs.\ random & 2.07$\times$ & 2.28$\times$ & 2.72$\times$ {\scriptsize[2.48, 2.98]} & 1$\times$ \\
-Pairs, day \& section & 60.6\% & 61.2\% & 63.1\% {\scriptsize[62.7, 63.6]} & 50\% \\
+Pairs, day \& section & 60.6\% & 61.2\% & 63.1\% {\scriptsize[62.6, 63.6]} & 50\% \\
 Pairs, day & 64.5\% & 64.0\% & 66.4\% {\scriptsize[66.1, 66.8]} & 50\% \\
 \bottomrule
 \end{tabular}}
@@ -399,16 +399,16 @@ difference).}
 
 \paragraph{Without training data, the judge reads part of the signal.} Shown two headlines from the same day and
 section, JEV names the more shared article 56.5\% [55.0, 58.1] of the time (Fig.~\ref{fig:judge}a), and 57.6\%
-[56.2, 59.1] for any two articles of a day. It has seen no Mashable share count from us; the supervised headline
+[56.0, 59.1] for any two articles of a day. It has seen no Mashable share count from us; the supervised headline
 model, trained on 9{,}000 to 38{,}000 earlier articles, reaches 61.5\% on the 3{,}041 of these pairs in its scored
 months (judge on those: 57.3\%). The judge is consistent
 across option orders (82\%) and across periods (54.0\%, 57.2\%, 58.9\% and 55.6\% in the four periods of
 Table~\ref{tab:align}; the two draws from the unshifted months, 59.5\% and 54.0\%, pool to 56.8\%). Its confidence
 is informative: 61.7\% on its most confident quarter and 64.0\% [59.3, 68.5] on its most confident tenth
 (Fig.~\ref{fig:judge}b), though less sharply than the supervised models' own score gaps. Given a whole day's
-lineup, its top pick lands in the day's top tenth on 23.3\% [20.1, 26.3] of 720 days (random: 11.2\%). With only
+lineup, its top pick lands in the day's top tenth on 23.3\% [20.3, 26.3] of 720 days (random: 11.2\%). With only
 the URL keywords instead of the headline it reaches 52.5\% [50.7, 54.1]: the full headline matters. Given the
-headline plus six dataset features it reaches 60.6\% [58.5, 62.8] on 2{,}000 pairs (headline only: 56.3\%;
+headline plus six dataset features it reaches 60.6\% [58.6, 62.7] on 2{,}000 pairs (headline only: 56.3\%;
 \texttt{kw\_avg\_avg} alone: 58.1\%), so it can use numbers put in front of it.
 
 \paragraph{It adds to the supervised models.} A logistic combination of the judge's verdict with a model's score
@@ -420,18 +420,18 @@ gap (10-fold over pairs) improves on the model alone: +1.7 points [0.2, 3.2] ove
 62.0\% of 250 pairs from early 2013 (original wording: 60.8\%) and on 53.6\% of 250 pairs from 2014 (original:
 52.4\%); over the 500 pairs the change is +1.2 points [$-$1.6, 4.2] and the decision is the same on 89\%. Asked how often a single article was shared, its expected share band correlates with true shares at 0.20
 for articles from the first half of 2013 and 0.21 for 2014, so the two periods are equally known to it, which does not show that it knows nothing about them. A
-second question wording gives 57.3\% on 1{,}000 of the pairs (first wording on these: 54.7\%; same decision on
-87\%).
+second question wording gives 57.3\% on 1{,}000 of the pairs (first wording on these: 54.7\%; same decision on 87\%). The open-weights JEV-9B is right on 54.5\% [50.0, 59.3] of 400 of the pairs (API on these: 55.5\%; same
+decision on 77\%).
 
 \subsection{The other headline decision (RQ4)}
 \label{sec:rq4}
 Choosing between two headlines of one article is a different problem: everything but the wording is fixed. On
 Upworthy pairs whose click-through differed significantly in a randomized test, the same judge is right 66.0\%
-[64.1, 68.1] of the time, and 85.0\% [82.0, 88.0] on its most confident quarter (Fig.~\ref{fig:judge}); accuracy
+[63.8, 68.1] of the time, and 85.0\% [81.8, 88.2] on its most confident quarter (Fig.~\ref{fig:judge}); accuracy
 rises steadily as coverage falls, which is what selective prediction needs \citep{geifman2017,li2026jev}. It is
 not only recalling published headlines: on pairs in which neither headline won its test it is right 63.4\%.
 Supervised ridge regressions trained on randomized contrasts reach 70.4\% (RoBERTa) and 68.4\% (GloVe); a second
-wording gives 66.1\% on 1{,}000 pairs, and the open-weights JEV-9B 60.3\% [55.7, 65.0] on 400 (API on these:
+wording gives 66.1\% on 1{,}000 pairs, and the open-weights JEV-9B 60.3\% [55.3, 65.3] on 400 (API on these:
 63.3\%). The two settings measure different things. If wording moved Mashable shares as much as it moves
 Upworthy clicks, a judge with this sense of wording would be right on about 53\% of same-day same-section pairs
 under a Gaussian model; it is right on 56.5\%, so across articles the headline tells the judge, like the ridge,
