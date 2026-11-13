@@ -31,6 +31,7 @@ from __future__ import annotations
 import argparse
 import datetime as dt
 import gzip
+import http.client
 import hashlib
 import json
 import os
@@ -58,33 +59,74 @@ def log(*a):
         f.write(line + "\n")
 
 
-def http_get(url, tries=6):
-    """Polite GET with backoff. Returns bytes, or None after repeated failure / on 404."""
-    for k in range(tries):
+_conn = {}
+
+
+def _once(url):
+    """One GET over a persistent (keep-alive) connection per host. Returns (status, location, body)."""
+    u = urllib.parse.urlsplit(url)
+    c = _conn.get(u.netloc)
+    if c is None:
+        proxy = urllib.request.getproxies().get("https")  # honours system / environment proxy settings
+        if proxy and not urllib.request.proxy_bypass(u.hostname):
+            pu = urllib.parse.urlsplit(proxy if "//" in proxy else "http://" + proxy)
+            c = http.client.HTTPSConnection(pu.hostname, pu.port or 8080, timeout=120)
+            c.set_tunnel(u.hostname, u.port or 443)
+        else:
+            c = http.client.HTTPSConnection(u.netloc, timeout=120)
+        _conn[u.netloc] = c
+    path = (u.path or "/") + ("?" + u.query if u.query else "")
+    path = path.replace(" ", "%20")
+    try:
+        c.request("GET", path, headers={"User-Agent": UA, "Accept-Encoding": "gzip", "Connection": "keep-alive"})
+        r = c.getresponse()
+        data = r.read()
+    except Exception:
+        try:
+            c.close()
+        finally:
+            _conn.pop(u.netloc, None)
+        raise
+    if r.will_close:
+        c.close()
+        _conn.pop(u.netloc, None)
+    if r.getheader("Content-Encoding", "") == "gzip" or data[:2] == b"\x1f\x8b":
+        try:
+            data = gzip.decompress(data)
+        except Exception:
+            pass
+    return r.status, r.getheader("Location"), data
+
+
+def http_get(url, tries=7):
+    """Polite GET with connection reuse and backoff. Returns bytes, or None after repeated failure / on 404."""
+    hops = 0
+    k = 0
+    while k < tries:
         wait = ARGS.delay - (time.time() - _last[0])
         if wait > 0:
             time.sleep(wait)
         _last[0] = time.time()
         try:
-            req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept-Encoding": "gzip"})
-            with urllib.request.urlopen(req, timeout=90) as r:
-                data = r.read()
-                if r.headers.get("Content-Encoding", "") == "gzip" or data[:2] == b"\x1f\x8b":
-                    try:
-                        data = gzip.decompress(data)
-                    except Exception:
-                        pass
-                return data
-        except urllib.error.HTTPError as e:
-            if e.code == 404:
-                return None
-            pause = min(600, 30 * 2 ** k) if e.code in (429, 503) else 10 * (k + 1)
-            log("HTTP", e.code, "pause", pause, url[:120])
-            time.sleep(pause)
-        except Exception as e:  # network error, timeout, reset
-            pause = min(300, 15 * 2 ** k)
+            status, loc, data = _once(url)
+        except Exception as e:  # network error, timeout, reset, refused
+            k += 1
+            pause = min(300, 10 * 2 ** (k - 1)) if k > 1 else 2  # first failure is usually a stale connection
             log("ERR", type(e).__name__, str(e)[:80], "pause", pause, url[:120])
             time.sleep(pause)
+            continue
+        if status == 200:
+            return data
+        if status in (301, 302, 303, 307, 308) and loc and hops < 4:
+            hops += 1
+            url = urllib.parse.urljoin(url, loc)
+            continue
+        if status == 404:
+            return None
+        k += 1
+        pause = min(600, 30 * 2 ** (k - 1)) if status in (429, 503) else 10 * k
+        log("HTTP", status, "pause", pause, url[:120])
+        time.sleep(pause)
     log("GIVEUP", url[:160])
     return None
 
@@ -294,6 +336,7 @@ def stage_lists():
                                            "collapse": "digest"})
         plan += [("ch-" + ch, r[0], r[1]) for r in rows or []]
     # homepage first (chronological), then stories.json, then channel pages
+    plan = [p for p in plan if p[1] <= ARGS.lists_until]
     order = {"home": 0, "stories": 1}
     plan.sort(key=lambda p: (order.get(p[0], 2), p[1]))
     done = load_done("lists_done.txt")
@@ -460,6 +503,7 @@ def main():
     ap.add_argument("--max-pass", type=int, default=0)
     ap.add_argument("--only-pass", type=int, default=0, help="articles stage: run only this pass (1, 2 or 3)")
     ap.add_argument("--reverse", action="store_true", help="artcdx stage: walk the days from the end")
+    ap.add_argument("--lists-until", default="20150110235959", help="skip list captures after this timestamp")
     ap.add_argument("--shard", default="", help="i/K: handle only keys whose hash mod K equals i")
     ap.add_argument("--tag", default="", help="suffix for log/status files when several processes share --root")
     ap.add_argument("--keep-awake", action="store_true", help="Windows: no idle sleep while running on mains power")
