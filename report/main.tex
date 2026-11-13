@@ -8,7 +8,6 @@
 \captionsetup{font=small}
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 
-\newcommand{\PH}[1]{\textcolor{red}{#1}}
 \title{Ranking Articles, Choosing Headlines:\\
 What News Popularity Models Learn, and What an Archive Is Worth}
 \author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
@@ -310,7 +309,7 @@ $\geq$0.7) the gap is 0.135. It is not robust, though: controlling for content d
 [$-$0.006, 0.092], and for twins 3--7 days apart it is 0.035 [$-$0.067, 0.121]. It is consistent with a follow-up
 competing with its predecessor, so that the low correlation partly reflects split attention, but also with
 follow-ups simply being smaller pieces (a petition, a trailer; Table~\ref{tab:twins}). One snapshot of shares
-cannot separate these readings; Section~\ref{sec:rq3} tests the split-attention reading directly.
+cannot separate these readings; Section~\ref{sec:rq4} tests the split-attention reading directly.
 
 
 
@@ -355,9 +354,10 @@ training choice serves the decision.
 
 \paragraph{Why: biased effect estimates.} The per-feature effects learnt from observational data are biased. With
 the randomized effect estimated on the other two splits, a cross-section over 22{,}743 tests differs detectably
-from it for \PH{8} of 15 headline features (joint test $p<0.001$), with week fixed effects for \PH{9} and with 50
-text-embedding dimensions for \PH{6}, confirming \citet{banerjee2026} with independent truth. Pairs of tests of
-the same article run on different days show no detectable bias (\PH{0} features, $p=\PH{0.79}$), but their
+from it for 8 of 15 headline features (joint test $p<0.001$), with week fixed effects for 9 and with 50
+text-embedding dimensions for 6, confirming \citet{banerjee2026} with independent truth. Pairs of tests of
+the same article run on different days show no detectable bias (0 features, $p=0.85$; on the other two splits 5--8 for the cross-sections and 0
+for the re-tests), but their
 intervals are wide enough that we cannot claim equivalence within $\pm$0.005 logit for any feature. The
 same-story pairs of the Mashable design cannot be checked here: only 402 Upworthy test pairs are on the same
 story but different articles (most headline-similar pairs are re-tests of one article), and at that size even
