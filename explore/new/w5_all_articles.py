@@ -14,6 +14,7 @@ Output: results/tables/w5_all_articles.csv
 from __future__ import annotations
 
 import argparse
+import os
 import sys
 from pathlib import Path
 
@@ -42,8 +43,7 @@ month = df.date.dt.to_period("M").astype(str).to_numpy()
 dn = (df.date - df.date.min()).dt.days.to_numpy()
 t95 = np.quantile(s, .95)
 O = load_obs(df, lists_only=True)
-raw = pd.read_parquet(ROOT / "data" / "interim" / "wb_obs.parquet", columns=["ts"])
-cap_day = pd.Series(pd.to_datetime(raw.ts.unique())).dt.normalize().value_counts()
+cap_day = pd.Series(pd.to_datetime(O.ts.unique())).dt.normalize().value_counts()  # captures actually used
 ncap = (df.date.map(cap_day).fillna(0) + (df.date + pd.Timedelta(days=1)).map(cap_day).fillna(0)).to_numpy()
 last_month = O.ts.max().strftime("%Y-%m")
 use = month < last_month  # full months only
@@ -67,7 +67,9 @@ for h in [float(x) for x in a.horizons.split(",")]:
     boot = rng.integers(0, len(days), size=(a.boot, len(days)))
     lab = s[ev] >= 1400; zp, zb = sc["prepub"][ev], sc["both"][ev]
     d = [roc_auc_score(lab[sub], zb[sub]) - roc_auc_score(lab[sub], zp[sub]) for sub in (np.concatenate([gi[j] for j in b]) for b in boot)]
-    for grp, mask in [("all", np.ones(ev.sum(), bool)), ("sighted", seen[ev]), ("not_sighted", ~seen[ev])]:
+    half = np.array([m[:4] + ("H1" if m[5:] <= "06" else "H2") for m in month[ev]])
+    for grp, mask in [("all", np.ones(ev.sum(), bool)), ("sighted", seen[ev]), ("not_sighted", ~seen[ev])] + \
+            [(hf, half == hf) for hf in sorted(set(half))]:
         r = dict(h=h, group=grp, n=int(mask.sum()), share=float(mask.mean()), p1400=float(lab[mask].mean()))
         for k, z in [("prepub", zp), ("both", zb)]:
             r["auc1400_" + k] = roc_auc_score(lab[mask], z[mask])
@@ -76,5 +78,7 @@ for h in [float(x) for x in a.horizons.split(",")]:
         if grp == "all":
             r["d_auc1400_lo"], r["d_auc1400_hi"] = np.quantile(d, [.025, .975])
         rows.append(r)
-    print(pd.DataFrame(rows[-3:]).round(3).to_string(index=False), flush=True)
-pd.DataFrame(rows).to_csv(ROOT / "results" / "tables" / "w5_all_articles.csv", index=False)
+    print(pd.DataFrame([r for r in rows if r["h"] == h]).round(3).to_string(index=False), flush=True)
+tag = (("_thin" + os.environ["WB_THIN"]) if os.environ.get("WB_THIN") else "") + \
+    (("_src_" + os.environ["WB_SRC"]) if os.environ.get("WB_SRC") else "")
+pd.DataFrame(rows).to_csv(ROOT / "results" / "tables" / f"w5_all_articles{tag}.csv", index=False)
