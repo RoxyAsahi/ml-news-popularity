@@ -19,7 +19,7 @@ URL, the date in it, its slug or scraped text to a row is.
   written in the row, `publish_date` comes from `timedelta` (2015-01-08 minus `timedelta` days).
   `load(repaired=False)` gives the file as distributed (URL as written, date parsed from it).
 
-## Research questions (report v21: *What Can Be Called Before Publication? A Misaligned Benchmark, Its Repair, and the Signal in the Headline*)
+## Research questions (report v21: *What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the Headline*)
 
 All Mashable results use the repaired data, a strictly past-only protocol (monthly rolling origin) and
 decision-level metrics (day ranking, the day's top pick, same-day same-section pairs).
@@ -40,6 +40,10 @@ memory in many variants, an independent re-alignment and offset profile; the rep
 report quotes `explore/editorial_dml/out/cite_*.csv`), and `explore/new/` with `scripts/wayback/` (Internet Archive captures of Mashable's
 pages with early share counts, and the exploration that led to RQ4; the report uses the compact
 `scripts/a4_archive_check.py` and `scripts/v8_first_hours.py`, which read `data/wayback/wb_obs.csv.gz`).
+The released archive files hold derived data only, no page content: `wb_obs.csv.gz` has, for each capture
+timestamp, the articles listed, their column and position and the share counts shown for them; `wb_meta.csv.gz`
+has per article the publication time, author, section and headline as listed. The captures were fetched from the Internet Archive at one request per
+second.
 
 **Earlier reports are superseded.** `report/v18/` and `report/v19/` were written before the shift was found. Their
 Mashable results that used the URL, its date, its slug or the headline (same-story twins in v18; "the headline

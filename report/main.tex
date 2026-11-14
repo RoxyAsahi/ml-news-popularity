@@ -10,7 +10,7 @@
 \setlength{\textfloatsep}{8pt plus 2pt minus 2pt}
 \raggedbottom
 
-\title{What Can Be Called Before Publication?\\
+\title{What Can Be Called, and When?\\
 A Misaligned Benchmark, Its Repair, and the Signal in the Headline}
 \author{Group 3 \\ Machine Learning (6012B0809Y), University of Amsterdam}
 \date{December 2026}
@@ -198,7 +198,7 @@ such tests, is the supervised reference.
 
 \paragraph{First hours.} For a look horizon $h$ (1, 3, 6, 12, 24 hours) an article's early state is its last
 homepage sighting at an age of at most $h$: the age, the log counts in total and per network, Facebook's part,
-shares per hour, the homepage column and position, and the number of sightings so far; articles not sighted by
+shares per hour, the homepage column and position, and the number of sightings so far (which also reflects how often the Archive crawled); articles not sighted by
 then have missing values. In the same rolling origin, HistGB is fitted on the 58 features, the pre-publication
 score (the late fusion, itself produced past-only from March 2013) and the early state. We report all articles,
 sighted or not; a run with captures thinned to four per day; and, to separate prediction from bookkeeping, the
@@ -461,17 +461,17 @@ raises the AUC from 0.746 to 0.822 (+0.076 [0.072, 0.081]), within six hours to 
 63.1\% to 77.5\% at six hours. The whole pre-publication effort of Sec.~\ref{sec:rq2}, from a single history
 feature to the fused model, moved the AUC from 0.64 to 0.75.
 
-\paragraph{Not bookkeeping, capture density or selection.} At the six-hour look only 9\% of articles have passed
+\paragraph{Not bookkeeping or capture density.} At the six-hour look only 9\% of articles have passed
 1{,}400 shares. Among the 21{,}663 sighted articles that have not, the model reaches 0.869, the pre-publication
 score 0.741 and the current count alone 0.762 (model minus count: +0.10 to +0.11), so the model predicts growth
-still to come and the features still matter next to the count. The Archive captured the homepage more often in
+still to come, and the rest of the early state and the features add 0.10 to the count. The Archive captured the homepage more often in
 2014; with at most four captures a day the six-hour AUC is 0.844. And for the articles never sighted by then the
 model does no better than the pre-publication score (0.733 against 0.737), as it should.
 
 \paragraph{Which network.} At the three-hour look Twitter supplies 83\% of the count and Facebook 12\%, yet the
 Facebook count alone ranks the sighted articles better (AUC 0.765 against 0.696 for Twitter and 0.737 for the
-total; for the top 5\% by final shares 0.763 against 0.613). Early Twitter shares are near-automatic and alike
-across articles; early Facebook shares are where articles differ. The dataset's final count is not split by
+total; for the top 5\% by final shares 0.763 against 0.613). We read this as early Twitter shares being near-automatic and alike
+across articles, and early Facebook shares being where articles differ. The dataset's final count is not split by
 network, so part of this may be composition of the final count.
 
 % ------------------------------------------------------------------

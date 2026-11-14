@@ -4,7 +4,7 @@
 #   ./run_all.sh          the report, then the experiments of the earlier reports (v1-v18), several hours
 set -euo pipefail
 # ---------------------------------------------------------------------------------------------------------
-# Report v21 ("What Can Be Called Before Publication? A Misaligned Benchmark, Its Repair, and the Signal in the
+# Report v21 ("What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the
 # Headline"). Everything in the report comes from this block; run it alone with  ./run_all.sh report
 # Needs data/raw/OnlineNewsPopularity.csv and data/external/mashable_sitemap_titles.csv (committed;
 # scripts/fetch_mashable_titles.py rebuilds it); downloads bge-base-en-v1.5 from Hugging Face once (embeddings are
