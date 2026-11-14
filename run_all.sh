@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Reproduce every table and figure. Run from the repo root after setup (see README).
-#   ./run_all.sh report   only the current report (v21), about 45 minutes on 4 cores
+#   ./run_all.sh report   only the current report (v22), about 45 minutes on 4 cores
 #   ./run_all.sh          the report, then the experiments of the earlier reports (v1-v18), several hours
 set -euo pipefail
 # ---------------------------------------------------------------------------------------------------------
-# Report v21 ("What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the
+# Report v22 ("What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the
 # Headline"). Everything in the report comes from this block; run it alone with  ./run_all.sh report
 # Needs data/raw/OnlineNewsPopularity.csv and data/external/mashable_sitemap_titles.csv (committed;
 # scripts/fetch_mashable_titles.py rebuilds it); downloads bge-base-en-v1.5 from Hugging Face once (embeddings are
@@ -15,7 +15,7 @@ set -euo pipefail
 report() {
   for s in scripts/a1_realign_urls.py scripts/a2_alignment_validation.py scripts/a4_archive_check.py scripts/v1_past_only_called.py \
            scripts/v2_judge_summary.py scripts/v3_signal_groups.py scripts/v4_top_pick_value.py \
-           scripts/v5_learners.py scripts/v6_headline_terms.py scripts/v7_word_memory.py scripts/v8_first_hours.py \
+           scripts/v5_learners.py scripts/v6_headline_terms.py scripts/v7_word_memory.py scripts/v8_first_hours.py scripts/v9_final_composition.py \
            scripts/fig_called.py scripts/fig_judge.py scripts/a3_export_realigned.py; do
     echo "== $s"; python "$s"
   done

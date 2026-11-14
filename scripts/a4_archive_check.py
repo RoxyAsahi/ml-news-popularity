@@ -28,6 +28,7 @@ W = ROOT / "data" / "wayback"
 O = pd.read_csv(W / "wb_obs.csv.gz", dtype={"ts": str}); M = pd.read_csv(W / "wb_meta.csv.gz")
 M["post_date"] = pd.to_datetime(M.post_date, utc=True, errors="coerce").dt.tz_localize(None)
 O["ts"] = pd.to_datetime(O.ts, format="%Y%m%d%H%M%S")
+O = O[O.src != "article"]  # list pages only (homepage, stories feed, section pages)
 O = O.merge(M[["art_id", "post_date"]], on="art_id", how="left").drop_duplicates(["art_id", "ts", "src", "col"])
 O["age_h"] = (O.ts - O.post_date).dt.total_seconds() / 3600
 O = O[(O.age_h > 0) & O.total.notna()].sort_values(["art_id", "ts"])

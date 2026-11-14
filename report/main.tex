@@ -1,4 +1,4 @@
-% ML Final Group Project -- Online News Popularity (v21: misaligned benchmark, repair, headline signal, first hours)
+% ML Final Group Project -- Online News Popularity (v22: misaligned benchmark, repair, headline signal, first hours)
 % Limit: 8 pages INCLUDING figures and references. Earlier reports: report/v18/main.tex, report/v19/main.tex
 % (both predate the repair of the url column and should not be used; see README).
 \documentclass[10pt,a4paper,twocolumn]{article}
@@ -87,8 +87,7 @@ randomized headline tests \citep{matias2021}, linguistic features pick the winne
 \citep{gligoric2021}.
 \paragraph{Judges.} LLMs are widely used as zero-shot judges \citep{zheng2023judge}. JEV is a decision-only
 model that returns calibrated probabilities over typed options instead of text; \citet{li2026jev} propose to
-accept its verdict when it is confident and escalate otherwise, and \citet{rao2026jev} compare it with LLM
-rubric judges.
+accept its verdict when it is confident and escalate otherwise.
 \paragraph{Benchmark errors.} Label errors are common in widely used test sets and can change which model
 looks best \citep{northcutt2021}, and leakage has invalidated results across ML-based science
 \citep{kapoor2023}. The error we report is of a third kind, a column that is valid in itself but joined to the
@@ -108,13 +107,13 @@ $\log(1{+}\text{shares})$ and call an article \emph{popular} if it has at least 
 \paragraph{Real headlines.} The URL's slug is a shortened headline. Mashable lists every article with its full
 headline in monthly sitemap pages; we fetched the 24 pages for 2013--2014 (one request per second, listing pages
 only), giving 40{,}161 headlines, and matched them to URLs by slug (in a random audit of 100 matches every
-headline belonged to its URL). Headlines are longer than slugs (median 9 vs.\ 4 words).
+headline belonged to its URL).
 
 \paragraph{Archived pages.} The Internet Archive holds captures of Mashable's homepage, its stories feed and its
 section pages from 2013 to 2015. Each lists articles with their URL, their publication time to the second and the
 share count shown at capture time, in total and for six networks; the homepage has three columns (new, rising,
 hot). We collected 10{,}125 captures (6{,}301 of the homepage; one request per second), 290{,}000 sightings of
-36{,}432 of the 39{,}491 articles with a URL. The counts are the dataset's quantity at an earlier time: the total
+36{,}432 of the 39{,}491 articles with a URL, and 74{,}920 captures of article pages; the one nearest to the collection date splits an article's final count by network when its total agrees with the dataset's (87\% of articles; 59\% in the second half of 2014). The counts are the dataset's quantity at an earlier time: the total
 equals the sum of the six networks in 99\% of sightings, and two to four days after publication it stands at a
 median 0.92--0.94 of the dataset's final count.
 
@@ -165,8 +164,7 @@ on 768-dimensional bge-base sentence embeddings \citep{xiao2024bge}. To combine 
 the features plus 32 principal components of the embedding (early fusion), and the plain mean of the HistGB and
 the headline-ridge predictions (late fusion; it has no parameters to tune, but we added it after seeing early
 fusion's scores, so it was not fixed in advance). Hyper-parameters of the compared families are
-chosen once, on March--June 2013 under the same rolling origin, and then frozen. We refit HistGB on feature
-groups (13 history, 28 body, 5 title, 14 placement features) to see where the skill sits.
+chosen once, on March--June 2013 under the same rolling origin, and then frozen.
 
 \paragraph{Word memory.} The nine \texttt{kw\_*} features summarize the shares of earlier articles with the same
 editor keyword, but the keywords are not in the data. We rebuild this memory from visible keys, the words and
@@ -186,7 +184,7 @@ gradient boosting, in folds of whole weeks, and residuals are regressed on resid
 with a probability for each option and no generated text \citep{li2026jev}. We ask: ``Which of these two articles
 was shared more often on social media?'', with a state line naming the site, the date and the section, and the
 two headlines as options. Every pair is asked in both orders and the probabilities averaged. On the repaired data we judge 4{,}000 random same-day same-section pairs and 4{,}000 same-day
-pairs; the section pairs again with only the URL keywords; 2{,}000 of them with the headline plus six features; and whole-day lineups (all of a day's headlines as options). The judge's
+pairs; the section pairs again with only the URL keywords; and 2{,}000 of them with the headline plus six features. The judge's
 confidence is its larger option probability. Three checks: 1{,}000 pairs are asked again with a different
 question; 400 pairs are run through the open-weights student JEV-9B; and, because
 a judge may have seen old articles, both headlines of 250 pairs from January--May 2013 and of 250 pairs from
@@ -203,7 +201,7 @@ then have missing values. In the same rolling origin, HistGB is fitted on the 58
 score (the late fusion, itself produced past-only from March 2013) and the early state. We report all articles,
 sighted or not; a run with captures thinned to four per day; and, to separate prediction from bookkeeping, the
 articles sighted but not yet at 1{,}400 shares, where the comparison is the current count alone, which is how the
-constant-ratio extrapolation of \citet{szabo2010} ranks articles.
+constant-ratio extrapolation of \citet{szabo2010} ranks articles. 
 
 \paragraph{Reproducibility.} Seeds are fixed; every number and figure comes from a script in the code
 (\texttt{run\_all.sh}); judge outputs are cached and released, and the API key is not.
@@ -386,7 +384,7 @@ selection.
 \label{sec:rq3}
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.82\textwidth]{fig_judge.png}
+\includegraphics[width=0.80\textwidth]{fig_judge.png}
 \caption{RQ3. (a) Pairwise accuracy on Mashable pairs from the same day and section, repaired data (past-only
 models: all such pairs in 2013-07 to 2014-12; judges: 4{,}000 random pairs, 2{,}000 with features, 400 for the open
 model) and on significantly different headline pairs within one randomized Upworthy test (judge: 2{,}000 pairs; ridge on RoBERTa representations: all pairs, five-fold over articles); 95\% intervals over days or pairs. (b) Accuracy on the pairs a scorer
@@ -401,8 +399,7 @@ section, JEV names the more shared article 56.5\% [54.9, 58.1] of the time (Fig.
 months (judge on those: 57.3\%). The judge is consistent
 across option orders (82\%) and periods (Table~\ref{tab:align}). Its confidence
 is informative: 61.7\% on its most confident quarter and 64.0\% [59.3, 68.5] on its most confident tenth
-(Fig.~\ref{fig:judge}b), though less sharply than the supervised models' own score gaps. Given a whole day's
-lineup, its top pick lands in the day's top tenth on 23.3\% [20.3, 26.3] of 720 days (random: 11.2\%). With only
+(Fig.~\ref{fig:judge}b), though less sharply than the supervised models' own score gaps. With only
 the URL keywords instead of the headline it reaches 52.5\% [50.8, 54.1]: the full headline matters. Given the
 headline plus six dataset features it reaches 60.6\% [58.4, 62.6] on 2{,}000 pairs (headline only: 56.3\%;
 \texttt{kw\_avg\_avg} alone: 58.1\%), so it can use numbers put in front of it.
@@ -470,9 +467,12 @@ model does no better than the pre-publication score (0.733 against 0.737), as it
 
 \paragraph{Which network.} At the three-hour look Twitter supplies 83\% of the count and Facebook 12\%, yet the
 Facebook count alone ranks the sighted articles better (AUC 0.765 against 0.696 for Twitter and 0.737 for the
-total; for the top 5\% by final shares 0.763 against 0.613). We read this as early Twitter shares being near-automatic and alike
-across articles, and early Facebook shares being where articles differ. The dataset's final count is not split by
-network, so part of this may be composition of the final count.
+total; for the top 5\% by final shares 0.763 against 0.613). In the final counts split by network, Facebook holds 44\% of all
+shares, Twitter 29\% and StumbleUpon, a discovery engine, 20\%, but Twitter is a near-constant floor (62\% of the median article's shares;
+the standard deviation of its log count is 0.51, Facebook's 1.39), and the top 5\% are 60\% Facebook. Part of early
+Facebook's advantage is therefore composition of the label. It is not only that: for the growth after the look on
+all networks other than Facebook, the early Facebook count still ranks articles better than the early Twitter count
+(AUC 0.738 against 0.701, +0.037 [0.030, 0.044]).
 
 % ------------------------------------------------------------------
 \section{Discussion}
@@ -487,7 +487,7 @@ unmeasured promotion as well as the social influence and chance documented in cu
 \paragraph{A judge as a cold-start prior.} A newsroom with an archive should train on it; the supervised
 headline model beats the zero-shot judge by four to five points. But the judge needs no archive, is right on 64\% of the
 pairs it is most sure about, is unaffected by rewording and adds to a trained
-model. Within an article, where an archive cannot identify wording effects without experiments, it is right on
+model. Within an article it is right on
 85\% of its confident quarter, so ``accept the confident verdicts, test the rest'' \citep{li2026jev} is a
 workable rule there; across articles the judge is one more feature.
 
