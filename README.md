@@ -19,7 +19,7 @@ URL, the date in it, its slug or scraped text to a row is.
   written in the row, `publish_date` comes from `timedelta` (2015-01-08 minus `timedelta` days).
   `load(repaired=False)` gives the file as distributed (URL as written, date parsed from it).
 
-## Research questions (report v21: *What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the Headline*)
+## Research questions (report v22: *What Can Be Called, and When? A Misaligned Benchmark, Its Repair, and the Signal in the Headline*)
 
 All Mashable results use the repaired data, a strictly past-only protocol (monthly rolling origin) and
 decision-level metrics (day ranking, the day's top pick, same-day same-section pairs).
@@ -29,7 +29,7 @@ decision-level metrics (day ranking, the day's top pick, same-day same-section p
 | RQ1 | Is the `url` column aligned with features and shares, and can a repair be verified without ground truth? | `a1_realign_urls.py`, `a2_alignment_validation.py`, `a4_archive_check.py` (share counts on archived homepages, `data/wayback/`) |
 | RQ2 | How much can be called before publication, and from which signals (history, body, headline)? What could an editor change? | `v1_past_only_called.py`, `v3_signal_groups.py`, `v4_top_pick_value.py`, `v5_learners.py`, `v6_headline_terms.py`, `v7_word_memory.py`, `explore/editorial_dml/` (day volume and levers, double ML) |
 | RQ3 | Can a zero-shot decision model (JEV) call popularity from the headline alone, and does it add to supervised models? (With a short within-article contrast on Upworthy's randomized headline tests.) | `v2_judge_summary.py`, `explore/jev/` |
-| RQ4 | How much do the first hours after publication add to what can be called before it, and is the gain more than bookkeeping of shares already counted? | `v8_first_hours.py` (share counts per network on archived Mashable homepages, `data/wayback/`) |
+| RQ4 | How much do the first hours after publication add to what can be called before it, and is the gain more than bookkeeping of shares already counted? | `v8_first_hours.py` (share counts per network on archived Mashable homepages, `data/wayback/`), `v9_final_composition.py` (final count split by network from archived article pages) |
 
 Real headlines: `data/external/mashable_sitemap_titles.csv` (40,161 sitemap entries;
 `scripts/fetch_mashable_titles.py`, `src/newspop/titles.py`).
@@ -39,9 +39,9 @@ memory in many variants, an independent re-alignment and offset profile; the rep
 `scripts/v7_word_memory.py`) and `explore/editorial_dml/` (double ML for editorial levers and day volume; the
 report quotes `explore/editorial_dml/out/cite_*.csv`), and `explore/new/` with `scripts/wayback/` (Internet Archive captures of Mashable's
 pages with early share counts, and the exploration that led to RQ4; the report uses the compact
-`scripts/a4_archive_check.py` and `scripts/v8_first_hours.py`, which read `data/wayback/wb_obs.csv.gz`).
+`scripts/a4_archive_check.py`, `scripts/v8_first_hours.py` and `scripts/v9_final_composition.py`, which read `data/wayback/wb_obs.csv.gz`).
 The released archive files hold derived data only, no page content: `wb_obs.csv.gz` has, for each capture
-timestamp, the articles listed, their column and position and the share counts shown for them; `wb_meta.csv.gz`
+timestamp of a list page or an article page, the articles shown, their column and position and the share counts shown for them; `wb_meta.csv.gz`
 has per article the publication time, author, section and headline as listed. The captures were fetched from the Internet Archive at one request per
 second.
 
