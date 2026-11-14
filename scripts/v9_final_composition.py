@@ -8,7 +8,7 @@ total agrees with `shares` (exactly below 1,000; within 50 above, where the data
 Part 1  composition of the final count: each network's part of all shares and of the median article, for all
         articles and for the top 5% by shares; the spread (sd of log1p) of each network's final count. Covered
         articles are slightly more popular than the rest, so the composition is also given reweighted to the whole
-        dataset (inverse coverage within 20 quantile bins of shares).
+        dataset (inverse coverage within half-year x 10 quantile bins of shares).
 Part 2  cross-network prediction, past-only (monthly rolling origin as in v8; HistGB on the age at the look and ONE
         early count, fitted on earlier months): the early state is the last homepage sighting within h hours (3, 6).
         Target "later growth outside Facebook" = final count without Facebook minus early count without Facebook. If
@@ -71,10 +71,13 @@ print(f"articles {n:,}; with an article-page capture {len(F):,}; nearest capture
       f"({len(G) / n:.1%} of the dataset); reach 1,400: covered {np.mean(s[cov] >= 1400):.1%}, "
       f"not covered {np.mean(s[~cov] >= 1400):.1%}")
 
-# inverse-coverage weights within 20 quantile bins of shares
-bins = pd.qcut(pd.Series(s).rank(method="first"), 20, labels=False).to_numpy()
-rate = pd.Series(cov).groupby(bins).mean()
-G["w"] = 1 / rate.reindex(bins[G.index]).to_numpy()
+# coverage differs by period (the Archive holds fewer late captures of late articles) and a little by popularity:
+# inverse-coverage weights within half-year x 10 quantile bins of shares
+half = (date.dt.year.astype(str) + "H" + ((date.dt.month > 6) + 1).astype(str)).to_numpy()
+print("covered by half-year: " + ", ".join(f"{k} {v:.1%}" for k, v in pd.Series(cov).groupby(half).mean().items()))
+bins = pd.Series(half) + "_" + pd.qcut(pd.Series(s).rank(method="first"), 10, labels=False).astype(str)
+rate = pd.Series(cov).groupby(bins.to_numpy()).mean()
+G["w"] = 1 / rate.reindex(bins.to_numpy()[G.index]).to_numpy()
 
 rows = []
 for name, m in [("all", np.ones(len(G), bool)), ("below 1,400", (G.shares < 1400).to_numpy()),
