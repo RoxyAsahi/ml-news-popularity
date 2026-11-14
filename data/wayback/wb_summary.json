@@ -1,9 +1,18 @@
 {
- "list_captures": 2152,
+ "list_captures": 10152,
  "by_kind": {
-  "home": 2152
+  "home": 6305,
+  "stories": 1804,
+  "ch-lifestyle": 243,
+  "ch-business": 299,
+  "ch-watercooler": 277,
+  "ch-us-world": 266,
+  "ch-social-media": 314,
+  "ch-tech": 296,
+  "ch-entertainment": 311,
+  "ch-world": 37
  },
  "article_captures": 0,
- "sightings": 64440,
- "articles": 15775
+ "sightings": 290372,
+ "articles": 37924
 }

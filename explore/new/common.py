@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import os
+
 import numpy as np
 import pandas as pd
 
@@ -52,7 +54,19 @@ def load_obs(df: pd.DataFrame, path=None, lists_only: bool = False) -> pd.DataFr
     O = pd.read_parquet(path or ROOT / "data" / "interim" / "wb_obs.parquet")
     if lists_only:
         O = O[O.src != "article"]
+    src = os.environ.get("WB_SRC", "home")  # homepage captures by default; "all" adds stories.json and channel pages
+    if src != "all":
+        O = O[O.src.isin(src.split(","))]
     O = O[(O.age_h > 0) & O.total.notna()].copy()
+    thin = int(os.environ.get("WB_THIN", "0"))  # keep at most this many captures per day (evenly spaced), 0 = all
+    if thin:
+        cap = pd.Series(np.sort(O.ts.unique()))
+        day = cap.dt.normalize(); pos = cap.groupby(day).cumcount(); cnt = cap.groupby(day).transform("size")
+        keep = np.zeros(len(cap), bool)
+        for d, g in cap.groupby(day):
+            k = len(g)
+            keep[g.index[np.unique(np.round(np.linspace(0, k - 1, min(thin, k))).astype(int))]] = True
+        O = O[O.ts.isin(cap[keep])].copy()
     row_of = pd.Series(np.arange(len(df)), index=df.art_id.to_numpy())
     row_of = row_of[row_of.index.notna() & ~row_of.index.duplicated()]
     O["row"] = O.art_id.map(row_of)
