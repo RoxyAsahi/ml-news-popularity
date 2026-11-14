@@ -1,12 +1,14 @@
 """External check of the url repair: share counts seen on Mashable's homepage shortly after publication.
 
-Internet Archive captures of mashable.com (data/wayback/, collected by scripts/wayback/wb_fetch.py; 2,152 captures,
-January 2013 to February 2014 so far) list articles with the share count shown at capture time. A count seen hours
+Internet Archive captures of mashable.com list pages (data/wayback/, collected by scripts/wayback/wb_fetch.py: the
+homepage, the stories feed and section pages, January 2013 to January 2015) list articles with the share count shown at capture time. A count seen hours
 after publication cannot exceed the count recorded in January 2015, and should predict it. Each sighting is joined
 to a dataset row through the article's URL, once with the repaired URL of the row and once with the URL written in
 the row (file as distributed), and compared with that row's shares:
-  sightings            sightings (age > 0) of articles that match a row
-  early_above_final    share of sightings whose count exceeds the row's shares (strictly, and by more than 5% + 100)
+  sightings            sightings (age > 0) of articles that match a row; sightings_48h: those within 48 hours
+  early_above_final_48h  share of sightings within 48 hours whose count exceeds the row's shares
+  above_final_any_age  the same over sightings of any age (strictly, and by more than 5% + 100); late sightings can
+                       exceed the dataset's count slightly because the two were not read at the same moment
   articles             articles with a sighting 6 to 48 hours after publication (the last such sighting is used)
   corr_log, spearman   correlation of that early count with the row's shares (log1p; rank)
 by period of the row's content date (before / from 6 June 2013, the first shifted row).
@@ -40,8 +42,11 @@ for name, col in [("repaired", "url"), ("as_distributed", "url_in_file")]:
     j = O.join(mp, on="art_id", how="inner")
     for per, mk in [("before 2013-06-06", j.date < "2013-06-06"), ("from 2013-06-06", j.date >= "2013-06-06")]:
         o = j[mk]; e = o[(o.age_h >= 6) & (o.age_h <= 48)].groupby("art_id").tail(1)
-        rows.append(dict(mapping=name, period=per, sightings=len(o), early_above_final=float((o.total > o.shares).mean()),
-                         early_above_final_5pct_100=float((o.total > 1.05 * o.shares + 100).mean()), articles=len(e),
+        o48 = o[o.age_h <= 48]
+        rows.append(dict(mapping=name, period=per, sightings=len(o), sightings_48h=len(o48),
+                         early_above_final_48h=float((o48.total > o48.shares).mean()),
+                         above_final_any_age=float((o.total > o.shares).mean()),
+                         above_final_any_age_5pct_100=float((o.total > 1.05 * o.shares + 100).mean()), articles=len(e),
                          corr_log=float(np.corrcoef(np.log1p(e.total), np.log1p(e.shares))[0, 1]),
                          spearman=float(spearmanr(e.total, e.shares)[0])))
 R = pd.DataFrame(rows); R.to_csv(ROOT / "results" / "tables" / "a4_archive_check.csv", index=False)
