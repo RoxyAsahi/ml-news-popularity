@@ -14,7 +14,12 @@ Part 3  cross-network prediction, past-only (monthly rolling origin, fit on mont
         Twitter count predict the final count outside Twitter? Targets are log final components; reported as AUC for
         exceeding the component's median and as Spearman correlation, with day-level bootstrap intervals.
 
-Outputs: results/tables/w9_final_composition.csv, w9_growth_by_network.csv, w9_cross_network.csv
+        Review additions: the composition reweighted to the dataset over month x share band; coverage by half-year;
+        the paper's label with Facebook removed (threshold at the quantile 1,400 occupies in the total); paired
+        Spearman differences; the Facebook-minus-Twitter difference by half-year and by tercile of the final total.
+
+Outputs: results/tables/w9_final_composition[_reweighted].csv, w9_final_spread.csv, w9_growth_by_network.csv,
+         w9_cross_network.csv, w9_cross_network_subgroups.csv
 """
 from __future__ import annotations
 
@@ -89,6 +94,29 @@ spread = pd.DataFrame({"median": G[NETS].median(), "q90": G[NETS].quantile(.9), 
 print("\n  each network's final count: spread, and AUC for 'total >= 1,400' of that network alone / of the rest")
 print(spread.round(3).to_string())
 T1.to_csv(OUT / "w9_final_composition.csv", index=False)
+
+# who is missing, and the composition reweighted to the whole dataset (cells: month x share band)
+half = np.where(df.date.dt.month.to_numpy() <= 6, "H1", "H2")
+halfyear = np.char.add(df.date.dt.year.to_numpy().astype(str), half)
+print("\n  share of dataset articles with a usable decomposition, by half-year of publication:")
+print(pd.Series(cov).groupby(halfyear).agg(["size", "mean"]).round(3).to_string())
+sband = np.digitize(s, [700, 1000, 1400, 2800, t95])
+cell = pd.Series(month).str.cat(pd.Series(sband).astype(str), sep="|").to_numpy()
+n_all = pd.Series(cell).value_counts(); n_cov = pd.Series(cell[cov]).value_counts()
+w = (n_all / n_cov).reindex(cell[G.index]).to_numpy()
+print(f"  cells {len(n_all)}, without any covered article {int((n_cov.reindex(n_all.index).isna()).sum())}")
+rw = []
+for name, m in [("all", np.ones(len(G), bool)), ("below 1,400", (G.shares < 1400).to_numpy()),
+                ("at least 1,400", (G.shares >= 1400).to_numpy()), ("top 5%", (G.shares >= t95).to_numpy())]:
+    g = G[m]; ww = w[m]
+    r = dict(group=name, n=len(g))
+    for k in NETS:
+        r["w_" + k] = (g[k] * ww).sum() / (g.total * ww).sum()
+    rw.append(r)
+RW = pd.DataFrame(rw)
+print("  composition reweighted to the dataset's distribution over month and share band (compare with the table above):")
+print(RW.round(3).to_string(index=False))
+RW.to_csv(OUT / "w9_final_composition_reweighted.csv", index=False)
 spread.to_csv(OUT / "w9_final_spread.csv")
 
 # ---- Parts 2 and 3: early look against the final components -------------------------------------------------------
@@ -112,7 +140,7 @@ def boot_ci(fn, d):
     return np.quantile(v, [.025, .975])
 
 
-growth, cross = [], []
+growth, cross, sub = [], [], []
 for h in [float(x) for x in a.horizons.split(",")]:
     E = early_state(O, h)
     both = E.index.intersection(G.index)
@@ -145,10 +173,14 @@ for h in [float(x) for x in a.horizons.split(",")]:
                "outside facebook": g.total - g.facebook, "outside twitter": g.total - g.twitter,
                "outside facebook and twitter": g.total - g.facebook - g.twitter,
                "later growth outside facebook": ((g.total - g.facebook) - (e_tot - e_cnt.facebook)).clip(lower=0),
-               "later growth outside twitter": ((g.total - g.twitter) - (e_tot - e_cnt.twitter)).clip(lower=0)}
+               "later growth outside twitter": ((g.total - g.twitter) - (e_tot - e_cnt.twitter)).clip(lower=0),
+               # the paper's label with Facebook removed: threshold at the quantile that 1,400 occupies in the total
+               "outside facebook, at the 1,400 quantile": g.total - g.facebook}
     feats = {"early facebook": ["age", "l_facebook"], "early twitter": ["age", "l_twitter"],
-             "early total": ["age", "l_total"], "early all six": ["age"] + ["l_" + k for k in NETS]}
-    print(f"\nPart 3  look within {h:g} h, months {a.first}..{a.last}: {use.sum():,} articles")
+             "early stumbleupon": ["age", "l_stumble_upon"], "early total": ["age", "l_total"], "early all six": ["age"] + ["l_" + k for k in NETS]}
+    print(f"\nPart 3  look within {h:g} h, months {a.first}..{a.last}: {use.sum():,} articles; early StumbleUpon count "
+          f"above zero in {np.mean(e_cnt.stumble_upon.to_numpy()[use] > 0):.1%} of looks, final above zero in "
+          f"{np.mean(g.stumble_upon.to_numpy()[use] > 0):.1%}")
     print(f"  {'final target':32s}" + "".join(f"{f:>26s}" for f in feats))
     for tn, tv in targets.items():
         yt = np.log1p(tv.to_numpy().astype(float))
@@ -160,7 +192,8 @@ for h in [float(x) for x in a.horizons.split(",")]:
                 tr = mth < m; te = mth == m
                 p[te] = reg().fit(Xf[tr], yt[tr]).predict(Xf[te])
             pred[fn] = p
-        hi = yt >= np.median(yt[use])
+        q = float(np.mean(g.total.to_numpy()[use] < 1400)) if "1,400 quantile" in tn else 0.5
+        hi = yt >= np.quantile(yt[use], q)
         line = f"  {tn:32s}"
         for fn in feats:
             p = pred[fn][use]; lab = hi[use]; du = dd[use]
@@ -176,8 +209,28 @@ for h in [float(x) for x in a.horizons.split(",")]:
         cross.append(dict(h=h, target=tn, features="facebook minus twitter", n=int(use.sum()),
                           auc_above_median=roc_auc_score(lab, pf) - roc_auc_score(lab, pt), lo=dlo, hi=dup,
                           spearman=np.nan))
-        print(line + f"   fb-tw {cross[-1]['auc_above_median']:+.3f} [{dlo:+.3f},{dup:+.3f}]", flush=True)
+        yu = yt[use]
+        dr = spearmanr(pf, yu)[0] - spearmanr(pt, yu)[0]
+        rlo, rup = boot_ci(lambda t: spearmanr(pf[t], yu[t])[0] - spearmanr(pt[t], yu[t])[0], du)
+        cross.append(dict(h=h, target=tn, features="facebook minus twitter (spearman)", n=int(use.sum()),
+                          auc_above_median=np.nan, lo=rlo, hi=rup, spearman=dr))
+        print(line + f"   fb-tw {cross[-2]['auc_above_median']:+.3f} [{dlo:+.3f},{dup:+.3f}]"
+                     f"  spearman {dr:+.3f} [{rlo:+.3f},{rup:+.3f}]", flush=True)
+        if tn == "later growth outside facebook":
+            hy = halfyear[rr][use]; tot_u = g.total.to_numpy()[use]
+            terc = np.digitize(tot_u, np.quantile(tot_u, [1 / 3, 2 / 3]))
+            groups = [("half-year " + x, hy == x) for x in np.unique(hy)] + \
+                     [("final total tercile " + str(i + 1), terc == i) for i in range(3)]
+            for gn, gm in groups:
+                la, a1, a2, dg = lab[gm], pf[gm], pt[gm], du[gm]
+                d = roc_auc_score(la, a1) - roc_auc_score(la, a2)
+                lo_, up_ = boot_ci(lambda t: roc_auc_score(la[t], a1[t]) - roc_auc_score(la[t], a2[t]), dg)
+                sub.append(dict(h=h, group=gn, n=int(gm.sum()), auc_fb=roc_auc_score(la, a1), auc_tw=roc_auc_score(la, a2),
+                                diff=d, lo=lo_, hi=up_, spearman_diff=spearmanr(a1, yu[gm])[0] - spearmanr(a2, yu[gm])[0]))
+                print(f"      {gn:24s} n={gm.sum():6d}  fb {sub[-1]['auc_fb']:.3f}  tw {sub[-1]['auc_tw']:.3f}  "
+                      f"fb-tw {d:+.3f} [{lo_:+.3f},{up_:+.3f}]  spearman diff {sub[-1]['spearman_diff']:+.3f}", flush=True)
 
 pd.DataFrame(growth).to_csv(OUT / "w9_growth_by_network.csv", index=False)
 pd.DataFrame(cross).to_csv(OUT / "w9_cross_network.csv", index=False)
+pd.DataFrame(sub).to_csv(OUT / "w9_cross_network_subgroups.csv", index=False)
 print("\nwrote results/tables/w9_*.csv")
