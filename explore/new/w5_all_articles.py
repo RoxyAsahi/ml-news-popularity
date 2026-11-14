@@ -79,5 +79,6 @@ for h in [float(x) for x in a.horizons.split(",")]:
             r["d_auc1400_lo"], r["d_auc1400_hi"] = np.quantile(d, [.025, .975])
         rows.append(r)
     print(pd.DataFrame([r for r in rows if r["h"] == h]).round(3).to_string(index=False), flush=True)
-tag = ("_thin" + os.environ["WB_THIN"]) if os.environ.get("WB_THIN") else ""
+tag = (("_thin" + os.environ["WB_THIN"]) if os.environ.get("WB_THIN") else "") + \
+    (("_src_" + os.environ["WB_SRC"]) if os.environ.get("WB_SRC") else "")
 pd.DataFrame(rows).to_csv(ROOT / "results" / "tables" / f"w5_all_articles{tag}.csv", index=False)
